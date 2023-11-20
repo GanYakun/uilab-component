@@ -1,7 +1,7 @@
 /*
  * @Author: lx.jin
  * @Date: 2021-09-26 15:23:36
- * @LastEditTime: 2022-08-10 15:02:36
+ * @LastEditTime: 2023-11-20 12:13:07
  * @LastEditors: lx.jin 308561217@qq.com
  * @Description: In User Settings Edit
  * @FilePath: /Union-PC/Union/src/utils/odata/index.js
@@ -38,8 +38,8 @@ odatajs.deferred = require('./lib/deferred.js');
 odatajs.utils = require('./lib/utils.js');
 
 // only neede for xml metadata
-odatajs.xml = require('./lib/xml.js');
-odatajs.xmlDom = require('./lib/xmldom.js');
+//odatajs.xml = require('./lib/xml.js');
+//odatajs.xmlDom = require('./lib/xmldom.js');
 
 
 // only need in browser case
