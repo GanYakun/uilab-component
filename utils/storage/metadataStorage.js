@@ -1,14 +1,12 @@
 /*
  * @Author: lx.jin
  * @Date: 2021-10-08 12:00:55
- * @LastEditTime: 2023-07-31 12:00:27
- * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2023-11-21 17:12:14
+ * @LastEditors: lx.jin 308561217@qq.com
  * @Description: In User Settings Edit
  * @FilePath: /Union-Wechat/utils/storage/metadataStorage.js
  */
 import localStorage from 'localStorage';
-import { getCurrentRouter } from '../util'
-
 let metadataStorage = {
   get: (key) => {
     return JSON.parse(localStorage.getItem(key))
