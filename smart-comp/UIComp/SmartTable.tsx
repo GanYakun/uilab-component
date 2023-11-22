@@ -1,7 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
 import { Space, Tag } from 'antd';
+import { getConfig } from '../Anotations/SmartTable';
 
 type GithubIssueItem = {
     url: string;
@@ -134,8 +135,21 @@ const columns: ProColumns<GithubIssueItem>[] = [
 ];
 
 export default (props) => {
-    const { entitySet }= props;
-    console.log({ entitySet })
+    const { entitySet } = props;
+    const [currentState, setCurrentState] = useState<object>()
+
+    //初始化方法
+    const init = async () => {
+        const result = await getConfig({ entitySet })
+        if (result) {
+            setCurrentState(result)
+        }
+    }
+
+    useEffect(() => {
+        !currentState && init()
+    }, [])
+
     const actionRef = useRef<ActionType>();
     return (
         <ProTable<GithubIssueItem>

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-21 17:28:52
+ * @LastEditTime: 2023-11-22 16:02:23
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,7 +10,6 @@ import odatajs from '../../utils/odata/index';
 import odata from '../../utils/odata/odata';
 import { message } from 'antd';
 import storage from '../../utils/storage/metadataStorage';
-import Utils from '../Process/utils'
 
 /**
  * 获取当前路由名称
@@ -25,14 +24,14 @@ const getRouteName = () => {
         const routeName = routeArr[0]
         return { appName, routeName };
     }
-    return false
+    return {}
 }
 
 /**
  * 获取ui5配置
  */
 const getUi5Config = async () => {
-    const { appName, routeName } = Utils.getRouteName()
+    const { appName, routeName } = getRouteName()
 
     //是否已有缓存
     if (storage.get(appName)) {
@@ -104,16 +103,18 @@ const getXmlDoc = async (path) => {
 const getI18nJson = async (i18nUrl) => {
     const i18nJson = {}
     let i18nData = await getXmlDoc(i18nUrl)
-    let resArr = i18nData.split('\n')
-    for (let item of resArr) {
-        if (item.search('=') !== -1) {
-            const arr = item.split('=')
-            if (arr.length === 2) {
-                i18nJson[`{@i18n>${arr[0]}}`] = arr[1]
+    if (i18nData){
+        let resArr = i18nData.split('\n')
+        for (let item of resArr) {
+            if (item.search('=') !== -1) {
+                const arr = item.split('=')
+                if (arr.length === 2) {
+                    i18nJson[`{@i18n>${arr[0]}}`] = arr[1]
+                }
             }
         }
+        return i18nJson
     }
-    return i18nJson
 }
 
 /**
@@ -159,8 +160,8 @@ const getMetadata = async (url) => {
  * @param {string} currentEntitySetName 
  * @param {object} metadata 
  */
-const getEntitySetConfig = async (currentEntitySetName, currentPath, ActionName) => {
-    const { metadata } = await Utils.getUi5Config()
+const getEntitySetConfig = async (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
+    const { metadata } = await getUi5Config()
 
     const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
     let result = {
@@ -169,7 +170,7 @@ const getEntitySetConfig = async (currentEntitySetName, currentPath, ActionName)
         currentEntityTypeName: null,
         currentEntityTypeData: null,
         currentPropertyType: null,
-        currentAnnotations: null,
+        currentAnnotations: null as any,
         currentStickySessionData: null,
         currentSortRestrictions: null
     };
@@ -187,7 +188,7 @@ const getEntitySetConfig = async (currentEntitySetName, currentPath, ActionName)
     })
 
     //递归处理 查找annotation等页面需要的配置文件
-    const _nbff = (arr) => {
+    const _nbff = (arr = []) => {
         let index = 0
         function query(currentEntityTypeName, navigationPropertyName, currentEntitySetName) {
             //遍历
@@ -285,8 +286,81 @@ const getAnnotationByTarget = (annotations, target) => {
     return result;
 };
 
+//annotations中获取当前term的annotation
+const getTermAnnotations = (annotations, term) => {
+    let result: any[] = [];
+    annotations.map((item: any) => {
+        if (item.term === term) {
+            result.push(item);
+        }
+    });
+    return result;
+};
+
+/**
+ * 获取annotation中对应字段的值 string、annotationPath、bool等 目的兼容标签内的字段和标签包裹的情况
+ * @param {string} label 例：string、annotationPath、bool
+ * @param {object} data 
+ * @returns 
+ */
+const getTextValueByData = (label, data) => {
+    if (data) {
+        if (data[label] instanceof Array) {
+            return data[label][0].text;
+        } else {
+            return data[label];
+        }
+    }
+};
+
+/**
+ * 通过annotation获取字段的显示label 
+ * Common.Label
+ * @param {*} annotations 当前对象的所有annotations
+ * @returns 
+ */
+const getLableByAnnotation = (annotations) => {
+    let result;
+    annotations && annotations.map((item) => {
+        if (item.term === 'Common.Label') {
+            result = getTextValueByData('string', item);
+        }
+    });
+    return result;
+};
+
+/**
+ * 获取当前对象的entityType中某个字段的数据类型：Edm.String、Edm.Boolean...
+ * @param {array} entityTypeArray metadata中所有entityType
+ * @param {string} property 需要获取的字段名称
+ * @returns Edm.String、Edm.Boolean
+ */
+const getPropertyType = (entityTypeArray, property) => {
+    let result;
+    entityTypeArray.property.map((d) => {
+        if (d.name === property) {
+            result = d.type;
+        }
+    });
+    return result;
+};
+
+/**
+ * 获取nameSpace+entityType 
+ * 区分Collection(com.dpbird.CustRequest) com.dpbird.CustRequest
+ * @param {*} typeName 
+ * @returns 
+ */
+const getNameSpaceEntityTypeName = (typeName) => {
+    let end = typeName.indexOf(')', 10);
+    return typeName.indexOf('Collection(') === 0 && end > 0 ? typeName.substring(11, end) : typeName;
+};
+
 export default {
     getRouteName,
     getUi5Config,
-    getEntitySetConfig
+    getEntitySetConfig,
+    getTermAnnotations,
+    getTextValueByData,
+    getLableByAnnotation
 }
