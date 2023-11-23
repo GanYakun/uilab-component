@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-23 10:46:17
+ * @LastEditTime: 2023-11-23 17:38:58
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,6 +10,7 @@ import odatajs from '../../utils/odata/index';
 import odata from '../../utils/odata/odata';
 import { message } from 'antd';
 import storage from '../../utils/storage/metadataStorage';
+import lodash from 'lodash';
 
 /**
  * 获取当前路由名称
@@ -286,10 +287,16 @@ const getAnnotationByTarget = (annotations, target) => {
     return result;
 };
 
-//annotations中获取当前term的annotation
+
+/**
+ * 获取term对应的annotations
+ * @param {array} annotations 
+ * @param {string} term 
+ * @returns 
+ */
 const getTermAnnotations = (annotations, term) => {
     let result: any[] = [];
-    annotations.map((item: any) => {
+    Array.isArray(annotations) && annotations.map((item: any) => {
         if (item.term === term) {
             result.push(item);
         }
@@ -666,6 +673,117 @@ const getPrimaryKeys = (currentEntityTypeData) => {
     return result;
 };
 
+/**
+ * 获取只读状态显示的内容
+ * UI.TextArrangementType/TextFirst UI.TextArrangementType/TextLast UI.TextArrangementType/TextOnly
+ * @param {object} record
+ * @param {array} currentAnnotations
+ * @param {string} fieldValue
+ * @param {array} annotations
+ * @param {string} namespace
+ * @param {string} fieldType
+ * @param {string} displayProperty 兼容lookup
+ * @returns {object}displayValue:只读显示的文本
+ */
+const getFieldReadonlyTextAndCurrentValue = (
+    record,
+    fieldValue,
+    currentAnnotations,
+) => {
+    let displayValue, currentPathText, currentValue;
+
+    //是否配置Common.Text
+    let { pathText, enumMemberText } = getCommonTextByAnnotatons(currentAnnotations);
+
+    //获取readonlyText
+    const _getReadonlyText = (value1, value2) => {
+        if (!value1) return value2;
+        switch (enumMemberText) {
+            case 'UI.TextArrangementType/TextFirst':
+                return `${value1} ( ${value2} )`;
+            case 'UI.TextArrangementType/TextLast':
+                return `${value2} ( ${value1} )`;
+            case 'UI.TextArrangementType/TextOnly':
+                return `${value1}`;
+        }
+        return value1;
+    };
+
+    //获取对应字段在record中的值 通过目标数组
+    const _getRecordDataByTargetArr = (record, targetArr) => {
+        let data = record
+        for (let i of targetArr) {
+            if (data) {
+                if (data instanceof Array) {
+                    const arr = []
+                    for (let item of data) {
+                        item[i] && arr.push(item[i])
+                    }
+                    data = arr
+                } else {
+                    data = data[i]
+                }
+            } else {
+                data = null
+            }
+        }
+        return data
+    }
+
+    //判断是否为object,普通字符串直接返回
+    if (record instanceof Object && fieldValue) {
+        if (fieldValue.search('/') === -1) {
+            if (pathText) {
+                if (pathText.search('/') === -1) {
+                    currentPathText = pathText
+                    const value1 = record[pathText];
+                    const value2 = record[fieldValue];
+                    displayValue = _getReadonlyText(value1, value2);
+                    currentValue = value2;
+                } else {
+                    const arr = pathText.split('/');
+                    const value1 = _getRecordDataByTargetArr(record, arr)
+                    currentPathText = value1
+                    const value2 = record[fieldValue];
+
+                    displayValue = _getReadonlyText(value1, value2);
+                    currentValue = value2;
+                }
+            } else {
+                currentPathText = fieldValue
+                displayValue = record[fieldValue];
+                currentValue = record[fieldValue];
+            }
+        } else {
+            let arr = fieldValue.split('/');
+            let arr1 = fieldValue.split('/')
+            if (pathText) {
+                arr = lodash.dropRight(arr, 1).concat(pathText.split('/'))
+            }
+            const value1 = _getRecordDataByTargetArr(record, arr)
+            const value2 = _getRecordDataByTargetArr(record, arr1)
+            //处理字段是列表
+            if (value1 instanceof Array) {
+                const arr = []
+                value1.map((item, index) => {
+                    arr.push(_getReadonlyText(item, value2[index]))
+                })
+                displayValue = arr
+            } else {
+                displayValue = _getReadonlyText(value1, value2);
+            }
+
+            currentValue = value2;
+        }
+    } else {
+        currentPathText = record
+        displayValue = record;
+        currentValue = record;
+    }
+
+    return { displayValue, currentPathText, currentValue };
+};
+
 
 export default {
     getRouteName,
@@ -675,5 +793,6 @@ export default {
     getTextValueByData,
     getLableByAnnotation,
     getQueryContitionsByAnnotations,
-    getPrimaryKeys
+    getPrimaryKeys,
+    getFieldReadonlyTextAndCurrentValue
 }

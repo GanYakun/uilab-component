@@ -2,22 +2,12 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-23 16:48:10
+ * @LastEditTime: 2023-11-23 17:41:30
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import Utils from '../Process/utils'
 import Odata from '../../utils/odata/odata'
-
-interface SmartFieldConfigType {
-    fieldType: string,
-    displayVlue: any
-}
-
-let SmartFieldConfig: SmartFieldConfigType = {
-    fieldType: '',//字段类型
-    displayVlue: null,
-}
 
 /**
  * 设置当前字段的类型
@@ -28,7 +18,14 @@ let SmartFieldConfig: SmartFieldConfigType = {
 const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => {
 
     let result = {
-        fieldType: isReadOnly ? 'ReadOnly' : 'Text'
+        fieldType: 'Text'
+    }
+
+    //只读返回
+    if (isReadOnly) {
+        return {
+            fieldType: 'ReadOnly'
+        }
     }
 
     //判断是否是长文本
@@ -112,12 +109,16 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => 
 
 const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly } = params
-    const { currentAnnotations, currentEntityTypeData, currentPropertyType } = await Utils.getEntitySetConfig('Roles', 'roleTypeId')
+    const { currentAnnotations, currentEntityTypeData, currentPropertyType } = await Utils.getEntitySetConfig(entitySet, path)
     const { fieldType } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
-    SmartFieldConfig.fieldType = fieldType
-    console.log({ currentAnnotations, currentEntityTypeData, currentPropertyType })
+    const { displayValue, currentValue } = Utils.getFieldReadonlyTextAndCurrentValue(record, path, currentAnnotations)
+    //console.log({ record, entitySet, path, isReadOnly, SmartFieldConfig, currentAnnotations, currentEntityTypeData, currentPropertyType })
 
-    return SmartFieldConfig
+    return {
+        fieldType,
+        displayValue,
+        currentValue
+    }
 }
 
 export {
