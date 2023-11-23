@@ -143,6 +143,8 @@ export default (props) => {
         const result = await getConfig({ entitySet })
         if (result) {
             setCurrentState(result)
+            const { annoRequest } = result
+            annoRequest && annoRequest()
         }
     }
 

@@ -2,14 +2,19 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-22 15:57:36
+ * @LastEditTime: 2023-11-23 10:36:29
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import Utils from '../Process/utils'
+import Odata from '../../utils/odata/odata'
 
 let SmartTableConfig = {
-    entitySet: null
+    entitySet: null as any,
+    annoRequest: null as any,
+    columns: [] as any,
+    inLineBtns: [] as any,
+    headerBtns: [] as any,
 }
 
 /**
@@ -183,11 +188,70 @@ const getTableConfig = async (currentAnnotations: any[]) => {
     return result
 }
 
+/**
+ * 处理请求参数
+ * @param queryEntity 
+ * @param targetPath 
+ */
+const _setRequest = (queryEntity = null, targetPath = null) => {
+    const { entitySet, columns } = SmartTableConfig
+    interface Params {
+        option: any
+    }
+    return async (params: Params = {
+        option: undefined
+    }) => {
+        const fieldArr = []
+        const { option: sendOption } = params
+        columns.map((item) => {
+            const { path, type, value, show, url } = item
+            switch (type) {
+                case 'UI.DataField':
+                    show === true && fieldArr.push(path)
+                    break;
+                default:
+                    break;
+            }
+        })
+        //获取查询条件
+        let { currentExpand, currentSelect } = await Utils.getQueryContitionsByAnnotations(
+            fieldArr, entitySet
+        );
+
+        //请求参数准备
+        interface Option {
+            path: string,
+            method: string,
+            parameters: any
+        }
+        let option: Option = {
+            path: queryEntity ? `${queryEntity}/${targetPath}` : entitySet,
+            method: 'GET',
+            parameters: {
+                $count: true
+            },
+        };
+        if (currentSelect && currentSelect.length > 0) {
+            option.parameters.$select = currentSelect.toString();
+        }
+        if (JSON.stringify(currentExpand) !== '{}') {
+            option.parameters.$expand = currentExpand;
+        }
+
+        //设置过滤、排序条件
+        if (sendOption) {
+            option.parameters = { ...option.parameters, ...sendOption }
+        }
+        return await Odata.submit(option);
+    }
+}
+
 const getConfig = async (params) => {
     const { entitySet } = params
     SmartTableConfig.entitySet = entitySet
     const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
     if (currentAnnotations) SmartTableConfig = { ...SmartTableConfig, ...await getTableConfig(currentAnnotations) }
+    SmartTableConfig.annoRequest = _setRequest()
 
     console.log({ SmartTableConfig, currentAnnotations, currentEntityTypeData })
     return SmartTableConfig

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-22 16:02:23
+ * @LastEditTime: 2023-11-23 10:46:17
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -79,7 +79,7 @@ const getUi5Config = async () => {
  * @param {string} path xml文档路径
  */
 const getXmlDoc = async (path) => {
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
         let oReq = new XMLHttpRequest();
         oReq.open('GET', path);
         oReq.send();
@@ -103,7 +103,7 @@ const getXmlDoc = async (path) => {
 const getI18nJson = async (i18nUrl) => {
     const i18nJson = {}
     let i18nData = await getXmlDoc(i18nUrl)
-    if (i18nData){
+    if (i18nData) {
         let resArr = i18nData.split('\n')
         for (let item of resArr) {
             if (item.search('=') !== -1) {
@@ -356,11 +356,324 @@ const getNameSpaceEntityTypeName = (typeName) => {
     return typeName.indexOf('Collection(') === 0 && end > 0 ? typeName.substring(11, end) : typeName;
 };
 
+/**
+ * 获取显示字段
+ * Common.Text UI.TextArrangement
+ * @param {array} currentAnnotations
+ * @returns {object}
+ */
+const getCommonTextByAnnotatons = (currentAnnotations) => {
+    const result = {
+        pathText: null,
+        enumMemberText: null,
+    };
+
+    if (currentAnnotations) {
+        //解析当前字段的类型，通过term=Common.Text，判断最终显示的方式。未设定使用TextOnly
+        for (let a of currentAnnotations) {
+            const { term, annotation } = a;
+            if (term === 'Common.Text') {
+                result.pathText = getTextValueByData('path', a);
+                if (annotation) {
+                    for (let b of annotation) {
+                        const { term } = b;
+                        if (term === 'UI.TextArrangement') {
+                            result.enumMemberText = getTextValueByData('enumMember', b);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+};
+
+/**
+ * 获取查看条件，1.expand条件  2.主对象的select条件
+ * @param {array} fieldArr
+ * @param {array} annotations
+ * @param {object}  entityContainer
+ * @param {string}  entitySetName
+ * @returns {object} currentExpand,currentSelect
+ */
+const getQueryContitionsByAnnotations = async (
+    fieldArr,
+    entitySetName
+) => {
+    const { metadata } = await getUi5Config()
+    const { entityContainer, annotations, entityType, namespace } = metadata.dataServices.schema[0];
+
+    let currentExpand = {},
+        currentSelect = []//最外层需要的$select
+
+    //添加$select
+    const _setSelect = (value, unitData) => {
+        if (currentSelect.findIndex((item) => item === value) === -1) {
+            currentSelect.push(value)
+        }
+        //处理单位请求，备注是第一层的字段
+        if (unitData && unitData.index === 0 && unitData.value) {
+            const { path } = unitData.value
+            // 是否是多段式
+            if (path.search('/') === -1) {
+                currentSelect.push(path)
+            }
+        }
+    }
+
+    //判断当前字段是否配置了Common.Text
+    const _nbff = (arr, field) => {
+        let parseData = [], index = 0, unitData, isImageData, selectData, primaryKey
+        const find = (entitySetName, navigationPropertyName, entityTypeName) => {
+            const { entitySet } = entityContainer
+            entitySet.map(async (item) => {
+                const { name, navigationPropertyBinding, entityType } = item
+                if (name === entitySetName) {
+                    //数组的最后一个元素为字段信息，是否配置Common.Text
+                    if (index === arr.length - 1) {
+
+                        //两种entityType 都要去找 1.字段上的 2.entitySet上的
+                        let fieldAnnotations1, fieldAnnotations2, fieldAnnotations
+                        fieldAnnotations1 = getAnnotationByTarget(annotations, `${entityType}/${arr[index]}`);
+                        fieldAnnotations2 = getAnnotationByTarget(annotations, `${namespace}.${entityTypeName}/${arr[index]}`);
+                        fieldAnnotations = fieldAnnotations1.concat(fieldAnnotations2)
+
+                        const { pathText } = getCommonTextByAnnotatons(fieldAnnotations);
+                        const { currentEntityTypeData } = await getEntitySetConfig(name)
+                        //是否配置Text
+                        if (pathText) {
+                            if (pathText.search('/') !== -1) {
+                                const textArr = pathText.split('/')
+                                //配置了Text 关联对象也要配置在主对象entitySet的navigationPropertyBinding
+                                if (navigationPropertyBinding && navigationPropertyBinding.findIndex((item) => item.path === textArr[0]) !== -1) {
+                                    parseData = parseData.concat(textArr)
+                                } else {
+                                    console.error(`entitySet:${entitySetName} 中 navigationPropertyBinding 没有定义===> ${textArr[0]}`)
+                                }
+                            } else {
+                                parseData.push(pathText)
+                                index === 0 && _setSelect(pathText)
+                            }
+                        } else {
+                            parseData.push(arr[index])
+                            arr.length === 1 && _setSelect(arr[index])
+                            //数据主键
+                            primaryKey = getPrimaryKeys(currentEntityTypeData)
+                        }
+
+                        //处理Unit
+                        const unit = getTermAnnotations(fieldAnnotations, 'Org.OData.Measures.V1.Unit') || getTermAnnotations(fieldAnnotations, 'Measures.Unit')
+                        if (unit && unit.path) {
+                            unitData = {
+                                index,
+                                value: unit
+                            };
+                        }
+                        //处理isImage
+                        isImageData = {
+                            index,
+                            value: getTermAnnotations(fieldAnnotations, 'UI.IsImage')
+                        };
+                        //selectData
+                        selectData = {
+                            index,
+                            value: arr[index]
+                        }
+
+                        return
+                    }
+
+                    //检查是否没有配置对应
+                    if (index !== arr.length - 1 && !navigationPropertyBinding) {
+                        console.error(`Edm entitySet 配置错误： ${navigationPropertyName} => 没有配置在主对象 ${entitySetName} 对应的navigationPropertyBinding中`)
+                    }
+
+                    //递归查找关联对象，直到最后一层
+                    navigationPropertyBinding && navigationPropertyBinding.map((d) => {
+                        const { path, target } = d
+                        if (path === navigationPropertyName) {
+                            index++
+                            parseData.push(path)
+                            find(target, arr[index], arr[index - 1])
+                        } else {
+                            //console.error(`Edm entitySet 配置错误： ${navigationPropertyName} => 没有配置在主对象 ${entitySetName} 对应的navigationPropertyBinding中  ${arr}`)
+                        }
+                    })
+                }
+            })
+        }
+        //查找关联对象
+        find(entitySetName, arr[index], arr[index])
+        return {
+            parseData,
+            unitData,
+            isImageData,
+            selectData,
+            primaryKey
+        }
+    }
+
+    //4.拼装expand select
+    const getMultistage = (arr, unitData, isImageData, selectData, primaryKey) => {
+        let floatObj = currentExpand;
+        function create(index) {
+            //处理单位
+            if (unitData && unitData.index !== 0) {
+                const { value } = unitData
+                if (value && index === unitData.index) {
+                    const { path } = value
+                    if (path.search('/') === -1) {
+                        floatObj['$select'] += `,${path}`
+                    }
+                }
+            } else {
+                //处理第一层的多段式 单位联合显示
+                if (unitData && unitData.value) {
+                    const { path } = unitData.value
+                    if (path.search('/') !== -1) {
+                        arr = path.split('/')
+                    }
+                }
+            }
+
+            //处理isImage
+            let ignore = false
+            if (isImageData) {
+                const { value } = isImageData
+                if (value && value.bool === 'true') {
+                    ignore = true
+                }
+            }
+
+            //最后一个字段返回不处理
+            if (index > arr.length - 2) {
+                return
+            }
+
+            if (!floatObj[arr[index]]) {
+                if (index === 0) {
+                    floatObj[arr[index]] = {}
+                    if (arr.length === 2 && !ignore && !floatObj[arr[index]]['$select']) {
+                        floatObj[arr[index]]['$select'] = arr[index + 1]
+                    }
+                } else {
+                    if (!floatObj.$expand) {
+                        floatObj.$expand = {
+                            ...floatObj.$expand,
+                            [arr[index]]: index === arr.length - 2 ? {
+                                $select: primaryKey && index === arr.length - 2 ? primaryKey.toString() : null//设置查询带上主键，最后一个对象
+                            } : {}
+                        }
+                    } else {
+                        floatObj.$expand = {
+                            ...floatObj.$expand,
+                            [arr[index]]: {
+                                ...floatObj.$expand[arr[index]]
+                            }
+                        }
+                    }
+                    if (index === arr.length - 2 && !ignore) {
+                        if (!floatObj.$expand[arr[index]]['$select']) {
+                            floatObj.$expand[arr[index]]['$select'] = arr[index + 1]
+                        } else {
+                            floatObj.$expand[arr[index]]['$select'] += `,${arr[index + 1]}`
+                        }
+                    }
+                }
+            } else {
+                //处理$select
+                if (index === 0) {
+                    if (arr.length === 2 && !ignore) {
+                        if (!floatObj[arr[index]]['$select']) {
+                            floatObj[arr[index]]['$select'] = arr[index + 1]
+                        } else {
+                            floatObj[arr[index]]['$select'] += `,${arr[index + 1]}`
+                        }
+                    }
+                } else if (index === arr.length - 2 && !ignore) {
+                    if (!floatObj.$expand[arr[index]]['$select']) {
+                        floatObj.$expand[arr[index]]['$select'] = arr[index + 1]
+                    } else {
+                        floatObj.$expand[arr[index]]['$select'] += `,${arr[index + 1]}`
+                    }
+                }
+            }
+
+            //selectData
+            if (selectData) {
+                const { value } = selectData
+                if (value && index === selectData.index) {
+                    if (floatObj['$select']) {
+                        floatObj['$select'] += `,${value}`
+                    } else {
+                        floatObj['$select'] = `${value}`
+                    }
+                }
+            }
+
+            floatObj = index === 0 ? floatObj[arr[index]] : floatObj.$expand[[arr[index]]]
+            create(index + 1)
+        }
+        create(0)
+    }
+
+    //判断是否是现实关联对象的字段 通过是否存在 ‘/’ 
+    fieldArr.map((item) => {
+        if (item) {
+            if (item.search('/') !== -1) {
+                let arr = item.split('/')
+                const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr, item)
+                if (parseData.length === 0) {
+                    console.error(`annotation配置错误： ${item} => 没有配置主对象（${entitySetName}）对应的navigationPropertyBinding`)
+                }
+                getMultistage(parseData, unitData, isImageData, selectData, primaryKey)
+            } else {
+                const { parseData, unitData, isImageData } = _nbff([item], item)
+                getMultistage(parseData, unitData, isImageData)
+                _setSelect(item, unitData)
+            }
+        }
+    })
+    return {
+        currentExpand,
+        currentSelect,
+    };
+};
+
+/**
+ * 获取当前对象的主键数据，primaryKeys 
+ * @param {*} currentEntityTypeData 当前对象的entityType数据
+ * @returns 
+ */
+const getPrimaryKeys = (currentEntityTypeData) => {
+    const result = [];
+    if (currentEntityTypeData) {
+        const { key } = currentEntityTypeData;
+        if (key) {
+            for (let a of key) {
+                const { propertyRef } = a;
+                if (propertyRef) {
+                    for (let b of propertyRef) {
+                        const { name } = b;
+                        result.push(name);
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+};
+
+
 export default {
     getRouteName,
     getUi5Config,
     getEntitySetConfig,
     getTermAnnotations,
     getTextValueByData,
-    getLableByAnnotation
+    getLableByAnnotation,
+    getQueryContitionsByAnnotations,
+    getPrimaryKeys
 }
