@@ -3,6 +3,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable, TableDropdown } from '@ant-design/pro-components';
 import { Space, Tag } from 'antd';
 import { getConfig } from '../Anotations/SmartTable';
+import SmartField from './SmartField';
 
 type GithubIssueItem = {
     url: string;
@@ -136,7 +137,7 @@ type GithubIssueItem = {
 
 export default (props) => {
     const { entitySet } = props;
-    const [currentState, setCurrentState] = useState<object>()
+    const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
     //初始化方法
     const init = async () => {
@@ -149,6 +150,16 @@ export default (props) => {
                     title: item.label,
                     key: path,
                     dataIndex: path,
+                    render: (text, record) => {
+                        const option={
+                            entitySet,
+                            path,
+                            record,
+                            isReadOnly:true
+                        }
+
+                        return <SmartField {...option} />
+                    }
                 })
                 setColumns([...columns]);
             })
