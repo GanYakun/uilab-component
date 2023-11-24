@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 19:38:09
+ * @LastEditTime: 2023-11-24 19:49:24
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -155,6 +155,7 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
         collectionPath
     );
 
+
     /**
     * 获取显示的文本内容
     * DisplayProperty有值显示对应值，否则显示columns
@@ -230,47 +231,48 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
     if (currentSelect.length) {
         option.parameters.$select = currentSelect.toString();
     }
+    console.log({ currentExpand, currentSelect, arr, option })
 
     return async (params) => {
-        if (params && params.option) {
-            const { option: sendOption } = params
-            const { $top, $skip, $count } = sendOption
-            option.parameters = {
-                ...option.parameters,
-                $top,
-                $skip,
-                $count
-            }
-            if (sendOption && sendOption.$top) {
-                option.parameters.$top = sendOption.$top
-            } else {
-                delete option.parameters.$top
-            }
-            if (sendOption && sendOption.$skip) {
-                option.parameters.$skip = sendOption.$skip
-            } else {
-                delete option.parameters.$skip
-            }
-            if (sendOption && sendOption.$count) {
-                option.parameters.$count = sendOption.$count
-            } else {
-                delete option.parameters.$count
-            }
-            if (sendOption && sendOption.$filter) {
-                option.parameters.$filter = sendOption.$filter
-            } else {
-                delete option.parameters.$filter
-            }
-            if (sendOption && sendOption.$search) {
-                option.parameters.$search = sendOption.$search
-            } else {
-                delete option.parameters.$search
-            }
-        }
+        // if (params && params.option) {
+        //     const { option: sendOption } = params
+        //     const { $top, $skip, $count } = sendOption
+        //     option.parameters = {
+        //         ...option.parameters,
+        //         $top,
+        //         $skip,
+        //         $count
+        //     }
+        //     if (sendOption && sendOption.$top) {
+        //         option.parameters.$top = sendOption.$top
+        //     } else {
+        //         delete option.parameters.$top
+        //     }
+        //     if (sendOption && sendOption.$skip) {
+        //         option.parameters.$skip = sendOption.$skip
+        //     } else {
+        //         delete option.parameters.$skip
+        //     }
+        //     if (sendOption && sendOption.$count) {
+        //         option.parameters.$count = sendOption.$count
+        //     } else {
+        //         delete option.parameters.$count
+        //     }
+        //     if (sendOption && sendOption.$filter) {
+        //         option.parameters.$filter = sendOption.$filter
+        //     } else {
+        //         delete option.parameters.$filter
+        //     }
+        //     if (sendOption && sendOption.$search) {
+        //         option.parameters.$search = sendOption.$search
+        //     } else {
+        //         delete option.parameters.$search
+        //     }
+        // }
         const result = await Odata.submit(option)
         if (result) {
             const { value } = result.data;
-            const obj = {};
+            const arr = [] as any;
             let _ValueListProperty, DisplayProperty
             for (let a of Parameters) {
                 const { type, ValueListProperty } = a
@@ -281,9 +283,12 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
             DisplayProperty =await _getValueListPropertyDisplay(_ValueListProperty, collectionPath)
             value.map((item) => {
                 const val = _getDisplayText(item, DisplayProperty, _ValueListProperty)
-                obj[item[_ValueListProperty]] = val ? val : item[_ValueListProperty];
+                arr.push({
+                    label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty] 
+                })
             });
-            return obj
+            console.log({ arr, DisplayProperty, value })
+            return arr
         }
     };
 }
