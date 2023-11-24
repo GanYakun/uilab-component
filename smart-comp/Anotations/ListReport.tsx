@@ -2,33 +2,12 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-23 11:10:58
+ * @LastEditTime: 2023-11-24 08:52:27
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 import Utils from '../Process/utils'
-
-interface ListReportConfigType {
-    entitySet: string,
-    tabs: Array<any>,
-    annoRequest: any,
-    showCounts: any,
-    navigation: any,
-    autoRefresh: any,
-    pageName: string,
-    getVariantConfig: any,
-}
-let ListReportConfig: ListReportConfigType = {
-    entitySet: '',
-    tabs: [],
-    annoRequest: null,
-    showCounts: null,
-    navigation: null,
-    autoRefresh: null,
-    pageName: '',
-    getVariantConfig: null,
-}
 
 /**
  * 获取manifest配置
@@ -56,6 +35,7 @@ const _getManifestConfig = async () => {
             id
         }
     }
+    return {}
 }
 
 /**
@@ -103,13 +83,22 @@ const _getManifestConfig = async () => {
 // }
 
 const getConfig = async () => {
-    ListReportConfig = { ...ListReportConfig, ...await _getManifestConfig() }
-    const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(ListReportConfig.entitySet)
+    const { entitySet }= await _getManifestConfig()
+    const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
     // if (ListReportConfig.views) {
     //     ListReportConfig.tabs = _setTabs(ListReportConfig.views, currentAnnotations, currentEntityTypeData)
     // }
     //console.log({ ListReportConfig, currentAnnotations, currentEntityTypeData })
-    return ListReportConfig
+    return {
+        entitySet,
+        tabs: [],
+        annoRequest: null,
+        showCounts: null,
+        navigation: null,
+        autoRefresh: null,
+        pageName: '',
+        getVariantConfig: null,
+    }
 }
 
 export {

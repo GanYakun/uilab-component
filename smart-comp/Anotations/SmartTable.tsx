@@ -2,34 +2,18 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-23 11:10:15
+ * @LastEditTime: 2023-11-24 08:49:42
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import Utils from '../Process/utils'
 import Odata from '../../utils/odata/odata'
-interface SmartTableConfigType {
-    entitySet: string,
-    annoRequest: any,
-    columns: any[],
-    inLineBtns: any[],
-    headerBtns: any[]
-
-}
-let SmartTableConfig: SmartTableConfigType = {
-    entitySet: '',
-    annoRequest: null,
-    columns: [],
-    inLineBtns: [],
-    headerBtns: [],
-}
-
 /**
  * 获取表格配置
  * @param currentAnnotations
  * @returns
  */
-const getTableConfig = async (currentAnnotations: any[]) => {
+const getTableConfig = async (currentAnnotations: any[], entitySetName: string) => {
     const result = {
         columns: [] as any,
         inLineBtns: [] as any,
@@ -71,7 +55,7 @@ const getTableConfig = async (currentAnnotations: any[]) => {
                             result.Path = Utils.getTextValueByData('path', c)
                             //当前LineItem上的Label优先级最高，如果未设置去查询当前字段时候配置Label 关联对象label
                             if (!result.Label) {
-                                const { currentAnnotations } = await Utils.getEntitySetConfig(SmartTableConfig.entitySet, result.Path)
+                                const { currentAnnotations } = await Utils.getEntitySetConfig(entitySetName, result.Path)
                                 result.Label = Utils.getLableByAnnotation(currentAnnotations)
                             }
                             break;
@@ -200,8 +184,7 @@ const getTableConfig = async (currentAnnotations: any[]) => {
  * @param queryEntity 
  * @param targetPath 
  */
-const _setRequest = (queryEntity = null, targetPath = null) => {
-    const { entitySet, columns } = SmartTableConfig
+const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) => {
     interface Params {
         option: any
     }
@@ -255,13 +238,16 @@ const _setRequest = (queryEntity = null, targetPath = null) => {
 
 const getConfig = async (params) => {
     const { entitySet } = params
-    SmartTableConfig.entitySet = entitySet
     const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
-    if (currentAnnotations) SmartTableConfig = { ...SmartTableConfig, ...await getTableConfig(currentAnnotations) }
-    SmartTableConfig.annoRequest = _setRequest()
-
-    console.log({ SmartTableConfig, currentAnnotations, currentEntityTypeData })
-    return SmartTableConfig
+    const { columns, inLineBtns, headerBtns } = await getTableConfig(currentAnnotations, entitySet)
+    const annoRequest = _setRequest(entitySet, columns)
+    return {
+        entitySet,
+        annoRequest,
+        columns,
+        inLineBtns,
+        headerBtns,
+    }
 }
 
 export {
