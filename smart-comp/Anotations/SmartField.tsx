@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 19:13:19
+ * @LastEditTime: 2023-11-24 19:38:09
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -146,6 +146,7 @@ const getValueListProperty = async (
  * @returns 
  */
 const _setRequest = async (collectionPath, columns, Parameters) => {
+
     //获取查询条件
     const arr = [] as any[]
     columns.map((item) => arr.push(item.path))
@@ -161,7 +162,6 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
     * @returns 
     */
     const _getDisplayText = (data, DisplayProperty, ValueListProperty) => {
-
         //1.是否配置了显示字段
         if (DisplayProperty) {
             //2.是否是显示关联对象的字段
@@ -198,9 +198,10 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
      * @param {*} collectionPath 
      * @returns 
      */
-    const _getValueListPropertyDisplay = (ValueListProperty, collectionPath) => {
+    const _getValueListPropertyDisplay = async (ValueListProperty, collectionPath) => {
         let result
-        const { entityContainer } = metadata.dataServices.schema[0];
+        const { metadata } = await Utils.getUi5Config()
+        const { annotations, entityContainer } = metadata.dataServices.schema[0];
         const { entitySetData: currentEntitySetData } = Utils.getEntitySetData(entityContainer, collectionPath)
         if (currentEntitySetData) {
             const { entityType: currentEntityTypeName } = currentEntitySetData
@@ -215,7 +216,6 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
                 }
             }
         }
-        //console.log({ result })
         return result
     }
 
@@ -230,6 +230,7 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
     if (currentSelect.length) {
         option.parameters.$select = currentSelect.toString();
     }
+
     return async (params) => {
         if (params && params.option) {
             const { option: sendOption } = params
@@ -266,7 +267,6 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
                 delete option.parameters.$search
             }
         }
-
         const result = await Odata.submit(option)
         if (result) {
             const { value } = result.data;
@@ -278,12 +278,11 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
                     _ValueListProperty = ValueListProperty
                 }
             }
-            DisplayProperty = _getValueListPropertyDisplay(_ValueListProperty, collectionPath)
+            DisplayProperty =await _getValueListPropertyDisplay(_ValueListProperty, collectionPath)
             value.map((item) => {
                 const val = _getDisplayText(item, DisplayProperty, _ValueListProperty)
                 obj[item[_ValueListProperty]] = val ? val : item[_ValueListProperty];
             });
-            console.log({ obj })
             return obj
         }
     };
@@ -343,7 +342,7 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
                 columns,
                 lookUpTitle,
                 Parameters,
-                annoRequest: _setRequest(collectionPath, columns, Parameters)
+                annoRequest: await _setRequest(collectionPath, columns, Parameters)
             }
         }
     }
