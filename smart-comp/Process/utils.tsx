@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-23 17:38:58
+ * @LastEditTime: 2023-11-24 18:17:07
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -784,6 +784,66 @@ const getFieldReadonlyTextAndCurrentValue = (
     return { displayValue, currentPathText, currentValue };
 };
 
+/**
+ * 获取当前对象的EntitySetData
+ * @param {object} entityContainer metadata中的entityContainer
+ * @param {string} entitySetName 
+ * @param {string} fieldValue      smartfield当前显示字段 判断是否显示
+ * @returns {name: 'Parties', entityType: 'com.dpbird.Party', navigationPropertyBinding: Array(6)}
+ */
+const getEntitySetData = (entityContainer, entitySetName, fieldValue=null) => {
+    let result = {
+        entitySetData: null,
+        property: null
+    };
+    const { entitySet } = entityContainer;
+
+    const _getEntitySet = (targetName) => {
+        entitySet.map((item) => {
+            const { name } = item;
+            if (name === targetName) {
+                result.entitySetData = item;
+            }
+        });
+    }
+    _getEntitySet(entitySetName)
+    if (fieldValue && fieldValue.search('/') !== -1) {
+        const arr = fieldValue.split('/')
+        arr.map((item, index) => {
+            if (index !== arr.length - 1) {
+                const { navigationPropertyBinding } = result.entitySetData
+                for (let a of navigationPropertyBinding) {
+                    const { path, target } = a
+                    if (path === item) {
+                        _getEntitySet(target)
+                    }
+                }
+            } else {
+                result.property = item
+            }
+        })
+    } else {
+        result.property = fieldValue
+    }
+
+    return result;
+};
+
+/**
+ * 获取当前字段对应的展示字段信息 
+ * Common.Text
+ * @param {*} annotations 当前对象的annotations
+ * @returns 
+ */
+const getDisplayTextByAnnotation = (annotations) => {
+    let result;
+    annotations && annotations.map((item) => {
+        if (!result && item.term === 'Common.Text') {
+            result = getTextValueByData('path', item);
+        }
+    });
+    return result;
+};
 
 export default {
     getRouteName,
@@ -794,5 +854,8 @@ export default {
     getLableByAnnotation,
     getQueryContitionsByAnnotations,
     getPrimaryKeys,
-    getFieldReadonlyTextAndCurrentValue
+    getFieldReadonlyTextAndCurrentValue,
+    getAnnotationByTarget,
+    getEntitySetData,
+    getDisplayTextByAnnotation
 }
