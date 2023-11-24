@@ -30,8 +30,9 @@ export default (props) => {
     const init = async () => {
         const result = await getConfig({ entitySet })
         if (result) {
+            console.log(result)
             setCurrentState(result)
-            Array.isArray(result.columns) && result.columns.forEach((item, index) => {
+            Array.isArray(result?.columns) && result?.columns.forEach((item, index) => {
                 const { path } = item || {};
                 columns?.push({
                     title: item.label,

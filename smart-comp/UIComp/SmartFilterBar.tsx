@@ -9,10 +9,8 @@
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartFilterBar'
 // import { DownOutlined, UpOutlined } from '@ant-design/icons';
-import { QueryFilter } from '@ant-design/pro-components';
-import { Input } from 'antd';
-import "./index.less";
-import { DownOutlined } from '@ant-design/icons';
+import { ProFormTreeSelect, QueryFilter } from '@ant-design/pro-components';
+import SmartField from './SmartField';
 
 type AdvancedSearchProps = {
     setTypeParams?: (params: any) => void;
@@ -21,14 +19,12 @@ type AdvancedSearchProps = {
 export default (props: AdvancedSearchProps) => {
     const { entitySet, setTypeParams } = props
     const [currentState, setCurrentState] = useState<any>()
-    const [searchText, setSearchText] = useState<{ key: string, value: string }[]>([]);
-    const [showFilter, setShowFilter] = useState<boolean>(false);
 
     //初始化方法
     const init = async () => {
         const result = await getConfig({ entitySet })
         if (result) {
-            setCurrentState(result)
+            setCurrentState(result);
         }
     }
 
@@ -36,80 +32,26 @@ export default (props: AdvancedSearchProps) => {
         !currentState && init()
     }, [])
     /**
-     * 设置文本框的数据
-     */
-    useEffect(() => {
-        if (currentState && currentState.annoSelectionFields && !searchText.length) {
-            currentState.annoSelectionFields.forEach((item) => {
-                searchText.push({
-                    key: item.path,
-                    value: ""
-                })
-            })
-            setSearchText([...searchText])
-        }
-    }, [currentState])
-    return (
-        <div className='smart-filter-bar' onClick={() => setShowFilter(!showFilter)}>
-            <div className='smart-filter-bar-standard'>
-                <div onClick={(e) => {
-                    e.stopPropagation()
-                }}>
-                    <span>标准*</span><DownOutlined />
+     * <div>
+                    <ProFormTreeSelect request={async () => (treeData)} />
                 </div>
-                {/* <div>
-                    <DownOutlined />
-                </div> */}
-            </div>
+     */
+    return (
+        <div>
+            <QueryFilter defaultCollapsed split>
+                <>
+                    {currentState && currentState.annoSelectionFields?.map((item, index) => {
+                        console.log(item, item.label);
 
-            {showFilter ? (
-                <QueryFilter
-                    submitter={false}
-                    span={24}
-                    labelWidth="auto"
-                    split
-                >
-                    <div className='smart-filter-bar-hover' onClick={(e) => {
-                        e.stopPropagation()
-                    }}>
-                        <div className='smart-filter-bar-hover-ip' style={{ display: "flex" }}>
-                            {
-                                currentState?.annoSelectionFields && currentState?.annoSelectionFields.map((item, index) => {
-                                    return <div key={index}>
-                                        <span>{item.label}</span>
-                                        <Input
-                                            placeholder="请输入"
-                                            value={searchText[index]?.value || ""}
-                                            onChange={(e) => {
-                                                searchText[index].value = e.target.value;
-                                                setSearchText([...searchText]);
-                                            }}
-                                            style={{ maxWidth: 522, minWidth: 200, marginRight: 20 }}
-                                        />
-                                    </div>
-                                })
-                            }
-                        </div>
-                        <div className='smart-filter-bar-hover-op'>
-                            <div onClick={() => {
-                                setTypeParams && setTypeParams(searchText);
-                            }}>执行</div>
-                            <div onClick={() => {
-                                let list: { key: string, value: string }[] = [];
-                                searchText.forEach((item) => {
-                                    list.push({
-                                        ...item,
-                                        value: ""
-                                    })
-                                })
-                                setSearchText([...list]);
-                                setTypeParams && setTypeParams([]);
-                            }}>清空过滤</div>
-                        </div>
-                    </div>
-                </QueryFilter>
-            ) : null
-            }
+                        const option = {
+                            entitySet,
+                            path: item.path,
+                            recode: item.label
+                        }
+                        return <SmartField key={index} {...option} />
+                    })}
+                </>
+            </QueryFilter>
         </div >
     )
 }

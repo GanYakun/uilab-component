@@ -8,6 +8,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
+import { ProFormSelect } from '@ant-design/pro-components';
 
 export default (props) => {
     const { record, entitySet, path, isReadOnly } = props
@@ -27,13 +28,24 @@ export default (props) => {
 
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue } = currentState
-        //console.log({ fieldType, displayValue })
+        const { fieldType, displayValue, valueListConfig } = currentState
+        console.log({ fieldType, displayValue, valueListConfig })
         switch (fieldType) {
             case 'ReadOnly':
                 return <div>{displayValue}</div>
             case 'Text':
                 return <div>{displayValue}</div>
+            case 'Select':
+                console.log("Select");
+                
+                return <ProFormSelect request={async () => {
+                   console.log(111);
+                   
+                    const result = await valueListConfig.annoRequest()
+                    console.log({ result }, "test");
+
+                    return []
+                }} />
             default:
                 return <div></div>
         }
