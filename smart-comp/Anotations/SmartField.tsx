@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 19:49:24
+ * @LastEditTime: 2023-11-24 20:06:20
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -155,7 +155,6 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
         collectionPath
     );
 
-
     /**
     * 获取显示的文本内容
     * DisplayProperty有值显示对应值，否则显示columns
@@ -223,15 +222,16 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
     let option = {
         path: collectionPath,
         method: 'GET',
-        parameters: {} as any,
+        parameters: {} ,
     };
     if (JSON.stringify(currentExpand) !== '{}') {
         option.parameters.$expand = currentExpand;
     }
+    console.log({ currentExpand, currentSelect, arr })
+
     if (currentSelect.length) {
         option.parameters.$select = currentSelect.toString();
     }
-    console.log({ currentExpand, currentSelect, arr, option })
 
     return async (params) => {
         // if (params && params.option) {
@@ -287,7 +287,6 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
                     label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty] 
                 })
             });
-            console.log({ arr, DisplayProperty, value })
             return arr
         }
     };

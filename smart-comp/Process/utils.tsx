@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 18:17:07
+ * @LastEditTime: 2023-11-24 20:05:50
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -626,22 +626,25 @@ const getQueryContitionsByAnnotations = async (
     }
 
     //判断是否是现实关联对象的字段 通过是否存在 ‘/’ 
-    fieldArr.map((item) => {
-        if (item) {
-            if (item.search('/') !== -1) {
-                let arr = item.split('/')
-                const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr, item)
-                if (parseData.length === 0) {
-                    console.error(`annotation配置错误： ${item} => 没有配置主对象（${entitySetName}）对应的navigationPropertyBinding`)
+    await Promise.all(
+        fieldArr.map((item) => {
+            if (item) {
+                if (item.search('/') !== -1) {
+                    let arr = item.split('/')
+                    const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr, item)
+                    if (parseData.length === 0) {
+                        console.error(`annotation配置错误： ${item} => 没有配置主对象（${entitySetName}）对应的navigationPropertyBinding`)
+                    }
+                    getMultistage(parseData, unitData, isImageData, selectData, primaryKey)
+                } else {
+                    const { parseData, unitData, isImageData } = _nbff([item], item)
+                    getMultistage(parseData, unitData, isImageData)
+                    _setSelect(item, unitData)
                 }
-                getMultistage(parseData, unitData, isImageData, selectData, primaryKey)
-            } else {
-                const { parseData, unitData, isImageData } = _nbff([item], item)
-                getMultistage(parseData, unitData, isImageData)
-                _setSelect(item, unitData)
             }
-        }
-    })
+        })
+    )
+
     return {
         currentExpand,
         currentSelect,
@@ -791,7 +794,7 @@ const getFieldReadonlyTextAndCurrentValue = (
  * @param {string} fieldValue      smartfield当前显示字段 判断是否显示
  * @returns {name: 'Parties', entityType: 'com.dpbird.Party', navigationPropertyBinding: Array(6)}
  */
-const getEntitySetData = (entityContainer, entitySetName, fieldValue=null) => {
+const getEntitySetData = (entityContainer, entitySetName, fieldValue = null) => {
     let result = {
         entitySetData: null,
         property: null
