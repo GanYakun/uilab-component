@@ -21,7 +21,7 @@ type GithubIssueItem = {
 };
 
 export default (props) => {
-    const { entitySet } = props;
+    const { entitySet, roleParams } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
     const actionRef = useRef<ActionType>();
@@ -38,11 +38,11 @@ export default (props) => {
                     key: path,
                     dataIndex: path,
                     render: (text, record) => {
-                        const option={
+                        const option = {
                             entitySet,
                             path,
                             record,
-                            isReadOnly:true
+                            isReadOnly: true
                         }
 
                         return <SmartField {...option} />
@@ -56,15 +56,23 @@ export default (props) => {
     useEffect(() => {
         !currentState && init()
     }, [])
-
+    useEffect(() => {
+        currentState && actionRef.current?.reload();
+    }, [roleParams])
     return (
         <ProTable<GithubIssueItem>
             columns={columns}
             actionRef={actionRef}
             cardBordered
             request={async (params, sort, filter) => {
+                let option = {
+                    params, sort, filter
+                }
                 if (currentState) {
-                    const result = await currentState.annoRequest();
+                    roleParams.forEach((item) => {
+                        option[item.key] = item.value;
+                    })
+                    const result = await currentState.annoRequest(option);
                     const { value, msg } = result.data;
                     //1.设置key
                     value.map((item) => {
