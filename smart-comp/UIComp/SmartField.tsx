@@ -36,14 +36,10 @@ export default (props) => {
                 return <div>{displayValue}</div>
             case 'Select':
                 console.log({ fieldType, displayValue, valueListConfig })
-                
-                return <ProFormSelect request={async () => {
-                   console.log(111);
-                   
-                    const result = await valueListConfig.annoRequest()()
-                    console.log({ result }, "test");
 
-                    return []
+                return <ProFormSelect request={async () => {
+                    const result = await valueListConfig.annoRequest()
+                    return result
                 }} />
             default:
                 return <div></div>

@@ -31,18 +31,11 @@ export default (props: AdvancedSearchProps) => {
     useEffect(() => {
         !currentState && init()
     }, [])
-    /**
-     * <div>
-                    <ProFormTreeSelect request={async () => (treeData)} />
-                </div>
-     */
     return (
         <div>
             <QueryFilter defaultCollapsed split>
                 <>
                     {currentState && currentState.annoSelectionFields?.map((item, index) => {
-                        console.log(item, item.label);
-
                         const option = {
                             entitySet,
                             path: item.path,
