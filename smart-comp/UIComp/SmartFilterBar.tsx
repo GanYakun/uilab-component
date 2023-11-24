@@ -13,11 +13,11 @@ import { ProFormTreeSelect, QueryFilter } from '@ant-design/pro-components';
 import SmartField from './SmartField';
 
 type AdvancedSearchProps = {
-    setTypeParams?: (params: any) => void;
+    setSearchVal?: (params: any) => void;
     entitySet?: any;
 };
 export default (props: AdvancedSearchProps) => {
-    const { entitySet, setTypeParams } = props
+    const { entitySet, setSearchVal } = props
     const [currentState, setCurrentState] = useState<any>()
 
     //初始化方法
@@ -33,7 +33,15 @@ export default (props: AdvancedSearchProps) => {
     }, [])
     return (
         <div>
-            <QueryFilter defaultCollapsed split>
+            <QueryFilter defaultCollapsed split onFinish={async (values) => {
+                if (setSearchVal) {
+                    setSearchVal(values)
+                }
+            }} onReset={async () => {
+                if (setSearchVal) {
+                    setSearchVal("")
+                }
+            }}>
                 <>
                     {currentState && currentState.annoSelectionFields?.map((item, index) => {
                         const option = {

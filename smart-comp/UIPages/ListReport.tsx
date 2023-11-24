@@ -14,7 +14,7 @@ import { getConfig } from '../Anotations/ListReport';
 
 export default () => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string }>()
-    const [roleParams, setTypeParams] = useState<{key: string, value: string}[]>([]);
+    const [searchVal, setSearchVal] = useState<string>("");
     //初始化方法
     const init = async () => {
         const result = await getConfig()
@@ -32,8 +32,8 @@ export default () => {
             const { entitySet, navigationRoute } = currentState
             return (
                 <>
-                    <SmartFilterBar setTypeParams={setTypeParams} entitySet={entitySet} />
-                    <SmartTable roleParams={roleParams} entitySet={entitySet} navigationRoute={navigationRoute} />
+                    <SmartFilterBar setSearchVal={setSearchVal} entitySet={entitySet} />
+                    <SmartTable searchVal={searchVal} entitySet={entitySet} navigationRoute={navigationRoute} />
                 </>
             )
         }

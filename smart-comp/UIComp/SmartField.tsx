@@ -37,7 +37,7 @@ export default (props) => {
             case 'Select':
                 console.log({ fieldType, displayValue, valueListConfig })
 
-                return <ProFormSelect request={async () => {
+                return <ProFormSelect name={valueListConfig.lookUpTitle} label={valueListConfig.lookUpTitle} request={async () => {
                     const result = await valueListConfig.annoRequest()
                     return result
                 }} />

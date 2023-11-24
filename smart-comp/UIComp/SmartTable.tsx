@@ -21,7 +21,7 @@ type GithubIssueItem = {
 };
 
 export default (props) => {
-    const { entitySet, roleParams } = props;
+    const { entitySet, searchVal } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
     const actionRef = useRef<ActionType>();
@@ -30,7 +30,6 @@ export default (props) => {
     const init = async () => {
         const result = await getConfig({ entitySet })
         if (result) {
-            console.log(result)
             setCurrentState(result)
             Array.isArray(result?.columns) && result?.columns.forEach((item, index) => {
                 const { path } = item || {};
@@ -59,20 +58,21 @@ export default (props) => {
     }, [])
     useEffect(() => {
         currentState && actionRef.current?.reload();
-    }, [roleParams])
+    }, [searchVal])
     return (
         <ProTable<GithubIssueItem>
             columns={columns}
             actionRef={actionRef}
             cardBordered
             request={async (params, sort, filter) => {
-                let option = {
+                let option: any = {
                     params, sort, filter
                 }
                 if (currentState) {
-                    roleParams.forEach((item) => {
-                        option[item.key] = item.value;
-                    })
+                    if (searchVal) {
+                        option.searchVal = searchVal;
+                    }
+                    
                     const result = await currentState.annoRequest(option);
                     const { value, msg } = result.data;
                     //1.设置key
