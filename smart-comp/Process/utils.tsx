@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 14:23:27
+ * @LastEditTime: 2023-11-27 14:37:31
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -286,7 +286,6 @@ const getAnnotationByTarget = (annotations, target) => {
     return result;
 };
 
-
 /**
  * 获取term对应的annotations
  * @param {array} annotations 
@@ -360,39 +359,6 @@ const getPropertyType = (entityTypeArray, property) => {
 const getNameSpaceEntityTypeName = (typeName) => {
     let end = typeName.indexOf(')', 10);
     return typeName.indexOf('Collection(') === 0 && end > 0 ? typeName.substring(11, end) : typeName;
-};
-
-/**
- * 获取显示字段
- * Common.Text UI.TextArrangement
- * @param {array} currentAnnotations
- * @returns {object}
- */
-const getCommonTextByAnnotatons = (currentAnnotations) => {
-    const result = {
-        pathText: null,
-        enumMemberText: null,
-    };
-
-    if (currentAnnotations) {
-        //解析当前字段的类型，通过term=Common.Text，判断最终显示的方式。未设定使用TextOnly
-        for (let a of currentAnnotations) {
-            const { term, annotation } = a;
-            if (term === 'Common.Text') {
-                result.pathText = getTextValueByData('path', a);
-                if (annotation) {
-                    for (let b of annotation) {
-                        const { term } = b;
-                        if (term === 'UI.TextArrangement') {
-                            result.enumMemberText = getTextValueByData('enumMember', b);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return result;
 };
 
 /**
@@ -845,18 +811,35 @@ const getEntitySetData = (entityContainer, entitySetName, fieldValue = null) => 
 };
 
 /**
- * 获取当前字段对应的展示字段信息 
- * Common.Text
- * @param {*} annotations 当前对象的annotations
- * @returns 
+ * 获取显示字段
+ * Common.Text UI.TextArrangement
+ * @param {array} currentAnnotations
+ * @returns {object}
  */
-const getDisplayTextByAnnotation = (annotations) => {
-    let result;
-    annotations && annotations.map((item) => {
-        if (!result && item.term === 'Common.Text') {
-            result = getTextValueByData('path', item);
+const getCommonTextByAnnotatons = (currentAnnotations) => {
+    const result = {
+        pathText: null,
+        enumMemberText: null,
+    };
+
+    if (currentAnnotations) {
+        //解析当前字段的类型，通过term=Common.Text，判断最终显示的方式。未设定使用TextOnly
+        for (let a of currentAnnotations) {
+            const { term, annotation } = a;
+            if (term === 'Common.Text') {
+                result.pathText = getTextValueByData('path', a);
+                if (annotation) {
+                    for (let b of annotation) {
+                        const { term } = b;
+                        if (term === 'UI.TextArrangement') {
+                            result.enumMemberText = getTextValueByData('enumMember', b);
+                        }
+                    }
+                }
+            }
         }
-    });
+    }
+
     return result;
 };
 
@@ -872,5 +855,5 @@ export default {
     getFieldReadonlyTextAndCurrentValue,
     getAnnotationByTarget,
     getEntitySetData,
-    getDisplayTextByAnnotation
+    getCommonTextByAnnotatons,
 }
