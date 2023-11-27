@@ -2,12 +2,14 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 17:25:53
+ * @LastEditTime: 2023-11-27 18:12:38
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import Utils from '../Process/utils'
 import Odata from '../../utils/odata/odata'
+import moment from 'moment'
+
 /**
  * 获取表格配置
  * @param currentAnnotations
@@ -185,14 +187,10 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
  * @param targetPath 
  */
 const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) => {
-    interface Params {
-        option: any
-    }
-    return async (params: Params = {
-        option: undefined
-    }) => {
+    return async (currentParams) => {
+
+        //列查询字段
         const fieldArr = []
-        const { option: sendOption } = params
         columns.map((item) => {
             const { path, type, value, show, url } = item
             switch (type) {
@@ -203,6 +201,7 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
                     break;
             }
         })
+
         //获取查询条件
         let { currentExpand, currentSelect } = await Utils.getQueryContitionsByAnnotations(
             fieldArr, entitySet
@@ -229,9 +228,47 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
         }
 
         //设置过滤、排序条件
-        if (sendOption) {
-            option.parameters = { ...option.parameters, ...sendOption }
+        if (currentParams) {
+            const { searchVal, params } = currentParams
+            const { pageSize, current } = params
+            if (pageSize && current){
+                option.parameters.$top=pageSize
+                option.parameters.$skip = pageSize * (current - 1)
+            }
+
+            //处理fiterbar的过滤条件
+            if (searchVal){
+                let onSearchFilter, url
+                for (let key of Object.keys(searchVal)) {
+                    if (searchVal[key] !== '' && searchVal[key] != null) {
+
+                        if (searchVal[key] instanceof Array) {
+                            //处理 dataTime类型的时间筛选
+                            url = `${key} gt ${moment(`${searchVal[key][0]} 00:00:00`).format('YYYY-MM-DDTHH:mm:ss.SSSZ')} and ${key} lt ${moment(`${searchVal[key][0]} 23:59:59`).format('YYYY-MM-DDTHH:mm:ss.SSSZ')}`
+                        } else {
+                            url =
+                                key.search('Id') == -1
+                                ? `contains(${key}, '${searchVal[key]}')`
+                                : `${key} eq '${searchVal[key]}'`;
+                        }
+
+                        //页面搜索条件的过滤条件
+                        if (!onSearchFilter) {
+                            onSearchFilter = url;
+                        } else {
+                            onSearchFilter += ` and ${url}`;
+                        }
+                    }
+                }
+                if (onSearchFilter) {
+                    option.parameters.$filter = onSearchFilter
+                } else {
+                    option.parameters.$filter = null
+                }  
+            }
+            //console.log({ currentParams, option })
         }
+        
         return await Odata.submit(option);
     }
 }
