@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 12:33:33
+ * @LastEditTime: 2023-11-27 14:23:27
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,11 +17,11 @@ import moment from 'moment'
  * 获取当前路由名称
  */
 const getRouteName = () => {
-    const href = window.location.href;
-    const hrefArr = href.split('/');
+    const { pathname } = window.location;
+    const hrefArr = pathname.split('/');
     if (hrefArr.length > 1) {
         const path = hrefArr[hrefArr.length - 1];
-        const appName = hrefArr[hrefArr.length - 2]
+        const appName = hrefArr.length === 4 ? hrefArr[hrefArr.length - 2] : hrefArr[hrefArr.length - 3]//目前是两个页面布局，后期优化
         const routeArr = path.split('?');
         const routeName = routeArr[0]
         return { appName, routeName };
@@ -34,7 +34,6 @@ const getRouteName = () => {
  */
 const getUi5Config = async () => {
     const { appName, routeName } = getRouteName()
-
     //是否已有缓存
     if (storage.get(appName)) {
         const { data } = storage.get(appName)
@@ -163,8 +162,7 @@ const getMetadata = async (url) => {
  * @param {object} metadata 
  */
 const getEntitySetConfig = async (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
-    const { metadata } = await getUi5Config()
-
+    const { metadata,manifest } = await getUi5Config()
     const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
     let result = {
         currentEntitySetName,
