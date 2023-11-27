@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 14:37:31
+ * @LastEditTime: 2023-11-27 17:08:47
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -162,7 +162,7 @@ const getMetadata = async (url) => {
  * @param {object} metadata 
  */
 const getEntitySetConfig = async (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
-    const { metadata,manifest } = await getUi5Config()
+    const { metadata, manifest } = await getUi5Config()
     const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
     let result = {
         currentEntitySetName,
@@ -292,13 +292,25 @@ const getAnnotationByTarget = (annotations, target) => {
  * @param {string} term 
  * @returns 
  */
-const getTermAnnotations = (annotations, term) => {
+const getTermAnnotations = (annotations, term, qualifier = null) => {
     let result: any[] = [];
-    Array.isArray(annotations) && annotations.map((item: any) => {
-        if (item.term === term) {
-            result.push(item);
-        }
-    });
+    if (Array.isArray(annotations)) {
+        //目前匹配到最后
+        annotations.map((item: any) => {
+            if (qualifier) {
+                if (item.term === term && item.qualifier === qualifier) {
+                    result.push(item);
+                }
+            } else {
+                //目前匹配到最后一条覆盖，兼容多次配置，后面的配置覆盖
+                if (item.term === term) {
+                    result.push(item);
+                }
+            }
+        });
+
+    }
+
     return result;
 };
 
@@ -653,7 +665,7 @@ const getPrimaryKeys = (currentEntityTypeData) => {
  * @param {string} displayProperty 兼容lookup
  * @returns {object}displayValue:只读显示的文本
  */
-const getFieldReadonlyTextAndCurrentValue = (
+const getFieldDisplayValueAndCurrentValue = (
     record,
     fieldValue,
     currentAnnotations,
@@ -843,6 +855,472 @@ const getCommonTextByAnnotatons = (currentAnnotations) => {
     return result;
 };
 
+/**
+ * 解析UI.Hidden,判断元素是否隐藏
+ * @param {object} annotation
+ * @param {object} currentRecord 当前对象的数据
+ * @return {boolean}
+ */
+const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidden') => {
+    let result = {
+        hiddenPath: null,
+        isHidden: false,
+        hiddenQueryPath: null
+    }
+    //目前只支持 path 一段式
+    const _getEqAndNe = (condition, data) => {
+        let result: any = {}
+        let path = getTextValueByData('path', data)
+        let string = getTextValueByData('string', data)
+        result.path = path
+        result.string = string
+        if (currentRecord && JSON.stringify(currentRecord) !== '{}') {
+            let val
+            if (path.search('/') !== -1) {
+                const arr = path.split('/')
+                arr.map((item, index) => {
+                    if (index === 0 && currentRecord[item]) {
+                        val = currentRecord[item]
+                    } else {
+                        if (val && val[item]) {
+                            val = val[item]
+                        }
+                    }
+                })
+            } else {
+                val = currentRecord[path]
+            }
+            if (string) {
+                if (condition === 'eq') {
+                    result.boolText = val === string
+                } else if (condition === 'ne') {
+                    result.boolText = val !== string
+                }
+            } else {
+                result.boolText = val
+            }
+        }
+
+        return result
+    }
+
+    if (annotation) {
+        for (let a of annotation) {
+            const { term, if: dataIf, bool } = a
+            if (term === currentTerm) {
+                //配置了语义化字段
+                const path = getTextValueByData('path', a)
+                if (path) {
+                    if (path.indexOf("()") !== -1) {
+                        result.hiddenQueryPath = path.slice(1)
+                    } else {
+                        result.hiddenPath = path
+                        //如果传递了值 objectPage 返回是否隐藏
+                        if (currentRecord) {
+                            result.isHidden = currentRecord[path]
+                        }
+                    }
+                }
+                //配置了if else 的情况
+                if (dataIf) {
+                    for (let b of dataIf) {
+                        const { eq, bool: dibool, ne, or, and, path: diPath } = b
+                        if (and) {
+                            //bug and没实现
+                            let and_eq = and[0].eq, and_eq_val
+                            if (and_eq) {
+                                and_eq_val = and_eq.findIndex((item) => {
+                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
+                                    //console.log({ path, string, boolText })
+                                    result.hiddenPath = path
+                                    return boolText
+                                }) !== -1
+                                result.isHidden = and_eq_val ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)
+                            }
+                        }
+                        //或者 
+                        if (or) {
+                            let or_eq = or[0].eq, or_eq_val
+                            if (or_eq) {
+                                or_eq_val = or_eq.findIndex((item) => {
+                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
+                                    result.hiddenPath = path
+                                    return boolText
+                                }) !== -1
+                                result.isHidden = or_eq_val ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)
+                            }
+                        }
+                        //相等
+                        if (eq) {
+                            const { path, boolText } = _getEqAndNe('eq', eq[0])
+                            if (path) {
+                                //console.log({ path, boolText, currentRecord, dibool })
+                                result.hiddenPath = path
+                                result.isHidden = boolText ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)
+                            }
+                        }
+                        //不等于
+                        if (ne) {
+                            const { path, string, boolText } = _getEqAndNe('ne', ne[0], bool)
+                            if (path) {
+                                result.hiddenPath = path
+                                result.isHidden = boolText ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)
+                            }
+                        }
+                        //直接写path
+                        if (diPath) {
+                            const { path, boolText } = _getEqAndNe('eq', b)
+                            if (path) {
+                                result.hiddenPath = path
+                                result.isHidden = boolText
+                            }
+                        }
+                    }
+                }
+                //直接配置了bool
+                if (bool) {
+                    result.isHidden = bool === 'true'
+                }
+            }
+        }
+    }
+
+    return result
+}
+
+/**
+ * 随机生成Key 供无逻辑组件使用
+ * @param {*} keyLength 
+ * @returns 
+ */
+const generateKey = (keyLength = 18) => {
+    let rlt = ''
+    for (let i = 0; i < keyLength; i++) {
+        if (Math.round(Math.random())) {
+            rlt += Math.ceil(Math.random() * 9)
+        } else {
+            const ranNum = Math.ceil(Math.random() * 23)
+            if (Math.round(Math.random())) {
+                rlt += String.fromCharCode(65 + ranNum)
+            } else {
+                rlt += String.fromCharCode(97 + ranNum)
+            }
+        }
+        //加上-，不要的可以去掉
+        if ((i + 1) % 6 === 0 && i > 2 && i < 17) {
+            rlt += '-'
+        }
+    }
+    return rlt
+}
+
+/**
+ * 解析PropertyValue属性值
+ * @param {*} data 
+ * @returns 
+ */
+const parsePropertyValue = (data) => {
+    const result = {
+        Value: '',
+        Title: '',
+        Description: null as any,
+        ImageUrl: ''
+    }
+
+    const _getValueByRecord = (record, property) => {
+        for (let b of record) {
+            const { type, propertyValue } = b
+            const { Value } = parsePropertyValue(propertyValue)
+            result[property] = {
+                type,
+                Value
+            }
+        }
+    }
+
+    if (Array.isArray(data)) {
+        for (let a of data) {
+            const { property, record } = a
+            if (record) {
+                _getValueByRecord(record, property)
+            } else {
+                switch (property) {
+                    case 'Value':
+                        result.Value = getTextValueByData('path', a)
+                        break;
+                    case 'TypeName':
+                        result.Title = getTextValueByData('string', a);
+                        break
+                    case 'TypeNamePlural':
+                        result.Title = getTextValueByData('string', a);
+                        break
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    return result
+}
+
+/**
+ * 解析objectPage headerInfo 注：目前只实现Title、Description
+ * UI.HeaderInfo
+ * @param {*} headerInfo 
+ * @param {*} currentRecord 请求的数据
+ * @param {*} entitySet
+ * @returns 
+ */
+const getHeaderInfoOptions = (currentAnnotations) => {
+    let result
+    const headerInfo = getTermAnnotations(currentAnnotations, 'UI.HeaderInfo');
+    if (headerInfo?.length > 0) {
+        const { record } = headerInfo[0];
+        for (let a of record) {
+            const { propertyValue, type } = a;
+            if (type === 'UI.HeaderInfoType') {
+                result = parsePropertyValue(propertyValue);
+            }
+        }
+    }
+    return result;
+};
+
+/**
+ * 得到目标已整理过的annotation
+ * @param annotations
+ */
+const getTargetAnnotationProcessed = async (
+    currentAnnotations,
+    target,
+    currentEntitySetData
+) => {
+
+    let targetNavigation, targetQualifier;
+
+    //解析target
+    if (target.search('@') !== -1) {
+        const arr = target.split('@')
+        targetNavigation = arr[0].substring(0, arr[0].length - 1)
+    }
+    if (target.search('#') !== -1) {
+        const arr = target.split('#')
+        targetQualifier = arr[arr.length - 1]
+    }
+    //console.log({ currentAnnotations, target, targetNavigation, targetQualifier, targetEntitySet })
+
+    //Table类型
+    if (target && target.search('UI.LineItem') !== -1) {
+        const targetEntitySet = await getEntitySetByCurrentEntitySetNavigationPropertyBinding(
+            currentEntitySetData,
+            targetNavigation,
+        );
+        return {
+            facetType: 'UI.LineItem',
+            targetNavigation,
+            targetEntitySet: targetEntitySet,
+            targetQualifier: targetQualifier
+        }
+    }
+
+    //FieldGroup类型
+    if (target && target.search('@UI.FieldGroup') !== -1) {
+        const data = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', targetQualifier)
+        if (data && data.length > 0) {
+            const { record } = data[0]
+            for (let a of record) {
+                const { type, propertyValue } = a
+                if (type === 'UI.FieldGroupType') {
+                    let Label, Fields = [] as any
+                    for (let b of propertyValue) {
+                        const { property, collection } = b
+                        switch (property) {
+                            case 'Label':
+                                Label = getTextValueByData('string', b)
+                                break;
+                            case 'Data':
+                                const record = collection[0]?.record
+                                for (let c of record) {
+                                    const { type, propertyValue } = c
+                                    const { Value } = parsePropertyValue(propertyValue)
+                                    Fields.push({ type, Value })
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    return {
+                        facetType: 'UI.FieldGroup',
+                        Label,
+                        Fields
+                    }
+                }
+            }
+        }
+    }
+};
+
+/**
+ * 解析objectPage Facets
+ * UI.Facets UI.HeaderFacets
+ * @param {*} currentAnnotations 
+ * @returns 
+ */
+const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntitySetData, currentRecord = null) => {
+    const result = {
+        Facets: null as any,
+        HeaderFacets: null as any,
+    }
+
+    const facetsData = getTermAnnotations(currentAnnotations, 'UI.Facets');
+    const headerFacetsData = getTermAnnotations(currentAnnotations, 'UI.HeaderFacets');
+
+    //解析ReferenceFacet
+    const _getReferenceFacet = async (propertyValue) => {
+        let result = {} as any;
+        for (let f of propertyValue) {
+            const { property } = f;
+            if (property === 'ID') {
+                result.id = getTextValueByData('string', f);
+            } else {
+                result.id = generateKey()
+            }
+            if (property === 'Label') {
+                result.label = getTextValueByData('string', f);
+            }
+            if (property === 'Target') {
+                result.target = getTextValueByData(`annotationPath`, f);
+                result.targetData = await getTargetAnnotationProcessed(
+                    currentAnnotations,
+                    result.target,
+                    currentEntitySetData
+                );
+            }
+        }
+        return result;
+    };
+
+    //解析CollectionFacet
+    const _getCollectionFacet = async (propertyValue) => {
+        let id,
+            label,
+            childfacets = [] as any;
+        for (let c of propertyValue) {
+            const { property, collection } = c;
+            if (property === 'ID') {
+                id = getTextValueByData('string', c);
+            }
+            if (property === 'Label') {
+                label = getTextValueByData('string', c);
+            }
+            if (property === 'Facets') {
+                for (let d of collection) {
+                    const { record } = d;
+                    for (let e of record) {
+                        const { type, propertyValue, annotation } = e;
+                        if (type === 'UI.ReferenceFacet') {
+                            const ReferenceFacetData = await _getReferenceFacet(propertyValue);
+                            childfacets.push(ReferenceFacetData);
+                        }
+                        if (type === 'UI.CollectionFacet') {
+                            const CollectionFacetData = _getCollectionFacet(propertyValue);
+                            childfacets.push(CollectionFacetData);
+                        }
+                    }
+                }
+            }
+        }
+        return { id, label, childfacets };
+    };
+
+    //解析Facets
+    const _parseFacets = async (data) => {
+        const { collection } = data;
+        const arr = [] as any
+        if (collection) {
+            for (let a of collection) {
+                const { record } = a;
+                if (record) {
+                    for (let b of record) {
+                        const { type, propertyValue, annotation } = b;
+                        if (type === 'UI.CollectionFacet') {
+                            const CollectionFacetData = await _getCollectionFacet(propertyValue);
+                            arr.push(CollectionFacetData);
+                        }
+                        if (type === 'UI.ReferenceFacet') {
+                            const ReferenceFacetData = await _getReferenceFacet(propertyValue);
+                            arr.push(ReferenceFacetData);
+                        }
+                    }
+                }
+            }
+        }
+        return arr
+    }
+
+    if (facetsData && facetsData.length > 0) {
+        result.Facets = await _parseFacets(facetsData[0])
+    }
+    if (headerFacetsData && headerFacetsData.length > 0) {
+        result.HeaderFacets = await _parseFacets(headerFacetsData[0])
+    }
+    return result
+}
+
+/**
+ * 获取关联对象entitySet,通过当前对象的navigationPropertyBinding与指定的path
+ * @param {*} currentEntitySetData 当前对象
+ * @param {*} targetPath 指定目标path
+ * @returns 关联对象的entitySet name
+ */
+const getEntitySetByCurrentEntitySetNavigationPropertyBinding = async (
+    currentEntitySetData,
+    targetPath,
+) => {
+
+    const { metadata } = await getUi5Config()
+    const { namespace, annotations, entityContainer } = metadata.dataServices.schema[0];
+    const { entitySet } = entityContainer
+    let result;
+    if (targetPath.search('/') === -1 && currentEntitySetData) {
+        const { navigationPropertyBinding } = currentEntitySetData;
+        for (let a of navigationPropertyBinding) {
+            const { path, target } = a;
+            if (path === targetPath) {
+                result = target;
+            }
+        }
+    } else {
+        const arr = targetPath.split('/')
+        //目前两段  不支持了
+        if (arr.length === 2 && currentEntitySetData) {
+            const { navigationPropertyBinding } = currentEntitySetData;
+            for (let a of navigationPropertyBinding) {
+                const { path, target } = a;
+                if (path === arr[0]) {
+                    entitySet.map((b) => {
+                        const { name, navigationPropertyBinding } = b
+                        if (name === target) {
+                            navigationPropertyBinding.map((c) => {
+                                const { path, target } = c
+                                if (path === arr[1]) {
+                                    result = target;
+                                }
+                            })
+                        }
+                    })
+
+                }
+            }
+        }
+    }
+
+    return result;
+};
+
 export default {
     getRouteName,
     getUi5Config,
@@ -852,8 +1330,10 @@ export default {
     getLabelByAnnotation,
     getQueryContitionsByAnnotations,
     getPrimaryKeys,
-    getFieldReadonlyTextAndCurrentValue,
+    getFieldDisplayValueAndCurrentValue,
     getAnnotationByTarget,
     getEntitySetData,
     getCommonTextByAnnotatons,
+    getHeaderInfoOptions,
+    getObjectPageFacetsByAnnotations
 }

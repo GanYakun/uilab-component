@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 14:22:44
+ * @LastEditTime: 2023-11-27 17:01:09
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -31,16 +31,21 @@ const _getManifestConfig = async () => {
 
 const getConfig = async ({ location }) => {
     const { entitySet } = await _getManifestConfig()
-    const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
-
+    const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
+    const HeaderInfo = Utils.getHeaderInfoOptions(currentAnnotations)
+    const { Facets, HeaderFacets } = await Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData)
     console.log({
         currentAnnotations,
         currentEntityTypeData,
         location,
-        entitySet
+        entitySet,
+        HeaderInfo,
+        Facets,
+        HeaderFacets
     })
     return {
         entitySet,
+        HeaderInfo
     }
 }
 
