@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 17:25:51
+ * @LastEditTime: 2023-11-27 19:04:21
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1171,8 +1171,8 @@ const getTargetAnnotationProcessed = async (
  */
 const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntitySetData, currentRecord = null) => {
     const result = {
-        Facets: null as any,
-        HeaderFacets: null as any,
+        Facets: [] as any,
+        HeaderFacets: [] as any,
     }
 
     const facetsData = getTermAnnotations(currentAnnotations, 'UI.Facets');
