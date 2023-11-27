@@ -6,7 +6,7 @@
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import SmartTable from '../UIComp/SmartTable'
 import SmartFilterBar from '../UIComp/SmartFilterBar'
 import SmartField from '../UIComp/SmartField';
@@ -14,7 +14,8 @@ import { getConfig } from '../Anotations/ListReport';
 
 export default () => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string }>()
-    const [searchVal, setSearchVal] = useState<string>("");
+    const [searchVal, setSearchVal] = useState<any>({});
+    const formRef = useRef();
     //初始化方法
     const init = async () => {
         const result = await getConfig()
@@ -32,7 +33,7 @@ export default () => {
             const { entitySet, navigationRoute } = currentState
             return (
                 <>
-                    <SmartFilterBar setSearchVal={setSearchVal} entitySet={entitySet} />
+                    <SmartFilterBar formRef={formRef} setSearchVal={setSearchVal} entitySet={entitySet} />
                     <SmartTable searchVal={searchVal} entitySet={entitySet} navigationRoute={navigationRoute} />
                 </>
             )

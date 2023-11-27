@@ -41,8 +41,6 @@ export default (props) => {
     const init = async () => {
         const result = await getConfig({ entitySet })
         if (result) {
-            console.log({ entitySet, result });
-
             setCurrentState(result)
             Array.isArray(result?.columns) && result?.columns.forEach((item, index) => {
                 const { path } = item || {};
@@ -70,7 +68,7 @@ export default (props) => {
         !currentState && init()
     }, [])
     useEffect(() => {
-        currentState && actionRef.current?.reload();
+        currentState && actionRef.current?.reloadAndRest();
     }, [searchVal])
 
     //页面跳转 判断是否是链接
@@ -91,8 +89,6 @@ export default (props) => {
                 return {
                     type: `radio`,
                     onChange: (_, selectedRowsItem) => {
-                        console.log(selectedRowsItem);
-
                         setCurrentSelectedRowsItem(selectedRowsItem)
                         onSelect && onSelect(selectedRowsItem);
                     },

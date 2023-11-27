@@ -8,10 +8,9 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormSelect } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import moment from 'moment';
-import { Modal } from 'antd';
-import Odata from '../../utils/odata/odata';
+import { Modal, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 
@@ -21,8 +20,9 @@ export default (props) => {
         entitySet,
         path,
         isReadOnly,
+        formRef
     } = props;
-    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any }>()
+    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any }>()
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
     const [currentSelected, setCurrentSelected] = useState<any>(null);//lookup选中项
@@ -57,7 +57,7 @@ export default (props) => {
         */
     const _getDisplayText = (data, DisplayProperty, ValueListProperty) => {
 
-        const { columns } = currentState.valueListConfig;
+        const { columns } = currentState?.valueListConfig || {};
 
         //1.是否配置了显示字段
         if (DisplayProperty) {
@@ -90,8 +90,7 @@ export default (props) => {
     };
     //渲染lookUp
     const _renderLookUp = (valueListConfig: any) => {
-        const { lookUpTitle, collectionPath, columns: parentColumns, Parameters, request, getValueListPropertyDisplay } = valueListConfig;
-        console.log(lookUpTitle, collectionPath, parentColumns, Parameters, request, getValueListPropertyDisplay);
+        const { lookUpTitle, collectionPath, columns: parentColumns, Parameters, getValueListPropertyDisplay } = valueListConfig;
         return (
             <Modal
                 title={lookUpTitle}
@@ -100,73 +99,42 @@ export default (props) => {
                 onCancel={() => setLookUpVisible(false)}
                 bodyStyle={{ padding: 0 }}
                 onOk={async () => {
-                    console.log(currentSelected, Parameters);
-
                     if (currentSelected && currentSelected.length > 0) {
-                        return;
-
                         if (Parameters) {
-                            let outTime = 1
-                            Parameters.map((a, index) => {
-                                const { type, ValueListProperty, LocalDataProperty } = a
+                            Parameters.map((item) => {
+                                const { type, ValueListProperty, LocalDataProperty } = item;
                                 if (type === 'ValueListParameterOut' || type === 'ValueListParameterInOut') {
-                                    outTime++
                                     let cvalue, value, DisplayProperty//cvalue:currentSelected 中的值 value：显示的值
                                     cvalue = currentSelected[0][ValueListProperty]
 
                                     //判断选中的值 显示字段
-                                    DisplayProperty = getValueListPropertyDisplay(ValueListProperty, collectionPath)
+                                    DisplayProperty = getValueListPropertyDisplay ? getValueListPropertyDisplay(ValueListProperty, collectionPath) : false;
                                     value = DisplayProperty ? _getDisplayText(currentSelected[0], DisplayProperty, ValueListProperty) : cvalue
 
                                     //是否设置表单值
                                     const setField = path === LocalDataProperty || path.search(LocalDataProperty) !== -1 || LocalDataProperty.search(path) !== -1
-
                                     //设置表单内的值
                                     if (setField) {
-                                        // if (formRef) {
-                                        //     //action modalForm内的lookup
-                                        //     formRef.current.setFieldsValue({
-                                        //         [path]: cvalue
-                                        //     });
-                                        // } else {
-                                        //     //设置当前字段的值
-                                        //     currentFieldProps.value = value
-                                        // }
+                                        currentFieldProps.value = value;
                                     }
-                                    // setCurrentValueEnum({ [cvalue]: value })
                                     setLookUpVisible(false);
-
-                                    //stickySession  更新字段 
-                                    // const time = 200 * outTime
-                                    // if (outTime > 2) {
-                                    //     setTimeout(() => {
-                                    //         onBlur && _onBlur(cvalue, LocalDataProperty, setField ? tableRef : null)
-                                    //     }, time);
-                                    // } else {
-                                    //     onBlur && _onBlur(cvalue, LocalDataProperty, setField ? tableRef : null)
-                                    // }
+                                    formRef.current.setFieldsValue({
+                                        [path]: value
+                                    });
+                                    
                                 }
                             })
                         }
-                        // formRefresh && formRefresh()
                     } else {
-                        // message.warning('请选择');
+                        message.warning('请选择');
                     }
                 }}
             >
                 <div className='uilab-lookup'>
                     <SmartTable
-                        // actionRef={actionRef}
-                        use$Search={true}
                         entitySet={collectionPath}
-                        search={false}
-                        defaultPageSize={5}
                         parentColumns={parentColumns}
-                        parentRequest={(option) => request(option)}
                         rowSelection='radio'
-                        inLookup={true}
-                        // $search={$search}
-                        // $filter={$filter}
                         onSelect={(item) => {
                             setCurrentSelected(item)
                         }}
@@ -178,13 +146,15 @@ export default (props) => {
     }
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue, valueListConfig, label } = currentState || {}
+        const { fieldType, displayValue, valueListConfig } = currentState || {}
 
         switch (fieldType) {
             case 'ReadOnly':
                 return <div>{displayValue}</div>
             case 'Text':
-                return <div>{displayValue}</div>
+                return <div>
+                    <ProFormText {...currentFieldProps} />
+                </div>
             case 'Select':
                 return <ProFormSelect
                     {...currentFieldProps}
@@ -193,8 +163,6 @@ export default (props) => {
                         return result
                     }} />
             case 'LookUp':
-                console.log({ fieldType, displayValue, valueListConfig, label });
-
                 const { Parameters } = valueListConfig
                 const LocalDataPropertyArr: any = []
                 if (Parameters) {
@@ -225,9 +193,6 @@ export default (props) => {
                                 const result = await valueListConfig.annoRequest()
                                 return result
                             }}
-                        // valueEnum={
-                        //     currentValueEnum ? currentValueEnum : { [currentValue]: displayValue }
-                        // }
                         />
                         {_renderLookUp(valueListConfig)}
                     </>
@@ -242,11 +207,7 @@ export default (props) => {
                     }}
                 />
             case 'DateTime':
-                return (
-                    <ProFormDateRangePicker
-                        {...currentFieldProps}
-                    />
-                );
+                return <ProFormDateRangePicker {...currentFieldProps} />
             default:
                 return <div></div>
         }

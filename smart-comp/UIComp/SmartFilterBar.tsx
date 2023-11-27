@@ -15,17 +15,16 @@ import SmartField from './SmartField';
 type AdvancedSearchProps = {
     setSearchVal?: (params: any) => void;
     entitySet?: any;
+    formRef?: any;
 };
 export default (props: AdvancedSearchProps) => {
-    const { entitySet, setSearchVal } = props
+    const { entitySet, setSearchVal, formRef } = props
     const [currentState, setCurrentState] = useState<any>()
 
     //初始化方法
     const init = async () => {
         const result = await getConfig({ entitySet })
-        console.log({ result }, "r2");
         if (result) {
-
             setCurrentState(result);
         }
     }
@@ -34,8 +33,9 @@ export default (props: AdvancedSearchProps) => {
         !currentState && init()
     }, [])
     return (
-        <div style={{ background: '#fff', padding: '24px', marginBottom: 10, borderRadius: 2 }}>
+        <div id='uilab-SmartFilterbar' style={{ background: '#fff', padding: '24px', marginBottom: 10, borderRadius: 2 }}>
             <QueryFilter
+                formRef={formRef}
                 layout='vertical'
                 defaultCollapsed
                 split
@@ -48,16 +48,17 @@ export default (props: AdvancedSearchProps) => {
                         setSearchVal("")
                     }
                 }}>
-                <>
-                    {currentState && currentState.annoSelectionFields?.map((item, index) => {
-                        const option = {
-                            entitySet,
-                            path: item.path,
-                            recode: item.label
-                        }
-                        return <SmartField key={index} {...option} />
-                    })}
-                </>
+                {currentState ? currentState.annoSelectionFields?.map((item, index) => {
+                    const option = {
+                        entitySet,
+                        path: item.path,
+                        recode: item.label,
+                        formRef
+                    }
+                    return <div key={`filter-${index}`}>
+                        <SmartField {...option} />
+                    </div>
+                }) : null}
             </QueryFilter>
         </div >
     )
