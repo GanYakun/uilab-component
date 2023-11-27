@@ -326,7 +326,7 @@ const getTextValueByData = (label, data) => {
  * @param {*} annotations 当前对象的所有annotations
  * @returns 
  */
-const getLableByAnnotation = (annotations) => {
+const getLabelByAnnotation = (annotations) => {
     let result;
     annotations && annotations.map((item) => {
         if (item.term === 'Common.Label') {
@@ -854,7 +854,7 @@ export default {
     getEntitySetConfig,
     getTermAnnotations,
     getTextValueByData,
-    getLableByAnnotation,
+    getLabelByAnnotation,
     getQueryContitionsByAnnotations,
     getPrimaryKeys,
     getFieldReadonlyTextAndCurrentValue,

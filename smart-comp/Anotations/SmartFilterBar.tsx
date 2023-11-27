@@ -36,7 +36,7 @@ const _getAnnoSelectionFields = async (entitySet, currentAnnotations) => {
     await Promise.all(
         SelectionFields.map(async (text) => {
             const { currentAnnotations: anno } = await Utils.getEntitySetConfig(entitySet, text)
-            const label = Utils.getLableByAnnotation(anno)
+            const label = Utils.getLabelByAnnotation(anno)
             result.push({
                 show: true,
                 path: text,

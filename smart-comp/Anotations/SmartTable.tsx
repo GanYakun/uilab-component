@@ -56,7 +56,7 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
                             //当前LineItem上的Label优先级最高，如果未设置去查询当前字段时候配置Label 关联对象label
                             if (!result.Label) {
                                 const { currentAnnotations } = await Utils.getEntitySetConfig(entitySetName, result.Path)
-                                result.Label = Utils.getLableByAnnotation(currentAnnotations)
+                                result.Label = Utils.getLabelByAnnotation(currentAnnotations)
                             }
                             break;
                         case 'Inline':

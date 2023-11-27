@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 20:06:20
+ * @LastEditTime: 2023-11-27 11:23:17
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -120,7 +120,7 @@ const getValueListProperty = async (
                                     const { LocalDataProperty, ValueListProperty } = _getProperty(propertyValue);
                                     if (ValueListProperty && type !== 'Common.ValueListParameterIn') {
                                         const { currentAnnotations } = await Utils.getEntitySetConfig(result.collectionPath, ValueListProperty)
-                                        const label = Utils.getLableByAnnotation(currentAnnotations)
+                                        const label = Utils.getLabelByAnnotation(currentAnnotations)
                                         if (result.columns.findIndex((columnItem) => columnItem.path === ValueListProperty) === -1) {
                                             result.columns.push({ path: ValueListProperty, label, type: 'UI.DataField' });
                                         }
@@ -227,48 +227,13 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
     if (JSON.stringify(currentExpand) !== '{}') {
         option.parameters.$expand = currentExpand;
     }
-    console.log({ currentExpand, currentSelect, arr })
+    //console.log({ currentExpand, currentSelect, arr })
 
     if (currentSelect.length) {
         option.parameters.$select = currentSelect.toString();
     }
 
     return async (params) => {
-        // if (params && params.option) {
-        //     const { option: sendOption } = params
-        //     const { $top, $skip, $count } = sendOption
-        //     option.parameters = {
-        //         ...option.parameters,
-        //         $top,
-        //         $skip,
-        //         $count
-        //     }
-        //     if (sendOption && sendOption.$top) {
-        //         option.parameters.$top = sendOption.$top
-        //     } else {
-        //         delete option.parameters.$top
-        //     }
-        //     if (sendOption && sendOption.$skip) {
-        //         option.parameters.$skip = sendOption.$skip
-        //     } else {
-        //         delete option.parameters.$skip
-        //     }
-        //     if (sendOption && sendOption.$count) {
-        //         option.parameters.$count = sendOption.$count
-        //     } else {
-        //         delete option.parameters.$count
-        //     }
-        //     if (sendOption && sendOption.$filter) {
-        //         option.parameters.$filter = sendOption.$filter
-        //     } else {
-        //         delete option.parameters.$filter
-        //     }
-        //     if (sendOption && sendOption.$search) {
-        //         option.parameters.$search = sendOption.$search
-        //     } else {
-        //         delete option.parameters.$search
-        //     }
-        // }
         const result = await Odata.submit(option)
         if (result) {
             const { value } = result.data;
@@ -341,12 +306,12 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
         result = {
             fieldType: isFixedValues ? 'Select' : 'LookUp',
             valueListConfig: {
-                isFixedValues,
-                collectionPath,
-                columns,
-                lookUpTitle,
-                Parameters,
-                annoRequest: await _setRequest(collectionPath, columns, Parameters)
+                isFixedValues,//是否为下拉类型：1.下拉类型Select 2.弹出表格类型LookUp
+                collectionPath,//查询的主对象
+                columns,//弹出表格类型LookUp 的列配置项
+                lookUpTitle,//弹出表格类型LookUp 的弹窗标题
+                Parameters,//略
+                annoRequest: await _setRequest(collectionPath, columns, Parameters)//请求
             }
         }
     }
@@ -383,18 +348,24 @@ const getConfig = async (params) => {
     const { currentAnnotations, currentPropertyType } = await Utils.getEntitySetConfig(entitySet, path)
     const { fieldType, valueListConfig } = await _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
     const { displayValue, currentValue } = Utils.getFieldReadonlyTextAndCurrentValue(record, path, currentAnnotations)
-    // console.log({
-    //     fieldType,
-    //     displayValue,
-    //     currentValue,
-    //     currentAnnotations,
-    //     valueListConfig
-    // })
+    const label = Utils.getLabelByAnnotation(currentAnnotations)
+    //调试用
+    if(path==='roleTypeId'){
+        console.log({
+            fieldType,
+            displayValue,
+            currentValue,
+            currentAnnotations,
+            valueListConfig,
+            label
+        })
+    }
     return {
-        fieldType,
-        displayValue,
-        currentValue,
-        valueListConfig
+        fieldType,//表单类型
+        displayValue,//用户显示的值
+        currentValue,//表单的值value
+        valueListConfig,//Select的类型需要的参数
+        label,//表单的label
     }
 }
 
