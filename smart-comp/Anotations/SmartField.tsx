@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 16:01:50
+ * @LastEditTime: 2023-11-27 17:24:57
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -86,14 +86,14 @@ const getValueListProperty = async (
 
     //判断是否是下拉框类型
     const ValueListWithFixedValues = Utils.getTermAnnotations(currentAnnotations, 'Common.ValueListWithFixedValues')
-    if (ValueListWithFixedValues && ValueListWithFixedValues.length > 0) {
-        result.isFixedValues = Utils.getTextValueByData('bool', ValueListWithFixedValues[0]) === 'true';
+    if (ValueListWithFixedValues) {
+        result.isFixedValues = Utils.getTextValueByData('bool', ValueListWithFixedValues) === 'true';
     }
 
     //解析ValueList
     const ValueList = Utils.getTermAnnotations(currentAnnotations, 'Common.ValueList') || Utils.getTermAnnotations(currentAnnotations, 'Common.ValueListMapping')
-    if (ValueList && ValueList.length > 0) {
-        const { record } = ValueList[0]
+    if (ValueList) {
+        const { record } = ValueList
         for (let a of record) {
             const { type, propertyValue } = a;
             if (type === 'Common.ValueListType' || type === 'Common.ValueListMappingType') {
@@ -264,7 +264,7 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
  * @returns 
  */
 const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnly) => {
-
+    
     let result = {
         fieldType: 'Text',
         valueListConfig: null as any,
@@ -277,18 +277,17 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
     }
 
     //判断是否是长文本
-    if (Utils.getTermAnnotations(currentAnnotations, 'UI.MultiLineText').length > 0) {
+    if (Utils.getTermAnnotations(currentAnnotations, 'UI.MultiLineText')) {
         result.fieldType = 'TextArea';
     }
 
     //是否 IsImageURL 远端图片地址
-    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImageURL').length > 0) {
+    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImageURL')) {
         result.fieldType = 'ImageURL';
     }
 
     //是否 IsImage 数据库存储
-    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImage').length > 0) {
-        console.log({ a: Utils.getTermAnnotations(currentAnnotations, 'UI.IsImage') })
+    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImage')) {
         result.fieldType = 'IsImage';
     }
 
@@ -303,7 +302,7 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
         } = await getValueListProperty(
             currentAnnotations,
         );
-        result = {
+        return {
             fieldType: isFixedValues ? 'Select' : 'LookUp',
             valueListConfig: {
                 isFixedValues,//是否为下拉类型：1.下拉类型Select 2.弹出表格类型LookUp
@@ -343,25 +342,25 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
     return result
 }
 
-const getConfig = async (params) => {
+export const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly } = params
     const { currentAnnotations, currentPropertyType } = await Utils.getEntitySetConfig(entitySet, path)
     const { fieldType, valueListConfig } = await _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const label = Utils.getLabelByAnnotation(currentAnnotations)
     //调试用
-    // if(path==='roleTypeId'){
-    //     console.log({
-    //         path,
-    //         isReadOnly,
-    //         fieldType,
-    //         displayValue,
-    //         currentValue,
-    //         currentAnnotations,
-    //         valueListConfig,
-    //         label
-    //     })
-    // }
+    if (path ==='fixedAssetName'){
+        console.log({
+            path,
+            isReadOnly,
+            fieldType,
+            displayValue,
+            currentValue,
+            currentAnnotations,
+            valueListConfig,
+            label
+        })
+    }
     return {
         fieldType,//表单类型
         displayValue,//用户显示的值
@@ -369,8 +368,4 @@ const getConfig = async (params) => {
         valueListConfig,//Select的类型需要的参数
         label,//表单的label
     }
-}
-
-export {
-    getConfig
 }

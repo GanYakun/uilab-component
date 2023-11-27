@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 17:08:47
+ * @LastEditTime: 2023-11-27 17:25:51
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -311,7 +311,7 @@ const getTermAnnotations = (annotations, term, qualifier = null) => {
 
     }
 
-    return result;
+    return result.length > 0 ? result[0]: null;
 };
 
 /**
@@ -1075,8 +1075,8 @@ const parsePropertyValue = (data) => {
 const getHeaderInfoOptions = (currentAnnotations) => {
     let result
     const headerInfo = getTermAnnotations(currentAnnotations, 'UI.HeaderInfo');
-    if (headerInfo?.length > 0) {
-        const { record } = headerInfo[0];
+    if (headerInfo) {
+        const { record } = headerInfo;
         for (let a of record) {
             const { propertyValue, type } = a;
             if (type === 'UI.HeaderInfoType') {
@@ -1127,8 +1127,8 @@ const getTargetAnnotationProcessed = async (
     //FieldGroup类型
     if (target && target.search('@UI.FieldGroup') !== -1) {
         const data = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', targetQualifier)
-        if (data && data.length > 0) {
-            const { record } = data[0]
+        if (data) {
+            const { record } = data
             for (let a of record) {
                 const { type, propertyValue } = a
                 if (type === 'UI.FieldGroupType') {
@@ -1261,11 +1261,11 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
         return arr
     }
 
-    if (facetsData && facetsData.length > 0) {
-        result.Facets = await _parseFacets(facetsData[0])
+    if (facetsData) {
+        result.Facets = await _parseFacets(facetsData)
     }
-    if (headerFacetsData && headerFacetsData.length > 0) {
-        result.HeaderFacets = await _parseFacets(headerFacetsData[0])
+    if (headerFacetsData) {
+        result.HeaderFacets = await _parseFacets(headerFacetsData)
     }
     return result
 }

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 08:49:42
+ * @LastEditTime: 2023-11-27 17:25:53
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -23,9 +23,9 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
     //LineItem
     const lineItem = Utils.getTermAnnotations(currentAnnotations, 'UI.LineItem')
     //console.log({ lineItem })
-    if (lineItem && lineItem.length > 0) {
+    if (lineItem) {
         //遍历collection数组 返回property配置
-        const { collection } = lineItem[0]
+        const { collection } = lineItem
         if (collection) {
             //解析LineItem 的Collection
             const _getPropertyValue = async (propertyValue, annotation) => {
@@ -236,7 +236,7 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
     }
 }
 
-const getConfig = async (params) => {
+export const getConfig = async (params) => {
     const { entitySet } = params
     const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
     const { columns, inLineBtns, headerBtns } = await getTableConfig(currentAnnotations, entitySet)
@@ -248,8 +248,4 @@ const getConfig = async (params) => {
         inLineBtns,
         headerBtns,
     }
-}
-
-export {
-    getConfig
 }
