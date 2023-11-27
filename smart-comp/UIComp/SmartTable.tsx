@@ -22,14 +22,27 @@ type GithubIssueItem = {
 };
 
 export default (props) => {
-    const { entitySet, searchVal, navigationRoute } = props;
+    const {
+        entitySet,
+        searchVal,
+        navigationRoute,
+        rowSelection,
+        onSelect
+    } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
+
+    //表格选中项
+    const [currentRowSelection, setCurrentRowSelection] = useState(rowSelection)
+    let [currentSelectedRowsItem, setCurrentSelectedRowsItem] = useState([])
+
     const actionRef = useRef<ActionType>();
     //初始化方法
     const init = async () => {
         const result = await getConfig({ entitySet })
         if (result) {
+            console.log({ entitySet, result });
+
             setCurrentState(result)
             Array.isArray(result?.columns) && result?.columns.forEach((item, index) => {
                 const { path } = item || {};
@@ -71,6 +84,33 @@ export default (props) => {
             })
         }
     }
+    //判断是否需要多选或者单选
+    const _rowSelection = () => {
+        switch (currentRowSelection) {
+            case 'radio':
+                return {
+                    type: `radio`,
+                    onChange: (_, selectedRowsItem) => {
+                        console.log(selectedRowsItem);
+
+                        setCurrentSelectedRowsItem(selectedRowsItem)
+                        onSelect && onSelect(selectedRowsItem);
+                    },
+                };
+            case 'checkbox':
+                return {
+                    type: `checkbox`,
+                    onChange: (_, selectedRowsItem) => {
+                        setCurrentSelectedRowsItem(selectedRowsItem)
+                    },
+                    getCheckboxProps: () => {
+                        //console.log({ record })
+                    }
+                }
+            default:
+                break;
+        }
+    };
     return (
         <ProTable<GithubIssueItem>
             columns={columns}
@@ -145,6 +185,7 @@ export default (props) => {
             toolBarRender={() => [
 
             ]}
+            rowSelection={currentRowSelection ? _rowSelection() : false}
         />
     );
 };

@@ -9,7 +9,7 @@
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartFilterBar'
 // import { DownOutlined, UpOutlined } from '@ant-design/icons';
-import { ProFormTreeSelect, QueryFilter } from '@ant-design/pro-components';
+import { ProFormText, ProFormTreeSelect, QueryFilter } from '@ant-design/pro-components';
 import SmartField from './SmartField';
 
 type AdvancedSearchProps = {
@@ -23,7 +23,9 @@ export default (props: AdvancedSearchProps) => {
     //初始化方法
     const init = async () => {
         const result = await getConfig({ entitySet })
+        console.log({ result }, "r2");
         if (result) {
+
             setCurrentState(result);
         }
     }

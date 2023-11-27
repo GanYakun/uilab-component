@@ -23,7 +23,7 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
     //LineItem
     const lineItem = Utils.getTermAnnotations(currentAnnotations, 'UI.LineItem')
     //console.log({ lineItem })
-    if (lineItem) {
+    if (lineItem && lineItem.length > 0) {
         //遍历collection数组 返回property配置
         const { collection } = lineItem[0]
         if (collection) {
