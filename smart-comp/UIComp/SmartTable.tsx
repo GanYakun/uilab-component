@@ -65,7 +65,9 @@ export default (props) => {
         if (navigationRoute) {
             umiHistory.push({
                 pathname: navigationRoute,
-                query: {},
+                query: {
+                    queryEntity: record['@odata.id']
+                },
             })
         }
     }

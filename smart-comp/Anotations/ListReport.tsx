@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 09:48:19
+ * @LastEditTime: 2023-11-27 13:49:48
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -29,7 +29,8 @@ const _getManifestConfig = async () => {
         let routing = manifest['sap.ui5']['routing'], navigationRoute
         if (routing && name === 'sap.fe.templates.ListReport') {
             const { routes, targets } = routing
-            navigationRoute = targets[routeName]?.options?.settings?.navigation[entitySet]?.detail?.route
+            const targetRoute = targets[routeName]?.options?.settings?.navigation[entitySet]?.detail?.route
+            navigationRoute = `${window.location.pathname}/${targetRoute}`
         }
         return {
             entitySet,
