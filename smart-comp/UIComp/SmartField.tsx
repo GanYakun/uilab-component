@@ -28,16 +28,14 @@ export default (props) => {
 
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue, valueListConfig } = currentState
+        const { fieldType, displayValue, valueListConfig, label } = currentState || {}
         switch (fieldType) {
             case 'ReadOnly':
                 return <div>{displayValue}</div>
             case 'Text':
                 return <div>{displayValue}</div>
             case 'Select':
-                console.log({ fieldType, displayValue, valueListConfig })
-
-                return <ProFormSelect name={valueListConfig.lookUpTitle} label={valueListConfig.lookUpTitle} request={async () => {
+                return <ProFormSelect name={path} label={label} request={async () => {
                     const result = await valueListConfig.annoRequest()
                     return result
                 }} />

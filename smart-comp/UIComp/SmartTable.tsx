@@ -3,6 +3,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';
+import { history as umiHistory } from 'umi';
 
 type GithubIssueItem = {
     url: string;
@@ -21,11 +22,10 @@ type GithubIssueItem = {
 };
 
 export default (props) => {
-    const { entitySet, searchVal } = props;
+    const { entitySet, searchVal, navigationRoute } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
     const actionRef = useRef<ActionType>();
-
     //初始化方法
     const init = async () => {
         const result = await getConfig({ entitySet })
@@ -59,6 +59,16 @@ export default (props) => {
     useEffect(() => {
         currentState && actionRef.current?.reload();
     }, [searchVal])
+
+    //页面跳转 判断是否是链接
+    const _historyPush = (record: any) => {
+        if (navigationRoute) {
+            umiHistory.push({
+                pathname: navigationRoute,
+                query: {},
+            })
+        }
+    }
     return (
         <ProTable<GithubIssueItem>
             columns={columns}
@@ -72,7 +82,7 @@ export default (props) => {
                     if (searchVal) {
                         option.searchVal = searchVal;
                     }
-                    
+
                     const result = await currentState.annoRequest(option);
                     const { value, msg } = result.data;
                     //1.设置key
@@ -102,6 +112,17 @@ export default (props) => {
             }}
             rowKey="key"
             search={false}
+            onRow={(record, index) => {
+                return {
+                    onClick: () => {
+                        _historyPush(record);
+                    }, // 点击行
+                    onDoubleClick: () => { },
+                    onContextMenu: () => { },
+                    onMouseEnter: () => { }, // 鼠标移入行
+                    onMouseLeave: () => { },
+                };
+            }}
             form={{
                 syncToUrl: (values, type) => {
                     if (type === 'get') {

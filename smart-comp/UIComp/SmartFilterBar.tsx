@@ -32,7 +32,7 @@ export default (props: AdvancedSearchProps) => {
         !currentState && init()
     }, [])
     return (
-        <div>
+        <div style={{ background: '#fff', padding: '24px', marginBottom: 10, borderRadius: 2 }}>
             <QueryFilter defaultCollapsed split onFinish={async (values) => {
                 if (setSearchVal) {
                     setSearchVal(values)
