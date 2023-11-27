@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-24 20:05:50
+ * @LastEditTime: 2023-11-27 12:33:33
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@ import odata from '../../utils/odata/odata';
 import { message } from 'antd';
 import storage from '../../utils/storage/metadataStorage';
 import lodash from 'lodash';
+import moment from 'moment'
 
 /**
  * 获取当前路由名称
@@ -692,6 +693,7 @@ const getFieldReadonlyTextAndCurrentValue = (
     record,
     fieldValue,
     currentAnnotations,
+    currentPropertyType
 ) => {
     let displayValue, currentPathText, currentValue;
 
@@ -784,6 +786,18 @@ const getFieldReadonlyTextAndCurrentValue = (
         currentValue = record;
     }
 
+    //日期类型需要格式化
+    if (currentValue) {
+        if (currentPropertyType === 'Edm.DateTimeOffset') {
+            currentValue = moment(currentValue, 'YYYY-MM-DD HH:mm:ss').utcOffset(-480 + 1440);
+            displayValue = moment(currentValue).format('YYYY-MM-DD HH:mm:ss')
+        } else if (currentPropertyType === 'Edm.DateOffset') {
+            currentValue = moment(currentValue, 'YYYY-MM-DD').utcOffset(-480 + 1440);
+            displayValue = moment(currentValue).format('YYYY-MM-DD')
+        }
+    }
+
+    //console.log({ displayValue, currentPathText, currentValue, moment, currentPropertyType })
     return { displayValue, currentPathText, currentValue };
 };
 
