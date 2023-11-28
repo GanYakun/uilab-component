@@ -57,7 +57,6 @@ export default (props) => {
                             record,
                             isReadOnly: true
                         }
-
                         return <SmartField {...option} />
                     }
                 })

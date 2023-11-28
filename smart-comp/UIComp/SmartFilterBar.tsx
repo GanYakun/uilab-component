@@ -38,7 +38,7 @@ export default (props: AdvancedSearchProps) => {
                 formRef={formRef}
                 layout='vertical'
                 // defaultCollapsed
-                // split
+                split
                 onFinish={async (values) => {
                     if (setSearchVal) {
                         setSearchVal(values)
@@ -52,7 +52,6 @@ export default (props: AdvancedSearchProps) => {
                     const option = {
                         entitySet,
                         path: item.path,
-                        recode: item.label,
                         formRef
                     }
                     return <div key={`filter-${index}`}>

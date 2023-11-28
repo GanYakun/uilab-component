@@ -147,7 +147,6 @@ export default (props) => {
     //根据fiedType类型渲染内容
     const renderContent = () => {
         const { fieldType, displayValue, valueListConfig } = currentState || {}
-
         switch (fieldType) {
             case 'ReadOnly':
                 return <div>{displayValue}</div>
