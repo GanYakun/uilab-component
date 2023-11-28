@@ -3,7 +3,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';
-import SmartModalForm from '../UIComp/SmartModalForm';
+import SmartModalForm from './SmartModalForm';
 import { history as umiHistory } from 'umi';
 
 type GithubIssueItem = {

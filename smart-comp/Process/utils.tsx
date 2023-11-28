@@ -2,16 +2,18 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 15:00:06
+ * @LastEditTime: 2023-11-28 19:02:59
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
+import React from 'react';
 import odatajs from '../../utils/odata/index';
 import odata from '../../utils/odata/odata';
 import { message } from 'antd';
 import storage from '../../utils/storage/metadataStorage';
 import lodash from 'lodash';
-import moment from 'moment'
+import moment from 'moment';
+import { FormattedMessage } from 'umi'
 
 /**
  * 获取当前路由名称
@@ -32,7 +34,7 @@ const getRouteName = () => {
 /**
  * 获取ui5配置
  */
-const getUi5Config = async () => {
+const getUi5Config = async (e) => {
     const { appName, routeName } = getRouteName()
     //是否已有缓存
     if (storage.get(appName)) {
@@ -46,6 +48,7 @@ const getUi5Config = async () => {
         manifestUrl: `/Ui5/${appName}/webapp/manifest.json`,
         annotationUrl: `/Ui5/${appName}/webapp/annotations/annotation.xml`,
         i18nUrl: `/Ui5/${appName}/webapp/i18n/i18n.properties`,
+        i18nUrl_zh: `/Ui5/${appName}/webapp/i18n/i18n_zh_CN.properties`,
     }
 
     const manifest = JSON.parse(await getXmlDoc(url.manifestUrl))
@@ -54,6 +57,7 @@ const getUi5Config = async () => {
         await getXmlDoc(url.annotationUrl)
     )
     const i18n = await getI18nJson(url.i18nUrl)
+    const i18n_zh = await getI18nJson(url.i18nUrl_zh)
     const requestUri = manifest['sap.app'].dataSources.mainService.uri
     const metadata = await getMetadata(requestUri)
 
@@ -67,6 +71,7 @@ const getUi5Config = async () => {
         manifest,
         annotations,
         i18n,
+        i18n_zh,
         metadata,
         routeName,
         appName
@@ -118,7 +123,7 @@ const getXmlDoc = async (path) => {
 const getI18nJson = async (i18nUrl) => {
     const i18nJson = {}
     let i18nData = await getXmlDoc(i18nUrl)
-    if (i18nData) {
+    if (i18nData && i18nData.search('DOCTYPE html') === -1) {
         let resArr = i18nData.split('\n')
         for (let item of resArr) {
             if (item.search('=') !== -1) {
@@ -130,6 +135,7 @@ const getI18nJson = async (i18nUrl) => {
         }
         return i18nJson
     }
+    return false
 }
 
 /**
@@ -1027,6 +1033,17 @@ const generateKey = (keyLength = 18) => {
 }
 
 /**
+ * 
+ * @param {*} path 字段
+ * @param {*} label 显示
+ * @param {*} formatMessage 工具类 
+ * @returns 
+ */
+const getTextByI18n = (label) => {
+    return label && label.search('@i18n>') === -1 ? label : <FormattedMessage id={label} />
+}
+
+/**
  * 解析PropertyValue属性值
  * @param {*} data 
  * @returns 
@@ -1066,7 +1083,7 @@ const parsePropertyValue = (data) => {
                         result.ID = getTextValueByData('string', a)
                         break;
                     case 'Label':
-                        result.Label = getTextValueByData('string', a)
+                        result.Label = getTextByI18n(getTextValueByData('string', a))
                         break;
                     case 'Value':
                         result.Value = getTextValueByData('path', a)
@@ -1306,7 +1323,6 @@ const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
     currentEntitySetData,
     targetPath,
 ) => {
-
     const { metadata } = getUi5ConfigAsync()
     const { namespace, annotations, entityContainer } = metadata.dataServices.schema[0];
     const { entitySet } = entityContainer
@@ -1457,7 +1473,7 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
         }
 
         result.annoRequest = {
-            post: async (body={}) => {
+            post: async (body = {}) => {
                 let option = {
                     path: entitySet,
                     method: 'POST',
