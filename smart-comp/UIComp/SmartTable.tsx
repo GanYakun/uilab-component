@@ -3,6 +3,7 @@ import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';
+import SmartModalForm from '../UIComp/SmartModalForm';
 import { history as umiHistory } from 'umi';
 
 type GithubIssueItem = {
@@ -30,7 +31,7 @@ export default (props) => {
         onSelect,
         parentColumns
     } = props;
-    const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
+    const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
 
     //表格选中项
@@ -176,13 +177,25 @@ export default (props) => {
                 },
             }}
             pagination={{
-                pageSize: 5,
-                onChange: (page) => console.log(page),
+                pageSize: 10,
             }}
             dateFormatter="string"
-            headerTitle="高级表格"
+            headerTitle=""
             toolBarRender={() => [
-
+                //快速创建按钮
+                currentState?.quickCreate && (
+                    <SmartModalForm
+                        entitySet={entitySet}
+                        content={{
+                            title: currentState?.quickCreate?.Label,
+                            btnText: currentState?.quickCreate?.Label
+                        }}
+                        fields={currentState?.quickCreate?.Fields}
+                        onSubmit={(params) => {
+                            currentState?.quickCreate?.annoRequest?.post(params)
+                        }}
+                    />
+                ),
             ]}
             rowSelection={currentRowSelection ? _rowSelection() : false}
         />

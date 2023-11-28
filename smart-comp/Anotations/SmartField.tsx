@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 12:21:47
+ * @LastEditTime: 2023-11-28 15:18:14
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -342,30 +342,74 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => 
     return result
 }
 
+/**
+ * 判断是否必填
+ * @param {*} currentAnnotations 
+ */
+const isNullable = (currentAnnotations, entitySet, path) => {
+    let result = false
+
+    //1.Common.FieldControlType/Mandatory
+    const mandatory = Utils.getTermAnnotations(currentAnnotations, `Common.FieldControl`);
+    if (mandatory && Utils.getTextValueByData(`enumMember`, mandatory) === 'Common.FieldControlType/Mandatory') {
+        result = true
+    }
+
+    //2.主对象是否配置RequiredProperties
+    const { currentAnnotations: entityAnnotations } = Utils.getEntitySetConfig(entitySet)
+    for (let a of entityAnnotations) {
+        const { term, record } = a
+        if ((term === 'Org.OData.Capabilities.V1.InsertRestrictions' || term === 'Capabilities.InsertRestrictions') && record) {
+            for (let b of record) {
+                const { type, propertyValue } = b
+                if ((type === 'Org.OData.Capabilities.V1.InsertRestrictionsType' || type === 'Capabilities.InsertRestrictionsType') && propertyValue) {
+                    for (let c of propertyValue) {
+                        const { property, collection } = c
+                        if (property === 'RequiredProperties') {
+                            for (let d of collection) {
+                                const { propertyPath } = d
+                                if (propertyPath && propertyPath.findIndex((item) => item.text === path) !== -1) {
+                                    result = true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result
+}
+
 export const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly } = params
     const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const label = Utils.getLabelByAnnotation(currentAnnotations)
+    const nullable = isNullable(currentAnnotations, entitySet, path)
+
     //调试用
-    // if (path ==='instanceOfProductId'){
-    //     console.log({
-    //         path,
-    //         isReadOnly,
-    //         fieldType,
-    //         displayValue,
-    //         currentValue,
-    //         currentAnnotations,
-    //         valueListConfig,
-    //         label
-    //     })
-    // }
+    if (path === 'description') {
+        console.log({
+            path,
+            isReadOnly,
+            fieldType,
+            displayValue,
+            currentValue,
+            currentAnnotations,
+            valueListConfig,
+            label,
+            nullable
+        })
+    }
     return {
         fieldType,//表单类型
         displayValue,//用户显示的值
         currentValue,//表单的值value
         valueListConfig,//Select的类型需要的参数
         label,//表单的label
+        nullable,//是否必填字段 true:必填
     }
 }

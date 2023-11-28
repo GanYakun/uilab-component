@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 12:17:47
+ * @LastEditTime: 2023-11-28 14:11:28
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -278,14 +278,14 @@ export const getConfig = async (params) => {
     const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet)
     const annoRequest = _setRequest(entitySet, columns)
-    const quickCreateConfig = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
+    const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
     console.log({
         entitySet,
         annoRequest,
         columns,
         inLineBtns,
         headerBtns,
-        quickCreateConfig
+        quickCreate
     })
     return {
         entitySet,
@@ -293,5 +293,6 @@ export const getConfig = async (params) => {
         columns,
         inLineBtns,
         headerBtns,
+        quickCreate,//是否配置快速创建
     }
 }

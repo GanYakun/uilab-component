@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 12:28:08
+ * @LastEditTime: 2023-11-28 15:00:06
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1033,10 +1033,15 @@ const generateKey = (keyLength = 18) => {
  */
 const parsePropertyValue = (data) => {
     const result = {
-        Value: '',
-        Title: '',
+        ID: '' as any,
+        Label: '' as any,
+        Value: '' as any,
+        Title: '' as any,
         Description: null as any,
-        ImageUrl: ''
+        ImageUrl: '' as any,
+        Target: '' as any,
+        TypeName: '' as any,
+        TypeNamePlural: '' as any
     }
 
     const _getValueByRecord = (record, property) => {
@@ -1057,14 +1062,23 @@ const parsePropertyValue = (data) => {
                 _getValueByRecord(record, property)
             } else {
                 switch (property) {
+                    case 'ID':
+                        result.ID = getTextValueByData('string', a)
+                        break;
+                    case 'Label':
+                        result.Label = getTextValueByData('string', a)
+                        break;
                     case 'Value':
                         result.Value = getTextValueByData('path', a)
                         break;
                     case 'TypeName':
-                        result.Title = getTextValueByData('string', a);
+                        result.TypeName = getTextValueByData('string', a);
                         break
                     case 'TypeNamePlural':
-                        result.Title = getTextValueByData('string', a);
+                        result.TypeNamePlural = getTextValueByData('string', a);
+                        break
+                    case 'Target':
+                        result.Target = getTextValueByData('annotationPath', a);
                         break
                     default:
                         break;
@@ -1216,7 +1230,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
     };
 
     //解析CollectionFacet
-    const _getCollectionFacet =  (propertyValue) => {
+    const _getCollectionFacet = (propertyValue) => {
         let id,
             label,
             childfacets = [] as any;
@@ -1338,48 +1352,43 @@ const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
  * @param {*} currentAnnotations 
  */
 const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
-    const result = {
+    let result = {
         ID: null,
         Label: null,
         Target: null as any,
         Fields: [] as any,
-        ImmutableFields: [],
-        Annotations: [] as any,
+        ImmutableFields: [] as any,
+        //Annotations: [] as any,
+        annoRequest: {} as any,
     }
     //解析termUI.QuickCreateFacets
-    if (getTermAnnotations(currentAnnotations, 'UI.QuickCreateFacets')) {
-        const { collection } = getTermAnnotations(currentAnnotations, 'UI.QuickCreateFacets')
+    const QuickCreateFacets = getTermAnnotations(currentAnnotations, 'UI.QuickCreateFacets')
+    if (QuickCreateFacets) {
+        const { collection } = QuickCreateFacets
         if (collection) {
             for (let a of collection) {
                 const { record } = a
                 for (let b of record) {
                     const { type, propertyValue } = b
                     if (type === 'UI.ReferenceFacet') {
-                        for (let c of propertyValue) {
-                            const { property, string, annotationPath } = c
-                            switch (property) {
-                                case 'ID':
-                                    result.ID = string
-                                case 'Label':
-                                    result.Label = string
-                                case 'Target':
-                                    result.Target = annotationPath
-                                default:
-                                    break;
-                            }
-                        }
+                        const { ID, Label, Target } = parsePropertyValue(propertyValue)
+                        result = { ...result, ID, Label, Target }
                     }
                 }
             }
         }
+    } else {
+        return false
     }
+
     //通过target 查找创建时需要的字段信息
     if (result.Target) {
         const arr = result.Target.split('#')
         const type = arr[0], qualifier = arr[1]
         if (type === '@UI.FieldGroup') {
-            const { record } = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', qualifier)
-            if (record) {
+            const FieldGroup = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', qualifier)
+            if (FieldGroup) {
+                const { record } = FieldGroup
                 for (let a of record) {
                     const { type, propertyValue } = a
                     if (type === 'UI.FieldGroupType') {
@@ -1389,27 +1398,24 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
                                 for (let c of collection) {
                                     const { record } = c
                                     for (let d of record) {
-                                        const { type, propertyValue, annotation } = d
+                                        const { type, propertyValue } = d
                                         if (type === 'UI.DataField') {
-                                            for (let e of propertyValue) {
-                                                const { property, path } = e
-                                                result.Annotations.push({ path, annotation })
-                                                if (property === 'Value') {
-                                                    result.Fields.push(path)
-                                                    //处理Core.Immutable
-                                                    const { currentAnnotations: propertyAnnotations } = getEntitySetConfig(entitySet, path)
-                                                    for (let b of propertyAnnotations) {
-                                                        const { term } = b
-                                                        const bool = getTextValueByData('bool', b)
-                                                        switch (term) {
-                                                            case 'Core.Immutable':
-                                                                if (!bool || bool === 'true') {
-                                                                    result.ImmutableFields.push(path)
-                                                                }
-                                                                break;
-                                                            default:
-                                                                break;
-                                                        }
+                                            const { Value } = parsePropertyValue(propertyValue)
+                                            result.Fields.push({ type, Value })
+                                            //处理Core.Immutable 是否配置了不可编辑
+                                            if (Value) {
+                                                const { currentAnnotations: propertyAnnotations } = getEntitySetConfig(entitySet, Value)
+                                                for (let b of propertyAnnotations) {
+                                                    const { term } = b
+                                                    const bool = getTextValueByData('bool', b)
+                                                    switch (term) {
+                                                        case 'Core.Immutable':
+                                                            if (!bool || bool === 'true') {
+                                                                result.ImmutableFields.push(Value)
+                                                            }
+                                                            break;
+                                                        default:
+                                                            break;
                                                     }
                                                 }
                                             }
@@ -1423,6 +1429,61 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
             }
         }
     }
+
+    //设置请求
+    if (result.Fields.length > 0) {
+        const _getCurrentBody = (body) => {
+            let result = {}
+            for (let key of Object.keys(body)) {
+                if (key.search('/') === -1) {
+                    result[key] = body[key]
+                } else {
+                    const arr = key.split('/')
+                    let obj = {};
+                    let currentObj = obj;
+                    for (let i = 0; i < arr.length; i++) {
+                        let key1 = arr[i];
+                        if (i === arr.length - 1) {
+                            currentObj[key1] = body[key]; // 或者设置为你想要的默认值
+                        } else {
+                            currentObj[key1] = {};
+                            currentObj = currentObj[key1];
+                        }
+                    }
+                    result = { ...result, ...obj }
+                }
+            }
+            return result
+        }
+
+        result.annoRequest = {
+            post: async (body={}) => {
+                let option = {
+                    path: entitySet,
+                    method: 'POST',
+                    body: _getCurrentBody(body),
+                };
+                return await odata.submit(option);
+            },
+            patch: async (record, body) => {
+                let option = {
+                    path: record['@odata.id'],
+                    method: 'PATCH',
+                    body: _getCurrentBody(body),
+                };
+                return await odata.submit(option);
+            },
+            delete: async (record) => {
+                let option = {
+                    path: record['@odata.id'],
+                    method: 'DELETE',
+                    body: {},
+                };
+                return await odata.submit(option);
+            }
+        }
+    }
+
     return result
 }
 
