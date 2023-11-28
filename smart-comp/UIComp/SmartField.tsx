@@ -20,7 +20,9 @@ export default (props) => {
         entitySet,
         path,
         isReadOnly,
-        formRef
+        formRef, // 表单的钩子函数
+        showLabel, // 是否显示label字段
+        colProps
     } = props;
     const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any }>()
 
@@ -31,6 +33,7 @@ export default (props) => {
     let [currentFieldProps, setCurrentFieldProps] = useState<any>({
         //1.tabel内不显示label 2.优先使用父级传递的label
         name: path,
+        colProps: colProps || { md: 8, xl: 6 },
         fieldProps: {
         }
     });
@@ -121,7 +124,7 @@ export default (props) => {
                                     formRef.current.setFieldsValue({
                                         [path]: value
                                     });
-                                    
+
                                 }
                             })
                         }
@@ -142,14 +145,21 @@ export default (props) => {
                 </div>
             </Modal>
         )
-
     }
     //根据fiedType类型渲染内容
     const renderContent = () => {
         const { fieldType, displayValue, valueListConfig } = currentState || {}
+
         switch (fieldType) {
             case 'ReadOnly':
-                return <div>{displayValue}</div>
+                currentFieldProps.value = displayValue || "-";
+                return showLabel ? <>
+                    <ProFormText
+                        {...currentFieldProps}
+                        readonly
+                        initialValue={displayValue || "-"}
+                    />
+                </> : <div>{displayValue || "-"}</div>
             case 'Text':
                 return <div>
                     <ProFormText {...currentFieldProps} />
