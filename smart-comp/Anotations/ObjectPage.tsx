@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 12:26:07
+ * @LastEditTime: 2023-11-28 12:32:01
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,6 +19,10 @@ import Utils from '../Process/utils'
 const _getManifestConfig = () => {
     const { manifest, routeName } = Utils.getUi5ConfigAsync()
     if (manifest) {
+        const { dataSources } = manifest['sap.app']
+        const { mainService } = dataSources
+        const serviceUrl = mainService.uri.slice(1)
+        window.serviceUrl = serviceUrl//设置当前应用请求地址
         const { options } = manifest['sap.ui5']['routing']['targets'][routeName]
         const { settings, } = options;
         const { entitySet } = settings;
@@ -89,7 +93,7 @@ const _setRequest = (entitySet, queryEntity, fieldArr) => {
     if (window['SAP-ContextId']) {
         option.headers['SAP-ContextId'] = window['SAP-ContextId']
     }
-    //console.log({ option, entitySet, queryEntity, fieldArr })
+    console.log({ option, entitySet, queryEntity, fieldArr })
     return async (params) => {
         if (params) {
             option.parameters = { ...option.parameters, ...params }
@@ -101,11 +105,12 @@ const _setRequest = (entitySet, queryEntity, fieldArr) => {
 export const getConfig = async ({ location }) => {
     const { queryEntity } = location?.query
     const { entitySet } = _getManifestConfig()
-    const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
+    const { currentAnnotations, currentEntitySetData } = Utils.getEntitySetConfig(entitySet)
     const HeaderInfo = Utils.getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData)
     const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets }))
     // console.log({
+    //     queryEntity,
     //     currentAnnotations,
     //     currentEntityTypeData,
     //     location,
