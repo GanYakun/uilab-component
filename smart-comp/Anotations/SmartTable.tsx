@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 18:12:38
+ * @LastEditTime: 2023-11-28 11:42:38
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -187,15 +187,15 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
  * @param targetPath 
  */
 const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) => {
-    return async (currentParams) => {
-
+    return async (currentParams, parentColumns) => {
+        const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
         const fieldArr = []
-        columns.map((item) => {
+        currentColumns.map((item) => {
             const { path, type, value, show, url } = item
             switch (type) {
                 case 'UI.DataField':
-                    show === true && fieldArr.push(path)
+                    fieldArr.push(path)
                     break;
                 default:
                     break;
@@ -206,7 +206,7 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
         let { currentExpand, currentSelect } = await Utils.getQueryContitionsByAnnotations(
             fieldArr, entitySet
         );
-
+        //console.log({ columns, fieldArr, entitySet, currentExpand, currentSelect })
         //请求参数准备
         interface Option {
             path: string,
@@ -231,13 +231,13 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
         if (currentParams) {
             const { searchVal, params } = currentParams
             const { pageSize, current } = params
-            if (pageSize && current){
-                option.parameters.$top=pageSize
+            if (pageSize && current) {
+                option.parameters.$top = pageSize
                 option.parameters.$skip = pageSize * (current - 1)
             }
 
             //处理fiterbar的过滤条件
-            if (searchVal){
+            if (searchVal) {
                 let onSearchFilter, url
                 for (let key of Object.keys(searchVal)) {
                     if (searchVal[key] !== '' && searchVal[key] != null) {
@@ -248,8 +248,8 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
                         } else {
                             url =
                                 key.search('Id') == -1
-                                ? `contains(${key}, '${searchVal[key]}')`
-                                : `${key} eq '${searchVal[key]}'`;
+                                    ? `contains(${key}, '${searchVal[key]}')`
+                                    : `${key} eq '${searchVal[key]}'`;
                         }
 
                         //页面搜索条件的过滤条件
@@ -264,11 +264,11 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
                     option.parameters.$filter = onSearchFilter
                 } else {
                     option.parameters.$filter = null
-                }  
+                }
             }
             //console.log({ currentParams, option })
         }
-        
+
         return await Odata.submit(option);
     }
 }

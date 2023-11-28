@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 09:21:07
+ * @LastEditTime: 2023-11-28 11:36:34
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -73,6 +73,20 @@ const getUi5Config = async () => {
     }
     storage.set(appName, result)
     return result
+}
+
+/**
+ * 获取ui5配置
+ */
+const getUi5ConfigAsync = () => {
+    const { appName, routeName } = getRouteName()
+    //是否已有缓存
+    if (storage.get(appName)) {
+        const { data } = storage.get(appName)
+        if (data) {
+            return data
+        }
+    }
 }
 
 /**
@@ -411,7 +425,7 @@ const getQueryContitionsByAnnotations = async (
         let parseData = [], index = 0, unitData, isImageData, selectData, primaryKey
         const find = (entitySetName, navigationPropertyName, entityTypeName) => {
             const { entitySet } = entityContainer
-            entitySet.map(async (item) => {
+            entitySet.map((item) => {
                 const { name, navigationPropertyBinding, entityType } = item
                 if (name === entitySetName) {
                     //数组的最后一个元素为字段信息，是否配置Common.Text
@@ -424,7 +438,7 @@ const getQueryContitionsByAnnotations = async (
                         fieldAnnotations = fieldAnnotations1.concat(fieldAnnotations2)
 
                         const { pathText } = getCommonTextByAnnotatons(fieldAnnotations);
-                        const { currentEntityTypeData } = await getEntitySetConfig(name)
+                        const { currentEntityTypeData } = getUi5ConfigAsync(name)
                         //是否配置Text
                         if (pathText) {
                             if (pathText.search('/') !== -1) {
@@ -499,7 +513,7 @@ const getQueryContitionsByAnnotations = async (
     }
 
     //4.拼装expand select
-    const getMultistage = (arr, unitData, isImageData, selectData, primaryKey) => {
+    const getMultistage = (arr, unitData, isImageData, selectData = null, primaryKey = null) => {
         let floatObj = currentExpand;
         function create(index) {
             //处理单位
@@ -603,24 +617,22 @@ const getQueryContitionsByAnnotations = async (
     }
 
     //判断是否是现实关联对象的字段 通过是否存在 ‘/’ 
-    await Promise.all(
-        fieldArr.map((item) => {
-            if (item) {
-                if (item.search('/') !== -1) {
-                    let arr = item.split('/')
-                    const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr, item)
-                    if (parseData.length === 0) {
-                        console.error(`annotation配置错误： ${item} => 没有配置主对象（${entitySetName}）对应的navigationPropertyBinding`)
-                    }
-                    getMultistage(parseData, unitData, isImageData, selectData, primaryKey)
-                } else {
-                    const { parseData, unitData, isImageData } = _nbff([item], item)
-                    getMultistage(parseData, unitData, isImageData)
-                    _setSelect(item, unitData)
+    fieldArr.map((item) => {
+        if (item) {
+            if (item.search('/') !== -1) {
+                let arr = item.split('/')
+                const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr, item)
+                if (parseData.length === 0) {
+                    console.error(`annotation配置错误： ${item} => 没有配置主对象（${entitySetName}）对应的navigationPropertyBinding`)
                 }
+                getMultistage(parseData, unitData, isImageData, selectData, primaryKey)
+            } else {
+                const { parseData, unitData, isImageData } = _nbff([item], item)
+                getMultistage(parseData, unitData, isImageData)
+                _setSelect(item, unitData)
             }
-        })
-    )
+        }
+    })
 
     return {
         currentExpand,

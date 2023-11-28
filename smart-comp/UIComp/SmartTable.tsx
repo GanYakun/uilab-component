@@ -27,7 +27,8 @@ export default (props) => {
         searchVal,
         navigationRoute,
         rowSelection,
-        onSelect
+        onSelect,
+        parentColumns
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -42,7 +43,8 @@ export default (props) => {
         const result = await getConfig({ entitySet })
         if (result) {
             setCurrentState(result)
-            Array.isArray(result?.columns) && result?.columns.forEach((item, index) => {
+            const currentColumns = parentColumns ? parentColumns : result?.columns
+            Array.isArray(currentColumns) && currentColumns.forEach((item, index) => {
                 const { path } = item || {};
                 columns?.push({
                     title: item.label,
@@ -122,7 +124,7 @@ export default (props) => {
                         option.searchVal = searchVal;
                     }
 
-                    const result = await currentState.annoRequest(option);
+                    const result = await currentState.annoRequest(option, parentColumns);
                     const { value, msg } = result.data;
                     //1.设置key
                     value.map((item) => {
