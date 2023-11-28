@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 11:42:38
+ * @LastEditTime: 2023-11-28 12:17:47
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,7 @@ import moment from 'moment'
  * @param currentAnnotations
  * @returns
  */
-const getTableConfig = async (currentAnnotations: any[], entitySetName: string) => {
+const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
     const result = {
         columns: [] as any,
         inLineBtns: [] as any,
@@ -30,7 +30,7 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
         const { collection } = lineItem
         if (collection) {
             //解析LineItem 的Collection
-            const _getPropertyValue = async (propertyValue, annotation) => {
+            const _getPropertyValue = (propertyValue, annotation) => {
                 const result = {
                     Label: null,
                     Path: null,
@@ -57,7 +57,7 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
                             result.Path = Utils.getTextValueByData('path', c)
                             //当前LineItem上的Label优先级最高，如果未设置去查询当前字段时候配置Label 关联对象label
                             if (!result.Label) {
-                                const { currentAnnotations } = await Utils.getEntitySetConfig(entitySetName, result.Path)
+                                const { currentAnnotations } = Utils.getEntitySetConfig(entitySetName, result.Path)
                                 result.Label = Utils.getLabelByAnnotation(currentAnnotations)
                             }
                             break;
@@ -115,7 +115,7 @@ const getTableConfig = async (currentAnnotations: any[], entitySetName: string) 
                         TargetType,
                         TargetValue,
                         NavigationPropertyPath
-                    } = await _getPropertyValue(propertyValue, annotation)
+                    } = _getPropertyValue(propertyValue, annotation)
                     switch (type) {
                         case 'UI.DataField':
                             _addToColumns({
@@ -275,9 +275,18 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
 
 export const getConfig = async (params) => {
     const { entitySet } = params
-    const { currentAnnotations, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
-    const { columns, inLineBtns, headerBtns } = await getTableConfig(currentAnnotations, entitySet)
+    const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
+    const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet)
     const annoRequest = _setRequest(entitySet, columns)
+    const quickCreateConfig = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
+    console.log({
+        entitySet,
+        annoRequest,
+        columns,
+        inLineBtns,
+        headerBtns,
+        quickCreateConfig
+    })
     return {
         entitySet,
         annoRequest,

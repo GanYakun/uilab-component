@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 11:26:01
+ * @LastEditTime: 2023-11-28 12:21:47
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,10 +13,10 @@ import Utils from '../Process/utils'
  * 解析ValueList
  * @param {*} currentAnnotations
  */
-const getValueListProperty = async (
+const getValueListProperty = (
     currentAnnotations,
 ) => {
-    const { metadata } = await Utils.getUi5Config()
+    const { metadata } = Utils.getUi5ConfigAsync()
     const { annotations } = metadata.dataServices.schema[0];
 
     let result = {
@@ -119,7 +119,7 @@ const getValueListProperty = async (
                                     const { type, propertyValue } = d;
                                     const { LocalDataProperty, ValueListProperty } = _getProperty(propertyValue);
                                     if (ValueListProperty && type !== 'Common.ValueListParameterIn') {
-                                        const { currentAnnotations } = await Utils.getEntitySetConfig(result.collectionPath, ValueListProperty)
+                                        const { currentAnnotations } = Utils.getEntitySetConfig(result.collectionPath, ValueListProperty)
                                         const label = Utils.getLabelByAnnotation(currentAnnotations)
                                         if (result.columns.findIndex((columnItem) => columnItem.path === ValueListProperty) === -1) {
                                             result.columns.push({ path: ValueListProperty, label, type: 'UI.DataField' });
@@ -145,12 +145,12 @@ const getValueListProperty = async (
  * @param {*} currentSelect 
  * @returns 
  */
-const _setRequest = async (collectionPath, columns, Parameters) => {
+const _setRequest = (collectionPath, columns, Parameters) => {
 
     //获取查询条件
     const arr = [] as any[]
     columns.map((item) => arr.push(item.path))
-    const { currentExpand, currentSelect } = await Utils.getQueryContitionsByAnnotations(
+    const { currentExpand, currentSelect } = Utils.getQueryContitionsByAnnotations(
         arr,
         collectionPath
     );
@@ -198,9 +198,9 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
      * @param {*} collectionPath 
      * @returns 
      */
-    const _getValueListPropertyDisplay = async (ValueListProperty, collectionPath) => {
+    const _getValueListPropertyDisplay = (ValueListProperty, collectionPath) => {
         let result
-        const { metadata } = await Utils.getUi5Config()
+        const { metadata } = Utils.getUi5ConfigAsync()
         const { annotations, entityContainer } = metadata.dataServices.schema[0];
         const { entitySetData: currentEntitySetData } = Utils.getEntitySetData(entityContainer, collectionPath)
         if (currentEntitySetData) {
@@ -222,7 +222,7 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
     let option = {
         path: collectionPath,
         method: 'GET',
-        parameters: {} ,
+        parameters: {},
     };
     if (JSON.stringify(currentExpand) !== '{}') {
         option.parameters.$expand = currentExpand;
@@ -245,11 +245,11 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
                     _ValueListProperty = ValueListProperty
                 }
             }
-            DisplayProperty =await _getValueListPropertyDisplay(_ValueListProperty, collectionPath)
+            DisplayProperty = _getValueListPropertyDisplay(_ValueListProperty, collectionPath)
             value.map((item) => {
                 const val = _getDisplayText(item, DisplayProperty, _ValueListProperty)
                 arr.push({
-                    label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty] 
+                    label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty]
                 })
             });
             return arr
@@ -263,8 +263,8 @@ const _setRequest = async (collectionPath, columns, Parameters) => {
  * @param {*} currentPropertyType 当前字段，例：Edm.String、Edm.Int64、Edm.DateTimeOffset、Edm.Date
  * @returns 
  */
-const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnly) => {
-    
+const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => {
+
     let result = {
         fieldType: 'Text',
         valueListConfig: null as any,
@@ -299,7 +299,7 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
             columns,
             lookUpTitle,
             Parameters,
-        } = await getValueListProperty(
+        } = getValueListProperty(
             currentAnnotations,
         );
         return {
@@ -310,7 +310,7 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
                 columns,//弹出表格类型LookUp 的列配置项
                 lookUpTitle,//弹出表格类型LookUp 的弹窗标题
                 Parameters,//略
-                annoRequest: await _setRequest(collectionPath, columns, Parameters)//请求
+                annoRequest: _setRequest(collectionPath, columns, Parameters)//请求
             }
         }
     }
@@ -344,8 +344,8 @@ const _setFieldValue = async (currentAnnotations, currentPropertyType, isReadOnl
 
 export const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly } = params
-    const { currentAnnotations, currentPropertyType } = await Utils.getEntitySetConfig(entitySet, path)
-    const { fieldType, valueListConfig } = await _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
+    const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path)
+    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const label = Utils.getLabelByAnnotation(currentAnnotations)
     //调试用

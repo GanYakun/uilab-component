@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 10:35:42
+ * @LastEditTime: 2023-11-28 12:26:07
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,8 +16,8 @@ import Utils from '../Process/utils'
  * @param {*} routeName 
  * @returns 
  */
-const _getManifestConfig = async () => {
-    const { manifest, routeName } = await Utils.getUi5Config()
+const _getManifestConfig = () => {
+    const { manifest, routeName } = Utils.getUi5ConfigAsync()
     if (manifest) {
         const { options } = manifest['sap.ui5']['routing']['targets'][routeName]
         const { settings, } = options;
@@ -68,8 +68,8 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets }) => {
 }
 
 //设置请求
-const _setRequest = async (entitySet, queryEntity, fieldArr) => {
-    const { currentSelect, currentExpand } = await Utils.getQueryContitionsByAnnotations(
+const _setRequest = (entitySet, queryEntity, fieldArr) => {
+    const { currentSelect, currentExpand } = Utils.getQueryContitionsByAnnotations(
         fieldArr,
         entitySet
     );
@@ -100,21 +100,21 @@ const _setRequest = async (entitySet, queryEntity, fieldArr) => {
 
 export const getConfig = async ({ location }) => {
     const { queryEntity } = location?.query
-    const { entitySet } = await _getManifestConfig()
-    const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = await Utils.getEntitySetConfig(entitySet)
+    const { entitySet } = _getManifestConfig()
+    const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const HeaderInfo = Utils.getHeaderInfoOptions(currentAnnotations)
-    const { Facets, HeaderFacets } = await Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData)
-    const annoRequest = await _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets }))
-    console.log({
-        currentAnnotations,
-        currentEntityTypeData,
-        location,
-        entitySet,
-        HeaderInfo,
-        Facets,
-        HeaderFacets,
-        annoRequest
-    })
+    const { Facets, HeaderFacets } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData)
+    const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets }))
+    // console.log({
+    //     currentAnnotations,
+    //     currentEntityTypeData,
+    //     location,
+    //     entitySet,
+    //     HeaderInfo,
+    //     Facets,
+    //     HeaderFacets,
+    //     annoRequest
+    // })
     return {
         entitySet,
         HeaderInfo,//导航栏信息

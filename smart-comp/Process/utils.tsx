@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 11:36:34
+ * @LastEditTime: 2023-11-28 12:23:34
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -175,8 +175,8 @@ const getMetadata = async (url) => {
  * @param {string} currentEntitySetName 
  * @param {object} metadata 
  */
-const getEntitySetConfig = async (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
-    const { metadata, manifest } = await getUi5Config()
+const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
+    const { metadata, manifest } = getUi5ConfigAsync()
     const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
     let result = {
         currentEntitySetName,
@@ -395,11 +395,11 @@ const getNameSpaceEntityTypeName = (typeName) => {
  * @param {string}  entitySetName
  * @returns {object} currentExpand,currentSelect
  */
-const getQueryContitionsByAnnotations = async (
+const getQueryContitionsByAnnotations = (
     fieldArr,
     entitySetName
 ) => {
-    const { metadata } = await getUi5Config()
+    const { metadata } = getUi5ConfigAsync()
     const { entityContainer, annotations, entityType, namespace } = metadata.dataServices.schema[0];
 
     let currentExpand = {},
@@ -1103,7 +1103,7 @@ const getHeaderInfoOptions = (currentAnnotations) => {
  * 得到目标已整理过的annotation
  * @param annotations
  */
-const getTargetAnnotationProcessed = async (
+const getTargetAnnotationProcessed = (
     currentAnnotations,
     target,
     currentEntitySetData
@@ -1124,7 +1124,7 @@ const getTargetAnnotationProcessed = async (
 
     //Table类型
     if (target && target.search('UI.LineItem') !== -1) {
-        const targetEntitySet = await getEntitySetByCurrentEntitySetNavigationPropertyBinding(
+        const targetEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(
             currentEntitySetData,
             targetNavigation,
         );
@@ -1181,7 +1181,7 @@ const getTargetAnnotationProcessed = async (
  * @param {*} currentAnnotations 
  * @returns 
  */
-const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntitySetData, currentRecord = null) => {
+const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetData, currentRecord = null) => {
     const result = {
         Facets: [] as any,
         HeaderFacets: [] as any,
@@ -1191,7 +1191,7 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
     const headerFacetsData = getTermAnnotations(currentAnnotations, 'UI.HeaderFacets');
 
     //解析ReferenceFacet
-    const _getReferenceFacet = async (propertyValue) => {
+    const _getReferenceFacet = (propertyValue) => {
         let result = {} as any;
         for (let f of propertyValue) {
             const { property } = f;
@@ -1205,7 +1205,7 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
             }
             if (property === 'Target') {
                 result.target = getTextValueByData(`annotationPath`, f);
-                result.targetData = await getTargetAnnotationProcessed(
+                result.targetData = getTargetAnnotationProcessed(
                     currentAnnotations,
                     result.target,
                     currentEntitySetData
@@ -1234,7 +1234,7 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
                     for (let e of record) {
                         const { type, propertyValue, annotation } = e;
                         if (type === 'UI.ReferenceFacet') {
-                            const ReferenceFacetData = await _getReferenceFacet(propertyValue);
+                            const ReferenceFacetData = _getReferenceFacet(propertyValue);
                             childfacets.push(ReferenceFacetData);
                         }
                         if (type === 'UI.CollectionFacet') {
@@ -1249,7 +1249,7 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
     };
 
     //解析Facets
-    const _parseFacets = async (data) => {
+    const _parseFacets = (data) => {
         const { collection } = data;
         const arr = [] as any
         if (collection) {
@@ -1259,11 +1259,11 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
                     for (let b of record) {
                         const { type, propertyValue, annotation } = b;
                         if (type === 'UI.CollectionFacet') {
-                            const CollectionFacetData = await _getCollectionFacet(propertyValue);
+                            const CollectionFacetData = _getCollectionFacet(propertyValue);
                             arr.push(CollectionFacetData);
                         }
                         if (type === 'UI.ReferenceFacet') {
-                            const ReferenceFacetData = await _getReferenceFacet(propertyValue);
+                            const ReferenceFacetData = _getReferenceFacet(propertyValue);
                             arr.push(ReferenceFacetData);
                         }
                     }
@@ -1274,10 +1274,10 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
     }
 
     if (facetsData) {
-        result.Facets = await _parseFacets(facetsData)
+        result.Facets = _parseFacets(facetsData)
     }
     if (headerFacetsData) {
-        result.HeaderFacets = await _parseFacets(headerFacetsData)
+        result.HeaderFacets = _parseFacets(headerFacetsData)
     }
     return result
 }
@@ -1288,12 +1288,12 @@ const getObjectPageFacetsByAnnotations = async (currentAnnotations, currentEntit
  * @param {*} targetPath 指定目标path
  * @returns 关联对象的entitySet name
  */
-const getEntitySetByCurrentEntitySetNavigationPropertyBinding = async (
+const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
     currentEntitySetData,
     targetPath,
 ) => {
 
-    const { metadata } = await getUi5Config()
+    const { metadata } = getUi5ConfigAsync()
     const { namespace, annotations, entityContainer } = metadata.dataServices.schema[0];
     const { entitySet } = entityContainer
     let result;
@@ -1333,9 +1333,103 @@ const getEntitySetByCurrentEntitySetNavigationPropertyBinding = async (
     return result;
 };
 
+/**QuickCreateFacets 快速创建的字段信息
+ * 解析
+ * @param {*} currentAnnotations 
+ */
+const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
+    const result = {
+        ID: null,
+        Label: null,
+        Target: null as any,
+        Fields: [] as any,
+        ImmutableFields: [],
+        Annotations: [] as any,
+    }
+    //解析termUI.QuickCreateFacets
+    if (getTermAnnotations(currentAnnotations, 'UI.QuickCreateFacets')) {
+        const { collection } = getTermAnnotations(currentAnnotations, 'UI.QuickCreateFacets')
+        if (collection) {
+            for (let a of collection) {
+                const { record } = a
+                for (let b of record) {
+                    const { type, propertyValue } = b
+                    if (type === 'UI.ReferenceFacet') {
+                        for (let c of propertyValue) {
+                            const { property, string, annotationPath } = c
+                            switch (property) {
+                                case 'ID':
+                                    result.ID = string
+                                case 'Label':
+                                    result.Label = string
+                                case 'Target':
+                                    result.Target = annotationPath
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    //通过target 查找创建时需要的字段信息
+    if (result.Target) {
+        const arr = result.Target.split('#')
+        const type = arr[0], qualifier = arr[1]
+        if (type === '@UI.FieldGroup') {
+            const { record } = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', qualifier)
+            if (record) {
+                for (let a of record) {
+                    const { type, propertyValue } = a
+                    if (type === 'UI.FieldGroupType') {
+                        for (let b of propertyValue) {
+                            const { property, collection } = b
+                            if (property === 'Data') {
+                                for (let c of collection) {
+                                    const { record } = c
+                                    for (let d of record) {
+                                        const { type, propertyValue, annotation } = d
+                                        if (type === 'UI.DataField') {
+                                            for (let e of propertyValue) {
+                                                const { property, path } = e
+                                                result.Annotations.push({ path, annotation })
+                                                if (property === 'Value') {
+                                                    result.Fields.push(path)
+                                                    //处理Core.Immutable
+                                                    const { currentAnnotations: propertyAnnotations } = getEntitySetConfig(entitySet, path)
+                                                    for (let b of propertyAnnotations) {
+                                                        const { term } = b
+                                                        const bool = getTextValueByData('bool', b)
+                                                        switch (term) {
+                                                            case 'Core.Immutable':
+                                                                if (!bool || bool === 'true') {
+                                                                    result.ImmutableFields.push(path)
+                                                                }
+                                                                break;
+                                                            default:
+                                                                break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result
+}
+
 export default {
     getRouteName,
     getUi5Config,
+    getUi5ConfigAsync,
     getEntitySetConfig,
     getTermAnnotations,
     getTextValueByData,
@@ -1347,5 +1441,6 @@ export default {
     getEntitySetData,
     getCommonTextByAnnotatons,
     getHeaderInfoOptions,
-    getObjectPageFacetsByAnnotations
+    getObjectPageFacetsByAnnotations,
+    parseQuickCreateFacets
 }
