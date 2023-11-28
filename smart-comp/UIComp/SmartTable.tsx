@@ -112,6 +112,7 @@ export default (props) => {
             columns={columns}
             actionRef={actionRef}
             cardBordered
+            scroll={{ x: 'max-content' }} // 设置scroll
             request={async (params, sort, filter) => {
                 let option: any = {
                     params, sort, filter
@@ -162,6 +163,7 @@ export default (props) => {
                 };
             }}
             form={{
+                layout: 'vertical',
                 syncToUrl: (values, type) => {
                     if (type === 'get') {
                         return {

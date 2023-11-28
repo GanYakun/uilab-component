@@ -37,8 +37,8 @@ export default (props: AdvancedSearchProps) => {
             <QueryFilter
                 formRef={formRef}
                 layout='vertical'
-                defaultCollapsed
-                split
+                // defaultCollapsed
+                // split
                 onFinish={async (values) => {
                     if (setSearchVal) {
                         setSearchVal(values)
