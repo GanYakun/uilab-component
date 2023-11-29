@@ -13,6 +13,7 @@ import { Card } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup, useIntl } from '@ant-design/pro-components';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 
 export default (props) => {
     const { location } = props;
@@ -51,8 +52,8 @@ export default (props) => {
                         type,
                         label,
                         content: (
-                            <div>
-                                <div>( {label} )</div>
+                            <div id='uilab-ObjectPage-header'>
+                                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
                                     const option = {
                                         isReadOnly: true,
@@ -62,7 +63,7 @@ export default (props) => {
                                         showLabel: true
                                     }
                                     return (
-                                        <div id={`target-${index}`}>
+                                        <div id={`target-${index}`} key={`target-${index}`}>
                                             <ProFormGroup>
                                                 <SmartField {...option} />
                                             </ProFormGroup>
@@ -191,6 +192,7 @@ export default (props) => {
             id='uilab-ObjectPage'
         >
             <PageContainer
+                onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
                 tabProps={{
@@ -202,7 +204,7 @@ export default (props) => {
                     // <Button key="3">重置</Button>
                 ]}
             >
-                <div ref={pageContent} style={{ background: "#fff", padding: 12, borderRadius: 2 }}>
+                <div ref={pageContent} style={{ background: "#fff", borderRadius: 2 }}>
                     {_renderSection}
                 </div>
             </PageContainer>

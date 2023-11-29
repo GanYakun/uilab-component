@@ -28,6 +28,8 @@ export default (props) => {
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
     const [currentSelected, setCurrentSelected] = useState<any>(null);//lookup选中项
+    const [currentValueEnum, setCurrentValueEnum] = useState(null); //下拉选择框暂存
+    const [selectLoading, setSelectLoading] = useState(false);//下拉框是否加载中
 
     //字段相关显示属性
     let [currentFieldProps, setCurrentFieldProps] = useState<any>({
@@ -146,6 +148,22 @@ export default (props) => {
             </Modal>
         )
     }
+    //下拉框请求数据
+    const queryValueEnum = async () => {
+        if (!currentValueEnum) {
+            const { valueListConfig } = (currentState || {});
+            setSelectLoading(true);
+            let obj: any = {};
+            const result = await valueListConfig.annoRequest();
+            setSelectLoading(false);
+            result?.map((item) => {
+                obj[item.value] = {
+                    text: item.label
+                }
+            })
+            setCurrentValueEnum(obj);
+        }
+    };
     //根据fiedType类型渲染内容
     const renderContent = () => {
         const { fieldType, displayValue, valueListConfig } = currentState || {}
@@ -157,7 +175,6 @@ export default (props) => {
                     <ProFormText
                         {...currentFieldProps}
                         readonly
-                        initialValue={displayValue || "-"}
                     />
                 </> : <div>{displayValue || "-"}</div>
             case 'Text':
@@ -165,12 +182,21 @@ export default (props) => {
                     <ProFormText {...currentFieldProps} />
                 </div>
             case 'Select':
+                //lookup 弹框图片&按钮
+                currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool) => {
+                    if (bool) {
+                        queryValueEnum();
+                    }
+                };
+                currentFieldProps.fieldProps.loading = selectLoading;
                 return <ProFormSelect
                     {...currentFieldProps}
-                    request={async () => {
-                        const result = await valueListConfig.annoRequest()
-                        return result
-                    }} />
+                    valueEnum={currentValueEnum ? currentValueEnum : {}}
+                // request={async () => {
+                //     const result = await valueListConfig.annoRequest()
+                //     return result
+                // }} 
+                />
             case 'LookUp':
                 const { Parameters } = valueListConfig
                 const LocalDataPropertyArr: any = []
