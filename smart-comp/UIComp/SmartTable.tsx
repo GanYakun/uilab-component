@@ -5,6 +5,7 @@ import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';
 import SmartModalForm from './SmartModalForm';
 import { history as umiHistory } from 'umi';
+import { RightOutlined } from '@ant-design/icons';
 
 type GithubIssueItem = {
     url: string;
@@ -61,8 +62,26 @@ export default (props) => {
                         return <SmartField {...option} />
                     }
                 })
-                setColumns([...columns]);
             })
+            // //是否需要跳转 添加跳转Icon
+            if (navigationRoute) {
+                columns.push({
+                    title: '',
+                    width: 'auto',
+                    hideInSearch: true,
+                    dataIndex: 'option',
+                    fixed: 'right',
+                    key: 'navOptoin',
+                    align: 'center',
+                    disable: true,
+                    render: (_, record) => {
+                        return <RightOutlined
+                            style={{ color: '#6a6d70', fontSize: '12px', background: 'transparent' }}
+                        />
+                    }
+                })
+            }
+            setColumns([...columns]);
         }
     }
 

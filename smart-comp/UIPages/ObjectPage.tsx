@@ -12,12 +12,11 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { Card } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
-import { ProForm, ProFormGroup, useIntl } from '@ant-design/pro-components';
+import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 
 export default (props) => {
     const { location } = props;
-    const { formatMessage } = useIntl();
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState(null);
@@ -42,7 +41,6 @@ export default (props) => {
 
         const { label: sectionLabel, targetData: sectionTargetData } = sectionItem;
         const _renderContent = (contentValue, label) => {
-            label = label && (label.search('@i18n>') === -1 ? label : formatMessage({ id: label }))
 
             if (!contentValue) return {}
             const { facetType: type } = contentValue;
@@ -150,7 +148,7 @@ export default (props) => {
         if (Facets) {
             return Facets.map((item, index) => {
                 const { targetData } = (item || {});
-                switch (targetData.facetType) {
+                switch (targetData?.facetType) {
                     case "UI.FieldGroup":
                         return <div key={`section${index}`} id='vertical'>
                             {targetData.facetType === "UI.FieldGroup" ? <Card title={targetData.Label} bordered={false}>

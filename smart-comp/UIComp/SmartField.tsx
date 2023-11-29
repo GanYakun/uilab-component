@@ -170,13 +170,13 @@ export default (props) => {
 
         switch (fieldType) {
             case 'ReadOnly':
-                currentFieldProps.value = displayValue || "-";
+                currentFieldProps.value = displayValue;
                 return showLabel ? <>
                     <ProFormText
                         {...currentFieldProps}
                         readonly
                     />
-                </> : <div>{displayValue || "-"}</div>
+                </> : <div>{displayValue}</div>
             case 'Text':
                 return <div>
                     <ProFormText {...currentFieldProps} />
