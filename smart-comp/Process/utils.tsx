@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-29 15:47:49
+ * @LastEditTime: 2023-11-29 17:09:01
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1504,6 +1504,287 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
     return result
 }
 
+/**
+ * 解析PresentationVariant 根据Annotations
+ * UI.PresentationVariant 
+ * @param {*} obj 
+ * @returns 
+ */
+const getPresentationVariantByAnnotations = (obj) => {
+    const { term, record, property } = obj;
+    let result = {
+        orderby: null as any,
+        text: null as any,
+        Visualizations: null as any
+    };
+    if (term === `UI.PresentationVariant` || property === 'PresentationVariant') {
+        for (let a of record) {
+            const { type, propertyValue } = a;
+            if (type === 'UI.PresentationVariantType') {
+                for (let b of propertyValue) {
+                    const { property, collection, string } = b;
+
+                    //默认排序
+                    if (property === 'SortOrder') {
+                        for (let c of collection) {
+                            const { record } = c;
+                            for (let d of record) {
+                                const { propertyValue } = d;
+                                let path, value;
+                                for (let e of propertyValue) {
+                                    const { property, propertyPath, bool } = e;
+                                    if (property === 'Property') {
+                                        path = propertyPath;
+                                    }
+                                    if (property === 'Descending') {
+                                        value = bool;
+                                    }
+                                }
+                                result.orderby = {
+                                    name: path,
+                                    target: value === 'true' ? 'desc' : 'asc'
+                                }
+                            }
+                        }
+                    }
+
+                    //Visualizations 可视化内容 ***目前只支持第一个***
+                    if (property === 'Visualizations') {
+                        for (let c of collection) {
+                            const { annotationPath } = c
+                            if (annotationPath && annotationPath instanceof Array) {
+                                const arr = annotationPath[0].text.split('#');//支持第一个annotationPath
+                                result.Visualizations = {
+                                    term: arr[0],
+                                    qualifier: arr[1]
+                                }
+                            }
+                        }
+                    }
+                    //Text 不清楚
+                    if (property === 'Text') {
+                        result.text = string;
+                    }
+                }
+            }
+        }
+    }
+
+    return result;
+};
+
+/**
+ * 解析SelectionPresentationVariant 根据Annotations
+ * UI.SelectionPresentationVariant 
+ * @param {*} obj 
+ * @returns 
+ */
+const getSelectionPresentationVariantByAnnotations = (obj, currentEntityTypeData) => {
+    const result = {
+        Text: null,
+        Presentation: null as any,
+        Selection: null as any
+    }
+
+    if (obj) {
+        const { term, record } = obj
+        if (term === 'UI.SelectionPresentationVariant') {
+            for (let a of record) {
+                const { type, propertyValue } = a
+                if (type === 'UI.SelectionPresentationVariantType') {
+                    for (let b of propertyValue) {
+                        const { property } = b
+                        switch (property) {
+                            case 'Text':
+                                result.Text = getTextByI18n(getTextValueByData('string', b))
+                                break;
+                            case 'SelectionVariant':
+                                result.Selection = getSelectionVariantByAnnotations(b, currentEntityTypeData)
+                                break;
+                            case 'PresentationVariant':
+                                result.Presentation = getPresentationVariantByAnnotations(b)
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return result
+}
+
+/**
+ * SelectionVariant 根据Annotations
+ * UI.SelectionVariant 
+ * @param {*} obj 
+ * @returns 
+ */
+const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
+    const result = {
+        filter: null,
+        PropertyNames: [] as any
+    };
+    const { property, record } = obj;
+    if (property === 'SelectionVariant') {
+        for (let a of record) {
+            const { propertyValue, type } = a;
+            if (type === 'UI.SelectionVariantType') {
+                for (let b of propertyValue) {
+                    const { property, collection } = b;
+                    if (property === 'SelectOptions') {
+                        let filterItem
+                        for (let c of collection) {
+                            const { record } = c;
+                            if (record) {
+                                for (let d of record) {
+                                    const { propertyValue, type } = d;
+                                    let PropertyName
+                                    if (type === 'UI.SelectOptionType') {
+                                        for (let e of propertyValue) {
+                                            const { property, collection } = e;
+                                            if (property === 'PropertyName') {
+                                                PropertyName = getTextValueByData('propertyPath', e);
+                                                result.PropertyNames.push(PropertyName)
+                                            }
+                                            if (property === 'Ranges' && collection) {
+                                                for (let f of collection) {
+                                                    const { record } = f;
+                                                    //是否有多项 多项为or
+                                                    if (record) {
+                                                        let $filter;
+                                                        for (let g of record) {
+                                                            let Option, Low, condition, lambda = {};
+                                                            const { propertyValue } = g;
+                                                            //if (type === 'UI.SelectionRangeType') {
+                                                            for (let h of propertyValue) {
+                                                                const { property } = h;
+                                                                if (property === 'Option') {
+                                                                    Option = getTextValueByData('enumMember', h);
+                                                                }
+                                                                if (property === 'Low') {
+                                                                    Low = h[null] ? null : getTextValueByData('string', h);
+                                                                }
+                                                                // if (property === 'Sign') {
+                                                                //     Sign = getTextValueByData('enumMember', h);
+                                                                // }
+                                                            }
+                                                            //}
+
+                                                            //查询 eq ne gt lt
+                                                            switch (Option) {
+                                                                case 'UI.SelectionRangeOptionType/EQ':
+                                                                    condition = 'eq'
+                                                                    break;
+                                                                case 'UI.SelectionRangeOptionType/NE':
+                                                                    condition = 'ne'
+                                                                    break;
+                                                                case 'UI.SelectionRangeOptionType/GT':
+                                                                    condition = 'gt'
+                                                                    break;
+                                                                case 'UI.SelectionRangeOptionType/LT':
+                                                                    condition = 'lt'
+                                                                    break;
+                                                                default:
+                                                                    break;
+                                                            }
+
+                                                            //如果是boolean 需要去掉引号 'null'
+                                                            let value
+                                                            if (Low === 'true' || Low === 'false') {
+                                                                value = Low
+                                                            } else if (Low === null) {
+                                                                value = null
+                                                            } else if (lodash.isNumber(Low) || Low === '0') {
+                                                                value = lodash.toNumber(Low)
+                                                            } else {
+                                                                value = `'${Low}'`
+                                                            }
+
+                                                            if (PropertyName.search('/') !== -1) {
+                                                                const arr = PropertyName.split('/');
+                                                                let _isCollection = isCollection(
+                                                                    currentEntityTypeData.navigationProperty,
+                                                                    arr[0],
+                                                                );
+                                                                //是否是一对多 是否使用lambda查询
+                                                                if (_isCollection) {
+                                                                    if (!lambda[arr[0]]) {
+                                                                        lambda[arr[0]] = [`${arr[1]} ${condition} ${value}`];
+                                                                    } else {
+                                                                        lambda[arr[0]].push(`${arr[1]} ${condition} ${value}`);
+                                                                    }
+                                                                } else {
+                                                                    $filter = !$filter ? `${PropertyName} ${condition} ${value}` : $filter += ` or ${PropertyName} ${condition} ${value}`;
+                                                                }
+                                                            } else {
+                                                                $filter = !$filter ? `${PropertyName} ${condition} ${value}` : $filter += ` or ${PropertyName} ${condition} ${value}`;
+                                                            }                                                            //拼接lambda语句
+                                                            if (`${JSON.stringify(lambda)}` !== '{}') {
+                                                                let lambdaUrl = '',
+                                                                    lambdaUrlItem = '';
+                                                                for (let key of Object.keys(lambda)) {
+                                                                    lambda[key].map((item) => {
+                                                                        if (lambdaUrlItem === '') {
+                                                                            lambdaUrlItem = `c:c/${item}`;
+                                                                        } else {
+                                                                            lambdaUrlItem += ` and c/${item}`;
+                                                                        }
+                                                                    });
+                                                                    if (lambdaUrl === '') {
+                                                                        lambdaUrl = `${key}/any(${lambdaUrlItem})`;
+                                                                    } else {
+                                                                        lambdaUrl += ` and ${key}/any(${lambdaUrlItem})`;
+                                                                    }
+                                                                }
+                                                                if (lambdaUrl !== '') {
+                                                                    $filter = !$filter ? lambdaUrl : $filter += ` or ${lambdaUrl}`;
+                                                                }
+                                                            }
+                                                        }
+                                                        if ($filter && $filter.search('or') !== -1) {
+                                                            $filter = `(${$filter})`
+                                                        }
+                                                        filterItem = !filterItem ? $filter : filterItem += ` and ${$filter}`
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (filterItem !== '') {
+                            result.filter = filterItem;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return result;
+};
+
+/**
+ * 判断navigation 是否是Collection 1vs多
+ * @param {array} navigationProperty 当前对象的关联对象
+ * @param {*} navigationPropertyPath 
+ * @returns 
+ */
+const isCollection = (navigationProperty, navigationPropertyPath) => {
+    let result = false;
+    if (navigationProperty) {
+        navigationProperty.map((item) => {
+            if (item.name === navigationPropertyPath && item.type.search('Collection') !== -1) {
+                result = true;
+            }
+        });
+    }
+    return result;
+};
+
 export default {
     getRouteName,
     getUi5Config,
@@ -1520,5 +1801,7 @@ export default {
     getCommonTextByAnnotatons,
     getHeaderInfoOptions,
     getObjectPageFacetsByAnnotations,
-    parseQuickCreateFacets
+    parseQuickCreateFacets,
+    getPresentationVariantByAnnotations,
+    getSelectionPresentationVariantByAnnotations
 }

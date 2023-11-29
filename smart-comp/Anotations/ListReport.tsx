@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-29 15:41:58
+ * @LastEditTime: 2023-11-29 17:14:17
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -68,59 +68,61 @@ const _getManifestConfig = async () => {
  * @param {*} currentEntityTypeData 
  * @returns 
  */
-// const _setTabs = (views, currentAnnotations, currentEntityTypeData) => {
-//     const { paths, showCounts } = views
-//     ListReportConfig.showCounts = showCounts
-//     const tabsArr = []
-//     const findAnnotation = (term, qualifier, key) => {
+const _setTabs = (views, currentAnnotations, currentEntityTypeData) => {
+    const { paths, showCounts } = views
+    const tabs: any[] = []
+    const findAnnotation = (term, qualifier, key) => {
+        switch (term) {
+            case 'com.sap.vocabularies.UI.v1.PresentationVariant':
+                const PresentationVariantIdx = currentAnnotations.findIndex((item) => {
+                    const { qualifier: currentQualifier, term } = item
+                    return currentQualifier === qualifier && term === 'UI.PresentationVariant'
+                })
+                const PresentationVariantResult = Utils.getPresentationVariantByAnnotations(currentAnnotations[PresentationVariantIdx])
+                console.log({ PresentationVariantResult })
+                tabs.push({ Presentation: { ...PresentationVariantResult, } })
+                break;
+            case 'com.sap.vocabularies.UI.v1.SelectionPresentationVariant':
+                const SelectionPresentationVariantIdx = currentAnnotations.findIndex((item) => {
+                    const { qualifier: currentQualifier, term } = item
+                    return currentQualifier === qualifier && term === 'UI.SelectionPresentationVariant'
+                })
+                const { Presentation, Selection, Text } = Utils.getSelectionPresentationVariantByAnnotations(currentAnnotations[SelectionPresentationVariantIdx], currentEntityTypeData)
+                tabs.push({ Presentation, Selection, Text })
+                break;
+            default:
+                break;
+        }
+    }
 
-//         switch (term) {
-//             case 'com.sap.vocabularies.UI.v1.PresentationVariant':
-//                 const PresentationVariantIdx = currentAnnotations.findIndex((item) => {
-//                     const { qualifier: currentQualifier, term } = item
-//                     return currentQualifier === qualifier && term === 'UI.PresentationVariant'
-//                 })
-//                 const PresentationVariantResult = getPresentationVariantByAnnotations(currentAnnotations[PresentationVariantIdx], currentEntityTypeData)
-//                 tabsArr.push({ Presentation: { ...PresentationVariantResult, key } })
-//                 break;
-//             case 'com.sap.vocabularies.UI.v1.SelectionPresentationVariant':
-//                 const SelectionPresentationVariantIdx = currentAnnotations.findIndex((item) => {
-//                     const { qualifier: currentQualifier, term } = item
-//                     return currentQualifier === qualifier && term === 'UI.SelectionPresentationVariant'
-//                 })
-//                 const SelectionPresentationVariantResult = getSelectionPresentationVariantByAnnotations(currentAnnotations[SelectionPresentationVariantIdx], currentEntityTypeData)
-//                 tabsArr.push({ ...SelectionPresentationVariantResult, key })
-//                 break;
-//             default:
-//                 break;
-//         }
-//     }
+    for (let a of paths) {
+        const { key, annotationPath } = a
+        const arr = annotationPath.split('#')
+        findAnnotation(arr[0], arr[1], key)
+    }
 
-//     for (let a of paths) {
-//         const { key, annotationPath } = a
-//         const arr = annotationPath.split('#')
-//         findAnnotation(arr[0], arr[1], key)
-//     }
-
-//     return tabsArr
-// }
+    return {
+        tabs,
+        showCounts
+    }
+}
 
 export const getConfig = async () => {
-    const { entitySet, navigationRoute } = await _getManifestConfig()
+    const { entitySet, navigationRoute, views } = await _getManifestConfig()
     const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
-    // if (ListReportConfig.views) {
-    //     ListReportConfig.tabs = _setTabs(ListReportConfig.views, currentAnnotations, currentEntityTypeData)
-    // }
-    //console.log({ ListReportConfig, currentAnnotations, currentEntityTypeData })
+    const { tabs, showCounts } = _setTabs(views, currentAnnotations, currentEntityTypeData)
+    console.log('ListReport-Log',{
+        currentAnnotations,
+        currentEntityTypeData,
+        entitySet,
+        tabs,
+        showCounts,
+        navigationRoute
+    })
     return {
         entitySet,
-        tabs: [],
-        annoRequest: null,
-        showCounts: null,
-        navigation: null,
-        autoRefresh: null,
-        pageName: '',
-        getVariantConfig: null,
+        tabs,//tabs配置 1.Text tab名字 2.Selection.filter 当前tab对应的table的默认过滤条件
+        showCounts,//是否显示tab内table的行数
         navigationRoute
     }
 }
