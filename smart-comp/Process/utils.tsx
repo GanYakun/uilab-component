@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 14:19:58
+ * @LastEditTime: 2023-11-30 15:45:52
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -796,6 +796,11 @@ const getFieldDisplayValueAndCurrentValue = (
         }
     }
 
+    //处理readonlyTextValue字段是列表
+    if (Array.isArray(displayValue)) {
+        displayValue = displayValue.join(',')
+    }
+
     //console.log({ displayValue, currentPathText, currentValue, moment, currentPropertyType })
     return { displayValue, currentPathText, currentValue };
 };
@@ -1063,7 +1068,8 @@ const parsePropertyValue = (data) => {
         ImageUrl: '' as any,
         Target: '' as any,
         TypeName: '' as any,
-        TypeNamePlural: '' as any
+        TypeNamePlural: '' as any,
+        Criticality: null as any
     }
 
     const _getValueByRecord = (record, property) => {
@@ -1102,6 +1108,9 @@ const parsePropertyValue = (data) => {
                     case 'Target':
                         result.Target = getTextValueByData('annotationPath', a);
                         break
+                    case 'Criticality':
+                        result.Criticality = getTextValueByData('path', a);
+                        break  
                     default:
                         break;
                 }
@@ -1191,8 +1200,8 @@ const getTargetAnnotationProcessed = (
                                 const record = collection[0]?.record
                                 for (let c of record) {
                                     const { type, propertyValue } = c
-                                    const { Value } = parsePropertyValue(propertyValue)
-                                    Fields.push({ type, Value })
+                                    const { Value, Criticality } = parsePropertyValue(propertyValue)
+                                    Fields.push({ type, Value, Criticality })
                                 }
                                 break;
                             default:
@@ -1308,7 +1317,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                         }
                         if (type === 'UI.ReferenceFacet') {
                             const ReferenceFacetData = _getReferenceFacet(propertyValue);
-                            arr.push({ ...ReferenceFacetData , isHidden });
+                            arr.push({ ...ReferenceFacetData, isHidden });
                         }
                     }
                 }
