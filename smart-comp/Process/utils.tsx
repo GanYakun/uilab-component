@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 10:20:27
+ * @LastEditTime: 2023-11-30 10:35:52
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -36,10 +36,19 @@ const getRouteName = () => {
  */
 const getUi5Config = async () => {
     const { appName, routeName } = getRouteName()
+    //是否已有缓存
+    if (storage.get(`uilab-${appName}`)) {
+        const { data } = storage.get(`uilab-${appName}`)
+        if (data) {
+            return data
+        }
+    }
+
     const url = {
         manifestUrl: `/Ui5/${appName}/webapp/manifest.json`,
         annotationUrl: `/Ui5/${appName}/webapp/annotations/annotation.xml`,
         i18nUrl: `/Ui5/${appName}/webapp/i18n/i18n.properties`,
+        i18nUrl_en: `/Ui5/${appName}/webapp/i18n/i18n_en.properties`,
         i18nUrl_zh: `/Ui5/${appName}/webapp/i18n/i18n_zh_CN.properties`,
     }
 
@@ -49,6 +58,7 @@ const getUi5Config = async () => {
         await getXmlDoc(url.annotationUrl)
     )
     const i18n = await getI18nJson(url.i18nUrl)
+    const i18n_en = await getI18nJson(url.i18nUrl_en)
     const i18n_zh = await getI18nJson(url.i18nUrl_zh)
     const requestUri = manifest['sap.app'].dataSources.mainService.uri
     const metadata = await getMetadata(requestUri)
@@ -63,6 +73,7 @@ const getUi5Config = async () => {
         manifest,
         annotations,
         i18n,
+        i18n_en,
         i18n_zh,
         metadata,
         routeName,
@@ -1224,7 +1235,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                 result.id = generateKey()
             }
             if (property === 'Label') {
-                result.label = getTextValueByData('string', f);
+                result.label = getTextByI18n(getTextValueByData('string', f))
             }
             if (property === 'Target') {
                 result.target = getTextValueByData(`annotationPath`, f);
@@ -1249,7 +1260,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                 id = getTextValueByData('string', c);
             }
             if (property === 'Label') {
-                label = getTextValueByData('string', c);
+                label = getTextByI18n(getTextValueByData('string', c))
             }
             if (property === 'Facets') {
                 for (let d of collection) {
@@ -1293,6 +1304,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                 }
             }
         }
+        console.log({arr})
         return arr
     }
 
