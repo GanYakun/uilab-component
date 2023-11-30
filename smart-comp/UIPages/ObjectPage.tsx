@@ -14,6 +14,7 @@ import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import { DataPoint } from '../../o3smart-comp/UIComponents/config';
 
 export default (props) => {
     const { location } = props;
@@ -27,8 +28,12 @@ export default (props) => {
     const init = async () => {
         const result = await getConfig({ location })
         if (result) {
+            console.log({ result });
+
             setCurrentState(result)
             const data = await result.annoRequest({});
+            console.log({ data });
+
             setCurrentRecord(data.data);
         }
     }
@@ -39,11 +44,11 @@ export default (props) => {
     //解析并渲染facet内容
     const _renderFacetContents = (sectionItem) => {
 
-        const { label: sectionLabel, targetData: sectionTargetData } = sectionItem;
-        const _renderContent = (contentValue, label) => {
+        const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
+        const _renderContent = (contentValue, label, id) => {
 
             if (!contentValue) return {}
-            const { facetType: type } = contentValue;
+            const { facetType: type, value } = contentValue;
             switch (type) {
                 case 'UI.FieldGroup':
                     return {
@@ -61,7 +66,7 @@ export default (props) => {
                                         showLabel: true
                                     }
                                     return (
-                                        <div id={`target-${index}`} key={`target-${index}`}>
+                                        <div id={`target-${index}`} key={`target-${index}-${id}`}>
                                             <ProFormGroup>
                                                 <SmartField {...option} />
                                             </ProFormGroup>
@@ -71,14 +76,39 @@ export default (props) => {
                             </div>
                         )
                     }
-                default:
+
+                case "dataPoint":
+                    const { Title, Value } = value
+                    const DataPointTitle = Title ? Title : Value
                     return {
-                        content: <></>
-                    };
+                        type,
+                        label,
+                        content: (
+                            <div key={`DataPoint${id}`}>
+                                <div style={{ whiteSpace: 'nowrap', fontFamily: '"72","72full",Arial,Helvetica,sans-serif', fontSize: '14px', color: '#32363a', fontWeight: 400, marginBottom: 10 }}>( {DataPointTitle} )</div>
+                                <ProForm submitter={false} grid={true} key={id} >
+                                    <ProFormGroup >
+                                        {/* <DataPoint
+                                            key={id}
+                                            entitySet={currentState?.entitySet || ""}
+                                            isReadOnly={true}
+                                            property={value}
+                                            record={currentRecord}
+                                            onBlur={async (params) => {
+                                                // const result = await patch({ path: value.Value, value: params, record: currentRecord, queryEntity: currentPatchEntity, entitySet: targetEntitySet, PrimaryKeys: formEntityPrimaryKeys })
+                                            }}
+                                        /> */}
+                                    </ProFormGroup>
+                                </ProForm>
+                            </div>
+                        )
+                    }
+                default:
+                    return {};
             }
         };
 
-        return _renderContent(sectionTargetData, sectionLabel);
+        return _renderContent(sectionTargetData, sectionLabel, sectionId);
     }
     //头部内容区域
     const _renderHeaderFacetContents = useMemo(() => {
@@ -87,7 +117,9 @@ export default (props) => {
         if (HeaderFacets) {
             HeaderFacets.map((item, index) => {
                 const { content } = _renderFacetContents(item);
-                contents.push(<div key={`headerSection${index}`} style={{ marginRight: '1rem', marginBottom: '1rem' }}>{content}</div>);
+                if (item.targetData) {
+                    contents.push(<div key={`headerSection${index}`} style={{ marginRight: '1rem', marginBottom: '1rem' }}>{content}</div>);
+                }
 
             })
         }
@@ -97,10 +129,10 @@ export default (props) => {
     const _getObjectPageTabOptions = () => {
         let { Facets } = (currentState || {});
         let arr: any[] = [];
-        Facets.forEach((item) => {
+        Facets.forEach((item, index) => {
             arr.push({
                 tab: item.label,
-                key: item.label,
+                key: index,
                 closable: false,
             })
         })
@@ -145,38 +177,58 @@ export default (props) => {
     //渲染section
     const _renderSection = useMemo(() => {
         const { Facets } = (currentState || {});
-        if (Facets) {
-            return Facets.map((item, index) => {
-                const { targetData } = (item || {});
-                switch (targetData?.facetType) {
-                    case "UI.FieldGroup":
-                        return <div key={`section${index}`} id='vertical'>
-                            {targetData.facetType === "UI.FieldGroup" ? <Card title={targetData.Label} bordered={false}>
-                                <ProForm grid={true} submitter={false}>
-                                    <ProFormGroup>
-                                        {
-                                            targetData?.Fields?.map((childItem, childIndex) => {
-                                                const option = {
-                                                    isReadOnly: true,
-                                                    entitySet: currentState?.entitySet,
-                                                    path: childItem.Value,
-                                                    record: currentRecord,
-                                                    showLabel: true
-                                                }
-                                                return <React.Fragment key={`card-${childIndex}`}>
+        const _renderSectionContent = (targetData, index) => {
+            switch (targetData?.facetType) {
+                case "UI.FieldGroup":
+                    return <div key={`section${index}-${index}`} id='vertical' style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                        <Card title={targetData.Label} bordered={false}>
+                            <ProForm grid={true} submitter={false}>
+                                <ProFormGroup>
+                                    {
+                                        targetData?.Fields?.map((childItem, childIndex) => {
+                                            const option = {
+                                                isReadOnly: true,
+                                                entitySet: currentState?.entitySet,
+                                                path: childItem.Value,
+                                                record: currentRecord,
+                                                showLabel: true
+                                            }
+                                            if (childItem.type === "UI.DataField") {
+                                                return <React.Fragment key={`card-${childIndex}-${index}`}>
                                                     <SmartField {...option} />
                                                 </React.Fragment>
-                                            })
+                                            } else if (childItem.type === "UI.DataFieldForAction") {
+                                                return <></>
+                                            } else {
+                                                return <></>
+                                            }
+                                        })
 
-                                        }
-                                    </ProFormGroup>
-                                </ProForm>
-                            </Card> : ""}
-                        </div>
-
-                    default:
-                        break;
+                                    }
+                                </ProFormGroup>
+                            </ProForm>
+                        </Card>
+                    </div>
+                case "UI.LineItem":
+                    return <div key={`section${index}`} id='vertical' style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                        <SmartTable entitySet={targetData?.targetEntitySet} />
+                    </div>
+                default:
+                    break;
+            }
+        }
+        if (Facets) {
+            return Facets.map((item, index) => {
+                const { targetData, childfacets } = (item || {});
+                // 循环多层
+                if (childfacets) {
+                    return <>{childfacets.map((targetItem, targetIndex) => {
+                        return _renderSectionContent(targetItem.targetData, index + "line" + targetIndex);
+                    })}</>
+                } else {
+                    return _renderSectionContent(targetData, index);
                 }
+
             })
         } else {
             return <div></div>
@@ -190,6 +242,7 @@ export default (props) => {
             id='uilab-ObjectPage'
         >
             <PageContainer
+                key={"index"}
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
@@ -202,7 +255,7 @@ export default (props) => {
                     // <Button key="3">重置</Button>
                 ]}
             >
-                <div ref={pageContent} style={{ background: "#fff", borderRadius: 2 }}>
+                <div ref={pageContent}>
                     {_renderSection}
                 </div>
             </PageContainer>
