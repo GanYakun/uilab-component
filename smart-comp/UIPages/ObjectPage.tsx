@@ -167,11 +167,11 @@ export default (props) => {
     //渲染section
     const _renderSection = useMemo(() => {
         const { Facets } = (currentState || {});
-        const _renderSectionContent = (targetData, index) => {
+        const _renderSectionContent = (targetData, targetName, index) => {
             switch (targetData?.facetType) {
                 case "UI.FieldGroup":
                     return <div key={`section-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                        <Card title={targetData.Label} bordered={false}>
+                        <Card title={targetName} bordered={false}>
                             <ProForm grid={true} submitter={false}>
                                 <ProFormGroup>
                                     {
@@ -215,12 +215,12 @@ export default (props) => {
                     if (childfacets) {
                         return <React.Fragment key={`Facets-${index}`}>{childfacets.map((targetItem, targetIndex) => {
                             return <React.Fragment key={`Facets-${index}-${targetIndex}`}>
-                                {_renderSectionContent(targetItem.targetData, index + "-" + targetIndex)}
+                                {_renderSectionContent(targetItem.targetData, targetItem.label, index + "-" + targetIndex)}
                             </React.Fragment>
                         })}</React.Fragment>
                     } else {
                         return <React.Fragment key={`Facets-${index}`}>
-                            {_renderSectionContent(targetData, index)}
+                            {_renderSectionContent(targetData, item.label, index)}
                         </React.Fragment>
                     }
                 } else {
