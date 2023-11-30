@@ -9,18 +9,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { getConfig } from '../Anotations/ObjectPage';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card } from 'antd';
+import { Card, Space, Skeleton } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
+import SmartSKeleton from '../UIComp/SmartSKeleton';
 
 export default (props) => {
     const { location } = props;
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState(null);
-    // 展示的数据
+    // 展示的数据 默认设置为第一条数据的id, 根据id进行展示
     const [activeValue, setActiveValue] = useState("");
+    const [loading, setLoading] = useState(true);
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
     //初始化方法
@@ -29,14 +31,15 @@ export default (props) => {
         if (result) {
             // 获取数据
             const data = await result.annoRequest({});
-            console.log({ data });
+            console.log("ObjectPage-data", { data });
             let result2 = await getConfig({ location, currentRecord: data.data });
-            console.log({ result });
+            console.log("ObjectPage-result", { result });
             setCurrentRecord(data.data);
             if (result.Facets?.length) {
                 setActiveValue(result.Facets[0].id);
             }
             setCurrentState(result2)
+            setLoading(false);
         }
     }
     useEffect(() => {
@@ -119,7 +122,7 @@ export default (props) => {
         let { Facets } = (currentState || {});
         let arr: any[] = [];
         Facets.forEach((item) => {
-            arr.push({
+            !item.isHidden && arr.push({
                 tab: item.label,
                 key: item.id,
                 closable: false,
@@ -167,7 +170,7 @@ export default (props) => {
         const _renderSectionContent = (targetData, index) => {
             switch (targetData?.facetType) {
                 case "UI.FieldGroup":
-                    return <div key={`section${index}-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                    return <div key={`section-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
                         <Card title={targetData.Label} bordered={false}>
                             <ProForm grid={true} submitter={false}>
                                 <ProFormGroup>
@@ -185,12 +188,11 @@ export default (props) => {
                                                     <SmartField {...option} />
                                                 </React.Fragment>
                                             } else if (childItem.type === "UI.DataFieldForAction") {
-                                                return <></>
+                                                return <React.Fragment key={`card-${childIndex}-${index}`}></React.Fragment>
                                             } else {
-                                                return <></>
+                                                return <React.Fragment key={`card-${childIndex}-${index}`}></React.Fragment>
                                             }
                                         })
-
                                     }
                                 </ProFormGroup>
                             </ProForm>
@@ -204,6 +206,7 @@ export default (props) => {
                     break;
             }
         }
+
         if (Facets) {
             return Facets.map((item, index) => {
                 const { targetData, childfacets } = (item || {});
@@ -211,7 +214,9 @@ export default (props) => {
                     // 循环多层
                     if (childfacets) {
                         return <React.Fragment key={`Facets-${index}`}>{childfacets.map((targetItem, targetIndex) => {
-                            return _renderSectionContent(targetItem.targetData, index + "line" + targetIndex);
+                            return <React.Fragment key={`Facets-${index}-${targetIndex}`}>
+                                {_renderSectionContent(targetItem.targetData, index + "-" + targetIndex)}
+                            </React.Fragment>
                         })}</React.Fragment>
                     } else {
                         return <React.Fragment key={`Facets-${index}`}>
@@ -226,9 +231,10 @@ export default (props) => {
             return <div></div>
         }
     }, [currentState, currentRecord, activeValue])
+
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage'>
-            <PageContainer
+            {loading ? <SmartSKeleton /> : <PageContainer
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
@@ -247,7 +253,7 @@ export default (props) => {
                 <div ref={pageContent}>
                     {_renderSection}
                 </div>
-            </PageContainer>
+            </PageContainer>}
         </div>
     )
 }
