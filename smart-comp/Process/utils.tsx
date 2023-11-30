@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-29 17:09:01
+ * @LastEditTime: 2023-11-30 10:20:27
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -36,15 +36,6 @@ const getRouteName = () => {
  */
 const getUi5Config = async () => {
     const { appName, routeName } = getRouteName()
-
-    //是否已有缓存
-    if (storage.get(appName)) {
-        const { data } = storage.get(appName)
-        if (data) {
-            return data
-        }
-    }
-
     const url = {
         manifestUrl: `/Ui5/${appName}/webapp/manifest.json`,
         annotationUrl: `/Ui5/${appName}/webapp/annotations/annotation.xml`,
@@ -77,18 +68,18 @@ const getUi5Config = async () => {
         routeName,
         appName
     }
-    storage.set(appName, result)
+    storage.set(`uilab-${appName}`, result)
     return result
 }
 
 /**
- * 获取ui5配置
+ * 获取ui5配置在缓存中
  */
 const getUi5ConfigAsync = () => {
-    const { appName, routeName } = getRouteName()
+    const { appName } = getRouteName()
     //是否已有缓存
-    if (storage.get(appName)) {
-        const { data } = storage.get(appName)
+    if (storage.get(`uilab-${appName}`)) {
+        const { data } = storage.get(`uilab-${appName}`)
         if (data) {
             return data
         }
