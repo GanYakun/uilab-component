@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 10:23:53
+ * @LastEditTime: 2023-11-30 14:02:41
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -188,6 +188,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
  */
 const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) => {
     return async (currentParams, parentColumns) => {
+        console.log({ currentParams })
         const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
         const fieldArr = []
@@ -229,7 +230,7 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
 
         //设置过滤、排序条件
         if (currentParams) {
-            const { searchVal, params } = currentParams
+            const { searchVal, params, filterDefaultValue } = currentParams
             const { pageSize, current } = params
             if (pageSize && current) {
                 option.parameters.$top = pageSize
@@ -266,7 +267,17 @@ const _setRequest = (entitySet, columns, queryEntity = null, targetPath = null) 
                     option.parameters.$filter = null
                 }
             }
-            //console.log({ currentParams, option })
+
+            //处理默认过滤条件
+            if (filterDefaultValue) {
+                if (!option?.parameters?.$filter) {
+                    option.parameters.$filter = filterDefaultValue
+                } else {
+                    option.parameters.$filter += ` and ${filterDefaultValue}`
+                }
+            }
+
+            console.log({ currentParams, option })
         }
 
         return await Odata.submit(option);
