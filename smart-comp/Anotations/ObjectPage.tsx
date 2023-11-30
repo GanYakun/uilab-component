@@ -2,14 +2,14 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 14:17:49
+ * @LastEditTime: 2023-11-30 14:50:11
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 import Odata from '../../utils/odata/odata'
 import Utils from '../Process/utils'
-import { addLocale, getLocale } from 'umi';
+import { addLocale } from 'umi';
 import enUS from 'antd/es/locale/en_US';
 import znCN from 'antd/es/locale/zh_CN';
 /**
@@ -77,9 +77,9 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
 
     const facetsData = [...Facets, ...HeaderFacets]
     if (facetsData) {
-        for (let a of facetsData) {
-            if (a?.targetData) {
-                const { facetType, Fields } = a?.targetData
+        const addValueToResult = (targetData) => {
+            if (targetData) {
+                const { facetType, Fields } = targetData
                 if (facetType === 'UI.FieldGroup') {
                     for (let b of Fields) {
                         const { type, Value } = b
@@ -90,12 +90,26 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
                 }
             }
         }
+
+        for (let a of facetsData) {
+            const { childfacets, targetData } = a
+            if (childfacets) {
+                for (let b of childfacets) {
+                    const { childfacets, targetData } = b
+                    addValueToResult(targetData)
+
+                }
+            }
+            addValueToResult(targetData)
+        }
     }
 
     //数组去重
     result.filter((item, index, result) => {
         return result.indexOf(item) === index
     })
+
+    //console.log({ result, HeaderFacets, Facets, facetsData })
     return result
 }
 
@@ -137,18 +151,23 @@ export const getConfig = async ({ location, currentRecord }) => {
     const HeaderInfo = Utils.getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
     const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }))
-    console.log('ObjectPage-Log', {
-        queryEntity,
-        currentAnnotations,
-        currentEntityTypeData,
-        location,
-        currentRecord,
-        entitySet,
-        HeaderInfo,
-        Facets,
-        HeaderFacets,
-        annoRequest
-    })
+
+    //调试使用
+    if (currentRecord) {
+        console.log('ObjectPage-Log', {
+            queryEntity,
+            currentAnnotations,
+            currentEntityTypeData,
+            location,
+            currentRecord,
+            entitySet,
+            HeaderInfo,
+            Facets,
+            HeaderFacets,
+            annoRequest
+        })
+    }
+
     return {
         entitySet,
         HeaderInfo,//导航栏信息
