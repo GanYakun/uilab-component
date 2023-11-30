@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 12:34:02
+ * @LastEditTime: 2023-11-30 14:19:58
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1221,6 +1221,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
     const result = {
         Facets: [] as any,
         HeaderFacets: [] as any,
+        HiddenPaths: [] as any
     }
 
     const facetsData = getTermAnnotations(currentAnnotations, 'UI.Facets');
@@ -1294,13 +1295,20 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                 if (record) {
                     for (let b of record) {
                         const { type, propertyValue, annotation } = b;
+                        //判断是否隐藏
+                        const { isHidden, hiddenPath } = isHiddenByAnnotation(annotation, currentRecord)
+                        //console.log({ isHidden, hiddenPath, currentRecord, b, propertyValue })
+                        if (hiddenPath) {
+                            result.HiddenPaths.findIndex((item) => item === hiddenPath) === -1 && result.HiddenPaths.push(hiddenPath)
+                        }
+
                         if (type === 'UI.CollectionFacet') {
                             const CollectionFacetData = _getCollectionFacet(propertyValue);
-                            arr.push(CollectionFacetData);
+                            arr.push({ ...CollectionFacetData, isHidden });
                         }
                         if (type === 'UI.ReferenceFacet') {
                             const ReferenceFacetData = _getReferenceFacet(propertyValue);
-                            arr.push(ReferenceFacetData);
+                            arr.push({ ...ReferenceFacetData , isHidden });
                         }
                     }
                 }

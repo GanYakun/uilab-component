@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 13:50:18
+ * @LastEditTime: 2023-11-30 14:17:49
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -57,7 +57,7 @@ const _getManifestConfig = async () => {
     return {}
 }
 //获取objectPage中所有需要请求的字段 
-const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets }) => {
+const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
     const result = [] as any
 
     if (HeaderInfo) {
@@ -69,6 +69,10 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets }) => {
                 }
             }
         }
+    }
+
+    if (HiddenPaths) {
+        result.push(...HiddenPaths)
     }
 
     const facetsData = [...Facets, ...HeaderFacets]
@@ -126,18 +130,19 @@ const _setRequest = (entitySet, queryEntity, fieldArr) => {
     }
 }
 
-export const getConfig = async ({ location,currentRecord }) => {
+export const getConfig = async ({ location, currentRecord }) => {
     const { queryEntity } = location?.query
-    const { entitySet } =await _getManifestConfig()
+    const { entitySet } = await _getManifestConfig()
     const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const HeaderInfo = Utils.getHeaderInfoOptions(currentAnnotations)
-    const { Facets, HeaderFacets } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData)
-    const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets }))
+    const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
+    const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }))
     console.log('ObjectPage-Log', {
         queryEntity,
         currentAnnotations,
         currentEntityTypeData,
         location,
+        currentRecord,
         entitySet,
         HeaderInfo,
         Facets,
