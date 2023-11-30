@@ -30,7 +30,8 @@ export default (props) => {
         navigationRoute,
         rowSelection,
         onSelect,
-        parentColumns
+        parentColumns,
+        $filter
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -142,7 +143,9 @@ export default (props) => {
                     if (searchVal) {
                         option.searchVal = searchVal;
                     }
-
+                    if ($filter) {
+                        option.$filter = $filter;
+                    }
                     const result = await currentState.annoRequest(option, parentColumns);
                     const { value, msg } = result.data;
                     //1.设置key

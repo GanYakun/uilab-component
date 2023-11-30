@@ -10,30 +10,89 @@ import React, { useEffect, useRef, useState } from 'react'
 import SmartTable from '../UIComp/SmartTable'
 import SmartFilterBar from '../UIComp/SmartFilterBar'
 import { getConfig } from '../Anotations/ListReport';
-
+import { Tabs } from 'antd';
+const { TabPane } = Tabs
 export default () => {
-    const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string }>()
+    const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
     const [searchVal, setSearchVal] = useState<any>({});
+    const [currentTabs, setCurrentTabs] = useState<any>(null)
+    const [activeTabKey, setActiveTabKey] = useState(0)
     const formRef = useRef();
     //初始化方法
     const init = async () => {
         const result = await getConfig()
         if (result) {
-            setCurrentState(result)
+            setCurrentState(result);
         }
     }
 
     useEffect(() => {
         !currentState && init()
     }, [])
+    useEffect(() => {
+        if (currentState && currentState.tabs?.length) {
+            initTabs()
+        }
+    }, [currentState])
+
+    const initTabs = async () => {
+        const { tabs } = (currentState || {});
+        const result = await currentState?.annoRequest()
+        if (result) {
+            result.map((item, index) => {
+                tabs[index].text = item.data['@odata.count'] ? `(${item.data['@odata.count']})` : ``;
+                tabs[index].key = `tabkey${index}`
+            })
+            setCurrentTabs(tabs)
+        }
+    }
 
     const renderContent = () => {
+        const { tabs } = (currentState || {});
         if (currentState) {
             const { entitySet, navigationRoute } = currentState
             return (
                 <>
                     <SmartFilterBar formRef={formRef} setSearchVal={setSearchVal} entitySet={entitySet} />
-                    <SmartTable searchVal={searchVal} entitySet={entitySet} navigationRoute={navigationRoute} />
+                    {tabs?.length ? <Tabs
+                        style={{ padding: '0 10px' }}
+                        type="card"
+                        size='middle'
+                        onChange={(params) => {
+                            setActiveTabKey(Number(params))
+                        }}>
+                        {currentTabs && currentTabs.map((item, i) => {
+                            const { text, Selection, Presentation } = item
+                            if (Presentation) {
+                                const { Visualizations } = Presentation
+                                const { term } = Visualizations
+                                switch (term) {
+                                    case '@UI.LineItem':
+                                        let $filter
+                                        if (Selection && Selection.filter) {
+                                            $filter = $filter ? `${$filter} and ${Selection.filter}` : Selection.filter
+                                        }
+                                        return <TabPane tab={<>
+                                            {tabs[i].Text} {text}
+                                        </>} key={i}>
+                                            <div key={`table${i}`}>
+                                                {
+                                                    activeTabKey === i && <SmartTable
+                                                        entitySet={entitySet}
+                                                        navigationRoute={navigationRoute}
+                                                        searchVal={searchVal}
+                                                        $filter={$filter}
+                                                    />
+                                                }
+                                            </div>
+                                        </TabPane>
+                                    default:
+                                        break;
+                                }
+                            }
+                        })}
+                    </Tabs> :
+                        <SmartTable searchVal={searchVal} entitySet={entitySet} navigationRoute={navigationRoute} />}
                 </>
             )
         }
