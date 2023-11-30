@@ -175,6 +175,8 @@ export default (props) => {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
                 if (showLabel) {
+                    console.log(record[valueColor], valueColor);
+
                     if (typeof (record[valueColor]) === "number") {
                         return <div id='label-color'>
                             <div>{currentFieldProps.label}</div>

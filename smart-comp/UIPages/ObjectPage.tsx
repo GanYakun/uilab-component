@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { getConfig } from '../Anotations/ObjectPage';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card, Space, Skeleton } from 'antd';
+import { Card, Space, Skeleton, Typography, Button } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
@@ -29,15 +29,16 @@ export default (props) => {
         let result = await getConfig({ location, currentRecord: {} })
         if (result) {
             // 获取数据
-            const data = await result.annoRequest({});
+            let data = await result.annoRequest({});
+            result = await getConfig({ location, currentRecord: data.data });
+            data = await result.annoRequest({});
             console.log("ObjectPage-data", { data });
-            let result2 = await getConfig({ location, currentRecord: data.data });
             console.log("ObjectPage-getConfig", { result });
             setCurrentRecord(data.data);
             if (result.Facets?.length) {
                 setActiveValue(result.Facets[0].id);
             }
-            setCurrentState(result2)
+            setCurrentState(result)
         }
     }
     useEffect(() => {
@@ -89,7 +90,12 @@ export default (props) => {
                                 <div style={{ whiteSpace: 'nowrap', fontFamily: '"72","72full",Arial,Helvetica,sans-serif', fontSize: '14px', color: '#32363a', fontWeight: 400, marginBottom: 10 }}>( {DataPointTitle} )</div>
                                 <ProForm submitter={false} grid={true} key={id} >
                                     <ProFormGroup >
-
+                                        <Typography.Title
+                                            level={2}
+                                            style={{ marginLeft: 10, color: '#6a6d70', fontSize: 26 }
+                                            }>
+                                            111111
+                                        </Typography.Title>
                                     </ProFormGroup>
                                 </ProForm>
                             </div>
@@ -150,7 +156,9 @@ export default (props) => {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
                     subTitle: Description && <SmartField {...subTitleOption} />,
-                    extra: [], // 右侧按钮
+                    extra: [
+                        // <Button>按钮</Button>
+                    ], // 右侧按钮
                 },
                 content: (
                     <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>

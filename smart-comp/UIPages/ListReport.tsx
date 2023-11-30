@@ -16,6 +16,7 @@ export default () => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
     const [searchVal, setSearchVal] = useState<any>({});
     const [currentTabs, setCurrentTabs] = useState<any>(null)
+    
     const [activeTabKey, setActiveTabKey] = useState(0)
     const formRef = useRef();
     //初始化方法
@@ -103,6 +104,6 @@ export default () => {
         </Space>
         <br />
         <br />
-        <Skeleton />
+        <Skeleton active />
     </div>
 }
