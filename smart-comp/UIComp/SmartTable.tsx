@@ -31,7 +31,7 @@ export default (props) => {
         rowSelection,
         onSelect,
         parentColumns,
-        $filter
+        filterDefaultValue
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -143,8 +143,8 @@ export default (props) => {
                     if (searchVal) {
                         option.searchVal = searchVal;
                     }
-                    if ($filter) {
-                        option.$filter = $filter;
+                    if (filterDefaultValue) {
+                        option.filterDefaultValue = filterDefaultValue;
                     }
                     const result = await currentState.annoRequest(option, parentColumns);
                     const { value, msg } = result.data;

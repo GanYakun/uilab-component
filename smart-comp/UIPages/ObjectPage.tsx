@@ -13,8 +13,6 @@ import { Card } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { DataPoint } from '../../o3smart-comp/UIComponents/config';
 
 export default (props) => {
     const { location } = props;
@@ -32,13 +30,13 @@ export default (props) => {
             // 获取数据
             const data = await result.annoRequest({});
             console.log({ data });
-            result = await getConfig({ location, currentRecord: data.data });
+            let result2 = await getConfig({ location, currentRecord: data.data });
             console.log({ result });
-            setCurrentState(result)
             setCurrentRecord(data.data);
             if (result.Facets?.length) {
                 setActiveValue(result.Facets[0].id);
             }
+            setCurrentState(result2)
         }
     }
     useEffect(() => {
@@ -49,7 +47,6 @@ export default (props) => {
 
         const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
         const _renderContent = (contentValue, label, id) => {
-
             if (!contentValue) return {}
             const { facetType: type, value } = contentValue;
             switch (type) {
@@ -58,7 +55,7 @@ export default (props) => {
                         type,
                         label,
                         content: (
-                            <div id='uilab-ObjectPage-header'>
+                            <div>
                                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
                                     const option = {
@@ -87,20 +84,11 @@ export default (props) => {
                         type,
                         label,
                         content: (
-                            <div key={`DataPoint${id}`}>
+                            <div>
                                 <div style={{ whiteSpace: 'nowrap', fontFamily: '"72","72full",Arial,Helvetica,sans-serif', fontSize: '14px', color: '#32363a', fontWeight: 400, marginBottom: 10 }}>( {DataPointTitle} )</div>
                                 <ProForm submitter={false} grid={true} key={id} >
                                     <ProFormGroup >
-                                        {/* <DataPoint
-                                            key={id}
-                                            entitySet={currentState?.entitySet || ""}
-                                            isReadOnly={true}
-                                            property={value}
-                                            record={currentRecord}
-                                            onBlur={async (params) => {
-                                                // const result = await patch({ path: value.Value, value: params, record: currentRecord, queryEntity: currentPatchEntity, entitySet: targetEntitySet, PrimaryKeys: formEntityPrimaryKeys })
-                                            }}
-                                        /> */}
+
                                     </ProFormGroup>
                                 </ProForm>
                             </div>
@@ -110,7 +98,6 @@ export default (props) => {
                     return {};
             }
         };
-
         return _renderContent(sectionTargetData, sectionLabel, sectionId);
     }
     //头部内容区域
@@ -123,7 +110,6 @@ export default (props) => {
                 if (item.targetData) {
                     contents.push(<div key={`headerSection${index}`} style={{ marginRight: '1rem', marginBottom: '1rem' }}>{content}</div>);
                 }
-
             })
         }
         return contents
@@ -145,7 +131,7 @@ export default (props) => {
     const _getObjectPageHeaderOptions = useMemo(() => {
         const { HeaderInfo, entitySet } = (currentState || {});
         if (HeaderInfo) {
-            const { Title, Description, ImageUrl } = HeaderInfo;
+            const { Title, Description } = HeaderInfo;
             const titleOption = {
                 isReadOnly: true,
                 entitySet: entitySet,
@@ -162,9 +148,7 @@ export default (props) => {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
                     subTitle: Description && <SmartField {...subTitleOption} />,
-                    extra: [
-                        // <Button key="1">次要按钮</Button>
-                    ], // 右侧按钮
+                    extra: [], // 右侧按钮
                 },
                 content: (
                     <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -176,14 +160,14 @@ export default (props) => {
         } else {
             return {};
         }
-    }, [currentRecord])
+    }, [currentState, currentRecord])
     //渲染section
     const _renderSection = useMemo(() => {
         const { Facets } = (currentState || {});
         const _renderSectionContent = (targetData, index) => {
             switch (targetData?.facetType) {
                 case "UI.FieldGroup":
-                    return <div key={`section${index}-${index}`} id='vertical' style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                    return <div key={`section${index}-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
                         <Card title={targetData.Label} bordered={false}>
                             <ProForm grid={true} submitter={false}>
                                 <ProFormGroup>
@@ -226,30 +210,25 @@ export default (props) => {
                 if (item.id === activeValue) {
                     // 循环多层
                     if (childfacets) {
-                        return <>{childfacets.map((targetItem, targetIndex) => {
+                        return <React.Fragment key={`Facets-${index}`}>{childfacets.map((targetItem, targetIndex) => {
                             return _renderSectionContent(targetItem.targetData, index + "line" + targetIndex);
-                        })}</>
+                        })}</React.Fragment>
                     } else {
-                        return _renderSectionContent(targetData, index);
+                        return <React.Fragment key={`Facets-${index}`}>
+                            {_renderSectionContent(targetData, index)}
+                        </React.Fragment>
                     }
                 } else {
-                    return <></>
+                    return <React.Fragment key={`Facets-${index}`}></React.Fragment>
                 }
-
             })
         } else {
             return <div></div>
         }
-    }, [currentRecord, activeValue])
+    }, [currentState, currentRecord, activeValue])
     return (
-        <div
-            style={{
-                background: '#F5F7FA',
-            }}
-            id='uilab-ObjectPage'
-        >
+        <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage'>
             <PageContainer
-                key={"index"}
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}

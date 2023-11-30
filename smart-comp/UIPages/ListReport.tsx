@@ -55,7 +55,6 @@ export default () => {
                 <>
                     <SmartFilterBar formRef={formRef} setSearchVal={setSearchVal} entitySet={entitySet} />
                     {tabs?.length ? <Tabs
-                        style={{ padding: '0 10px' }}
                         type="card"
                         size='middle'
                         onChange={(params) => {
@@ -68,9 +67,9 @@ export default () => {
                                 const { term } = Visualizations
                                 switch (term) {
                                     case '@UI.LineItem':
-                                        let $filter
+                                        let filterDefaultValue
                                         if (Selection && Selection.filter) {
-                                            $filter = $filter ? `${$filter} and ${Selection.filter}` : Selection.filter
+                                            filterDefaultValue = filterDefaultValue ? `${filterDefaultValue} and ${Selection.filter}` : Selection.filter
                                         }
                                         return <TabPane tab={<>
                                             {tabs[i].Text} {text}
@@ -81,7 +80,7 @@ export default () => {
                                                         entitySet={entitySet}
                                                         navigationRoute={navigationRoute}
                                                         searchVal={searchVal}
-                                                        $filter={$filter}
+                                                        filterDefaultValue={filterDefaultValue}
                                                     />
                                                 }
                                             </div>
