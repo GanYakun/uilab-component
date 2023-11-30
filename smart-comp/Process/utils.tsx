@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 10:35:52
+ * @LastEditTime: 2023-11-30 12:31:35
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -34,13 +34,15 @@ const getRouteName = () => {
 /**
  * 获取ui5配置
  */
-const getUi5Config = async () => {
+const getUi5Config = async (reload = false) => {
     const { appName, routeName } = getRouteName()
     //是否已有缓存
-    if (storage.get(`uilab-${appName}`)) {
-        const { data } = storage.get(`uilab-${appName}`)
-        if (data) {
-            return data
+    if (!reload) {
+        if (storage.get(`uilab-${appName}`)) {
+            const { data } = storage.get(`uilab-${appName}`)
+            if (data) {
+                return data
+            }
         }
     }
 
@@ -1304,7 +1306,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                 }
             }
         }
-        console.log({arr})
+        console.log({ arr })
         return arr
     }
 

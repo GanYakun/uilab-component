@@ -2,14 +2,16 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 10:19:05
+ * @LastEditTime: 2023-11-30 12:27:38
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 import Utils from '../Process/utils'
-import { addLocale } from 'umi';
+import { addLocale, getLocale } from 'umi';
 import Odata from '../../utils/odata/odata'
+import enUS from 'antd/es/locale/en_US';
+import znCN from 'antd/es/locale/zh_CN';
 
 /**
  * 获取manifest配置
@@ -18,19 +20,27 @@ import Odata from '../../utils/odata/odata'
  * @returns 
  */
 const _getManifestConfig = async () => {
-    const { manifest, routeName, i18n_zh, i18n } = await Utils.getUi5Config()
+    const { manifest, routeName, i18n_en, i18n_zh, i18n } = await Utils.getUi5Config(true)
     //国际化 CN 
     if (i18n_zh) {
         addLocale(
             'zh-CN',
-            i18n_zh
+            i18n_zh,
+            {
+                momentLocale: 'zh-cn',
+                antd: znCN,
+            },
         )
     }
     //国际化 US
-    if (i18n) {
+    if (i18n_en) {
         addLocale(
             'en-US',
-            i18n
+            i18n_en,
+            {
+                momentLocale: 'en-us',
+                antd: enUS,
+            },
         )
     }
     if (manifest && routeName) {
@@ -146,7 +156,8 @@ export const getConfig = async () => {
         showCounts,
         navigationRoute,
         annoRequest,
-        views
+        views,
+        getLocale: getLocale()
     })
     return {
         entitySet,
