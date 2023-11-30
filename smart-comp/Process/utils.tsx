@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 15:45:52
+ * @LastEditTime: 2023-11-30 16:58:29
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1069,7 +1069,9 @@ const parsePropertyValue = (data) => {
         Target: '' as any,
         TypeName: '' as any,
         TypeNamePlural: '' as any,
-        Criticality: null as any
+        Criticality: null as any,
+        SemanticObject: '' as any,
+        Action: '' as any,
     }
 
     const _getValueByRecord = (record, property) => {
@@ -1108,9 +1110,12 @@ const parsePropertyValue = (data) => {
                     case 'Target':
                         result.Target = getTextValueByData('annotationPath', a);
                         break
-                    case 'Criticality':
-                        result.Criticality = getTextValueByData('path', a);
-                        break  
+                    case 'SemanticObject':
+                        result.SemanticObject = getTextValueByData('string', a)
+                        break;
+                    case 'Action':
+                        result.Action = getTextValueByData('string', a)
+                        break;
                     default:
                         break;
                 }
@@ -1120,29 +1125,6 @@ const parsePropertyValue = (data) => {
 
     return result
 }
-
-/**
- * 解析objectPage headerInfo 注：目前只实现Title、Description
- * UI.HeaderInfo
- * @param {*} headerInfo 
- * @param {*} currentRecord 请求的数据
- * @param {*} entitySet
- * @returns 
- */
-const getHeaderInfoOptions = (currentAnnotations) => {
-    let result
-    const headerInfo = getTermAnnotations(currentAnnotations, 'UI.HeaderInfo');
-    if (headerInfo) {
-        const { record } = headerInfo;
-        for (let a of record) {
-            const { propertyValue, type } = a;
-            if (type === 'UI.HeaderInfoType') {
-                result = parsePropertyValue(propertyValue);
-            }
-        }
-    }
-    return result;
-};
 
 /**
  * 得到目标已整理过的annotation
@@ -1806,6 +1788,26 @@ const isCollection = (navigationProperty, navigationPropertyPath) => {
     return result;
 };
 
+/**
+ * 解析DataField UI.DataFieldForIntentBasedNavigation、UI.DataFieldForAction
+ * @param {object} record
+ * @returns
+ */
+const getDataFieldByRecord = (record) => {
+    if (record){
+        const { type, propertyValue, annotation } = record
+        const { SemanticObject, Action, Label } = parsePropertyValue(propertyValue)
+        return {
+            SemanticObject,
+            Action,
+            Label,
+            annotation,
+            type
+        }
+    }
+    return {}
+}
+
 export default {
     getRouteName,
     getUi5Config,
@@ -1820,9 +1822,11 @@ export default {
     getAnnotationByTarget,
     getEntitySetData,
     getCommonTextByAnnotatons,
-    getHeaderInfoOptions,
+    parsePropertyValue,
     getObjectPageFacetsByAnnotations,
     parseQuickCreateFacets,
     getPresentationVariantByAnnotations,
-    getSelectionPresentationVariantByAnnotations
+    getSelectionPresentationVariantByAnnotations,
+    isHiddenByAnnotation,
+    getDataFieldByRecord
 }

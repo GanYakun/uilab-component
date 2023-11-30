@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 15:46:45
+ * @LastEditTime: 2023-11-30 16:22:06
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@ import Utils from '../Process/utils'
 import { addLocale } from 'umi';
 import enUS from 'antd/es/locale/en_US';
 import znCN from 'antd/es/locale/zh_CN';
+
 /**
  * 获取manifest配置
  * @param {*} manifest 
@@ -56,7 +57,11 @@ const _getManifestConfig = async () => {
     }
     return {}
 }
-//获取objectPage中所有需要请求的字段 
+/**
+ * 获取字段数组
+ * @param {*} data 
+ * @returns 
+ */
 const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
     const result = [] as any
 
@@ -114,7 +119,13 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
     return result
 }
 
-//设置请求
+/**
+ * 设置请求方法
+ * @param {*} entitySet 
+ * @param {*} queryEntity 
+ * @param {*} fieldArr 
+ * @returns 
+ */
 const _setRequest = (entitySet, queryEntity, fieldArr) => {
     const { currentSelect, currentExpand } = Utils.getQueryContitionsByAnnotations(
         fieldArr,
@@ -145,12 +156,72 @@ const _setRequest = (entitySet, queryEntity, fieldArr) => {
     }
 }
 
+/**
+ * 解析Identification
+ * UI.Identification
+ * @param {object} currentAnnotations
+ * @returns
+ */
+const getIdentificationByAnnotations = (currentAnnotations, currentRecord) => {
+    const result = [] as any
+    const annotation = Utils.getTermAnnotations(currentAnnotations, 'UI.Identification');
+    if (annotation) {
+        const { collection } = annotation
+        for (let a of collection) {
+            const { record } = a
+            for (let b of record) {
+                const obj = Utils.getDataFieldByRecord(b)
+                const { annotation: fieldannotation } = b
+                if (fieldannotation) {
+                    //是否隐藏
+                    const { hiddenPath, isHidden } = Utils.isHiddenByAnnotation(fieldannotation, currentRecord)
+                    //console.log({ hiddenPath, isHidden, currentRecord, fieldannotation })
+                    obj.hiddenPath = hiddenPath
+                    obj.isHidden = isHidden
+                    for (let c of fieldannotation) {
+                        const { term, path, string } = c
+                        if (term === 'Common.MediaUploadLink' && string) {
+                            obj.MediaUploadLink = string
+                        }
+                    }
+                }
+                result.push(obj)
+            }
+        }
+    }
+    return result
+}
+
+/**
+ * 解析objectPage headerInfo 注：目前只实现Title、Description
+ * UI.HeaderInfo
+ * @param {*} headerInfo 
+ * @param {*} currentRecord 请求的数据
+ * @param {*} entitySet
+ * @returns 
+ */
+const getHeaderInfoOptions = (currentAnnotations) => {
+    let result
+    const headerInfo = Utils.getTermAnnotations(currentAnnotations, 'UI.HeaderInfo');
+    if (headerInfo) {
+        const { record } = headerInfo;
+        for (let a of record) {
+            const { propertyValue, type } = a;
+            if (type === 'UI.HeaderInfoType') {
+                result = Utils.parsePropertyValue(propertyValue);
+            }
+        }
+    }
+    return result;
+};
+
 export const getConfig = async ({ location, currentRecord }) => {
     const { queryEntity } = location?.query
     const { entitySet } = await _getManifestConfig()
     const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
-    const HeaderInfo = Utils.getHeaderInfoOptions(currentAnnotations)
+    const HeaderInfo = getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
+    const Identification = getIdentificationByAnnotations(currentAnnotations, currentRecord)
     const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }))
 
     //调试使用
@@ -165,7 +236,8 @@ export const getConfig = async ({ location, currentRecord }) => {
             HeaderInfo,
             Facets,
             HeaderFacets,
-            annoRequest
+            annoRequest,
+            Identification
         })
     }
 
@@ -175,5 +247,6 @@ export const getConfig = async ({ location, currentRecord }) => {
         HeaderFacets,//头部构件
         Facets,//内容区构件
         annoRequest,//请求
+        Identification,//头部按钮
     }
 }
