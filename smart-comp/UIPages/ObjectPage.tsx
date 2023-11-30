@@ -22,7 +22,6 @@ export default (props) => {
     const [currentRecord, setCurrentRecord] = useState(null);
     // 展示的数据 默认设置为第一条数据的id, 根据id进行展示
     const [activeValue, setActiveValue] = useState("");
-    const [loading, setLoading] = useState(true);
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
     //初始化方法
@@ -33,13 +32,12 @@ export default (props) => {
             const data = await result.annoRequest({});
             console.log("ObjectPage-data", { data });
             let result2 = await getConfig({ location, currentRecord: data.data });
-            console.log("ObjectPage-result", { result });
+            console.log("ObjectPage-getConfig", { result });
             setCurrentRecord(data.data);
             if (result.Facets?.length) {
                 setActiveValue(result.Facets[0].id);
             }
             setCurrentState(result2)
-            setLoading(false);
         }
     }
     useEffect(() => {
@@ -47,7 +45,6 @@ export default (props) => {
     }, [])
     //解析并渲染facet内容
     const _renderFacetContents = (sectionItem) => {
-
         const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
         const _renderContent = (contentValue, label, id) => {
             if (!contentValue) return {}
@@ -66,7 +63,8 @@ export default (props) => {
                                         entitySet: currentState?.entitySet,
                                         path: item.Value,
                                         record: currentRecord,
-                                        showLabel: true
+                                        showLabel: true,
+                                        valueColor: item.Criticality
                                     }
                                     return (
                                         <div id={`target-${index}`} key={`target-${index}-${id}`}>
@@ -121,7 +119,8 @@ export default (props) => {
     const _getObjectPageTabOptions = () => {
         let { Facets } = (currentState || {});
         let arr: any[] = [];
-        Facets.forEach((item) => {
+        // 切换的列表大于1时才显示
+        Facets?.length > 1 && Facets.forEach((item) => {
             !item.isHidden && arr.push({
                 tab: item.label,
                 key: item.id,
@@ -233,8 +232,8 @@ export default (props) => {
     }, [currentState, currentRecord, activeValue])
 
     return (
-        <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage'>
-            {loading ? <SmartSKeleton /> : <PageContainer
+        <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header'>
+            {currentState ? <PageContainer
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
@@ -253,7 +252,7 @@ export default (props) => {
                 <div ref={pageContent}>
                     {_renderSection}
                 </div>
-            </PageContainer>}
+            </PageContainer> : <SmartSKeleton />}
         </div>
     )
 }

@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import SmartTable from '../UIComp/SmartTable'
 import SmartFilterBar from '../UIComp/SmartFilterBar'
 import { getConfig } from '../Anotations/ListReport';
-import { Tabs } from 'antd';
+import { Skeleton, Space, Tabs } from 'antd';
 const { TabPane } = Tabs
 export default () => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
@@ -97,5 +97,12 @@ export default () => {
         }
     }
 
-    return currentState ? renderContent() : <div>loading...</div>
+    return currentState ? renderContent() : <div style={{ backgroundColor: '#fff', padding: 24 }}>
+        <Space>
+            <Skeleton.Input size="large" active />
+        </Space>
+        <br />
+        <br />
+        <Skeleton />
+    </div>
 }

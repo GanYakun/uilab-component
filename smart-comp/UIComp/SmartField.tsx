@@ -13,6 +13,8 @@ import moment from 'moment';
 import { Modal, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
+import "./index.less";
+import { Criticality } from "../Process/config";
 
 export default (props) => {
     const {
@@ -22,7 +24,8 @@ export default (props) => {
         isReadOnly,
         formRef, // 表单的钩子函数
         showLabel, // 是否显示label字段
-        colProps
+        colProps,
+        valueColor
     } = props;
     const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any }>()
 
@@ -171,12 +174,21 @@ export default (props) => {
         switch (fieldType) {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
-                return showLabel ? <>
-                    <ProFormText
-                        {...currentFieldProps}
-                        readonly
-                    />
-                </> : <div>{displayValue}</div>
+                if (showLabel) {
+                    if (typeof (record[valueColor]) === "number") {
+                        return <div id='label-color'>
+                            <div>{currentFieldProps.label}</div>
+                            <div style={{ color: Criticality[record[valueColor]] || "" }}>{currentFieldProps.value}</div>
+                        </div>
+                    } else {
+                        return <ProFormText
+                            {...currentFieldProps}
+                            readonly
+                        />
+                    }
+                } else {
+                    return <div>{displayValue}</div>
+                }
             case 'Text':
                 return <div>
                     <ProFormText {...currentFieldProps} />
