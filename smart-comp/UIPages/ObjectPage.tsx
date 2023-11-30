@@ -21,23 +21,26 @@ export default (props) => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState(null);
-
+    // 展示的数据
+    const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
     //初始化方法
     const init = async () => {
-        const result = await getConfig({ location })
+        let result = await getConfig({ location, currentRecord: {} })
         if (result) {
-            console.log({ result });
-
-            setCurrentState(result)
+            // 获取数据
             const data = await result.annoRequest({});
             console.log({ data });
-
+            result = await getConfig({ location, currentRecord: data.data });
+            console.log({ result });
+            setCurrentState(result)
             setCurrentRecord(data.data);
+            if (result.Facets?.length) {
+                setActiveValue(result.Facets[0].id);
+            }
         }
     }
-
     useEffect(() => {
         !currentState && init();
     }, [])
@@ -129,10 +132,10 @@ export default (props) => {
     const _getObjectPageTabOptions = () => {
         let { Facets } = (currentState || {});
         let arr: any[] = [];
-        Facets.forEach((item, index) => {
+        Facets.forEach((item) => {
             arr.push({
                 tab: item.label,
-                key: index,
+                key: item.id,
                 closable: false,
             })
         })
@@ -220,20 +223,24 @@ export default (props) => {
         if (Facets) {
             return Facets.map((item, index) => {
                 const { targetData, childfacets } = (item || {});
-                // 循环多层
-                if (childfacets) {
-                    return <>{childfacets.map((targetItem, targetIndex) => {
-                        return _renderSectionContent(targetItem.targetData, index + "line" + targetIndex);
-                    })}</>
+                if (item.id === activeValue) {
+                    // 循环多层
+                    if (childfacets) {
+                        return <>{childfacets.map((targetItem, targetIndex) => {
+                            return _renderSectionContent(targetItem.targetData, index + "line" + targetIndex);
+                        })}</>
+                    } else {
+                        return _renderSectionContent(targetData, index);
+                    }
                 } else {
-                    return _renderSectionContent(targetData, index);
+                    return <></>
                 }
 
             })
         } else {
             return <div></div>
         }
-    }, [currentRecord])
+    }, [currentRecord, activeValue])
     return (
         <div
             style={{
@@ -254,6 +261,9 @@ export default (props) => {
                 footer={[
                     // <Button key="3">重置</Button>
                 ]}
+                onTabChange={(e) => {
+                    setActiveValue(e);
+                }}
             >
                 <div ref={pageContent}>
                     {_renderSection}
