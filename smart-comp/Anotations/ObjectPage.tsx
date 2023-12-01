@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 12:26:57
+ * @LastEditTime: 2023-12-01 14:19:02
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -62,7 +62,7 @@ const _getManifestConfig = () => {
  * @param {*} data 
  * @returns 
  */
-const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
+const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }) => {
     const result = [] as any
 
     if (HeaderInfo) {
@@ -107,6 +107,15 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
                 }
             }
             addValueToResult(targetData)
+        }
+    }
+
+    if (Identification){
+        for (let a of Identification) {
+            const { hiddenPath } = a
+            if (hiddenPath) {
+                result.push(hiddenPath)
+            }
         }
     }
 
@@ -234,7 +243,7 @@ export const getConfig = async ({ location, currentRecord }) => {
     const HeaderInfo = getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
     const Identification = getIdentificationByAnnotations(currentAnnotations, currentRecord)
-    const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }))
+    const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }))
 
     //调试使用
     if (currentRecord) {
