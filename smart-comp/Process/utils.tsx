@@ -2,13 +2,13 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 19:03:07
+ * @LastEditTime: 2023-12-01 10:38:02
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React from 'react';
 import odatajs from '../../utils/odata/index';
-import odata from '../../utils/odata/odata';
+import Odata from '../../utils/odata/odata';
 import { message } from 'antd';
 import storage from '../../utils/storage/metadataStorage';
 import lodash from 'lodash';
@@ -66,7 +66,7 @@ const getUi5Config = async (reload = false) => {
     const metadata = await getMetadata(requestUri)
 
     //合并annotations
-    if (annotations && annotations.dataServices&&metadata) {
+    if (annotations && annotations.dataServices && metadata) {
         metadata.dataServices.schema[0].annotations = metadata.dataServices.schema[0].annotations ? metadata.dataServices.schema[0].annotations : []
         metadata.dataServices.schema[0].annotations = annotations.dataServices.schema[0].annotations ? metadata.dataServices.schema[0].annotations.concat(annotations.dataServices.schema[0].annotations) : metadata.dataServices.schema[0].annotations
     }
@@ -159,7 +159,7 @@ const getMetadata = async (url) => {
         path: `${url}$metadata`,
         parameters: {},
     };
-    const result = await odata.read(options, odatajs.oData.metadataHandler);
+    const result = await Odata.read(options, odatajs.oData.metadataHandler);
     if (result) {
         message.destroy()
         const { data, statusCode } = result
@@ -199,7 +199,7 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
     };
 
     const { metadata } = getUi5ConfigAsync()
-    if (metadata){
+    if (metadata) {
         const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
         //查找主对象的entityType
         const { entitySet } = entityContainer
@@ -1208,6 +1208,24 @@ const getTargetAnnotationProcessed = (
 };
 
 /**
+ * 判断navigation 是否是Collection 1vs多
+ * @param {array} navigationProperty 当前对象的关联对象
+ * @param {*} navigationPropertyPath 
+ * @returns 
+ */
+const isCollection = (navigationProperty, navigationPropertyPath) => {
+    let result = false;
+    if (navigationProperty) {
+        navigationProperty.map((item) => {
+            if (item.name === navigationPropertyPath && item.type.search('Collection') !== -1) {
+                result = true;
+            }
+        });
+    }
+    return result;
+};
+
+/**
  * 解析objectPage Facets
  * UI.Facets UI.HeaderFacets
  * @param {*} currentAnnotations 
@@ -1385,6 +1403,7 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
         ImmutableFields: [] as any,
         //Annotations: [] as any,
         annoRequest: {} as any,
+        type: 'UI.QuickCreateFacets'
     }
     //解析termUI.QuickCreateFacets
     const QuickCreateFacets = getTermAnnotations(currentAnnotations, 'UI.QuickCreateFacets')
@@ -1488,23 +1507,23 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
                     method: 'POST',
                     body: _getCurrentBody(body),
                 };
-                return await odata.submit(option);
+                return await Odata.submit(option);
             },
             patch: async (record, body) => {
                 let option = {
-                    path: record['@odata.id'],
+                    path: record['@Odata.id'],
                     method: 'PATCH',
                     body: _getCurrentBody(body),
                 };
-                return await odata.submit(option);
+                return await Odata.submit(option);
             },
             delete: async (record) => {
                 let option = {
-                    path: record['@odata.id'],
+                    path: record['@Odata.id'],
                     method: 'DELETE',
                     body: {},
                 };
-                return await odata.submit(option);
+                return await Odata.submit(option);
             }
         }
     }
@@ -1776,41 +1795,84 @@ const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
 };
 
 /**
- * 判断navigation 是否是Collection 1vs多
- * @param {array} navigationProperty 当前对象的关联对象
- * @param {*} navigationPropertyPath 
+ * 根据action名称 遍历后台返回的action数组，返回对应action的配置项
+ * @param {*} actionName 
  * @returns 
  */
-const isCollection = (navigationProperty, navigationPropertyPath) => {
-    let result = false;
-    if (navigationProperty) {
-        navigationProperty.map((item) => {
-            if (item.name === navigationPropertyPath && item.type.search('Collection') !== -1) {
-                result = true;
-            }
-        });
+const parseActionByName = (actionName) => {
+    let result = {
+        isBound: false,
+        Fields: [] as any,
+        SideEffects: [] as any,
+        annoRequest: null as any
     }
-    return result;
-};
+    const { metadata } = getUi5ConfigAsync()
+    const { action, complexType, namespace, annotations } = metadata.dataServices.schema[0];
 
-/**
- * 解析DataField UI.DataFieldForIntentBasedNavigation、UI.DataFieldForAction
- * @param {object} record
- * @returns
- */
-const getDataFieldByRecord = (record) => {
-    if (record){
-        const { type, propertyValue, annotation } = record
-        const { SemanticObject, Action, Label } = parsePropertyValue(propertyValue)
-        return {
-            SemanticObject,
-            Action,
-            Label,
-            annotation,
-            type
+    //查找anction对应的参数数据
+    if (action && actionName) {
+        for (let a of action) {
+            const { name } = a
+            if (actionName === `${namespace}.${name}`) {
+                let { isBound, parameter, entitySetPath, returnType, name } = a
+                result.isBound = isBound === 'true'
+                result.Fields = isBound ? parameter.shift() : parameter;//isBound true 去除第一个参数
+                break
+            }
         }
     }
-    return {}
+
+    //SideEffects设置
+    if (actionName) {
+        const actionAnnotations = getAnnotationByTarget(annotations, actionName)
+        const SideEffectsData = getTermAnnotations(actionAnnotations, 'Common.SideEffects');
+        if (Array.isArray(SideEffectsData) && SideEffectsData.length > 0) {
+            const record = SideEffectsData[0].record
+            for (let a of record) {
+                const { propertyValue } = a
+                for (let b of propertyValue) {
+                    const { property, collection } = b
+                    if (property === 'TargetEntities') {
+                        for (let c of collection) {
+                            const { navigationPropertyPath } = c
+                            for (let d of navigationPropertyPath) {
+                                const { text } = d
+                                result.SideEffects.push(text)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    //处理请求
+    result.annoRequest = async ({ boundActionData, body }) => {
+        //是否为批量提交场景 
+        if (boundActionData && boundActionData.length > 0) {
+            const arr = [] as any
+            boundActionData.map((item) => {
+                let option = {
+                    path: `${item['@Odata.id']}/${actionName}`,
+                    method: 'POST',
+                    headers: {},
+                    body: body,
+                }
+                arr.push(option)
+            })
+            return await Odata.submit(arr);
+        } else {
+            let option = {
+                path: actionName,
+                method: 'POST',
+                headers: {},
+                body: body,
+            };
+            return await Odata.submit(option);
+        }
+    }
+
+    return result
 }
 
 export default {
@@ -1833,5 +1895,5 @@ export default {
     getPresentationVariantByAnnotations,
     getSelectionPresentationVariantByAnnotations,
     isHiddenByAnnotation,
-    getDataFieldByRecord
+    parseActionByName
 }

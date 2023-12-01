@@ -207,6 +207,7 @@ export default (props) => {
                 //快速创建按钮
                 currentState?.quickCreate && (
                     <SmartModalForm
+                        formType={currentState?.quickCreate?.type}
                         entitySet={entitySet}
                         content={{
                             title: currentState?.quickCreate?.Label,

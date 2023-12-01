@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 09:42:40
+ * @LastEditTime: 2023-12-01 10:42:06
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,7 +20,7 @@ import znCN from 'antd/es/locale/zh_CN';
  * @returns 
  */
 const _getManifestConfig = () => {
-    const { manifest, routeName, i18n_en, i18n_zh, i18n } = Utils.getUi5ConfigAsync()
+    const { manifest, routeName, i18n_en, i18n_zh } = Utils.getUi5ConfigAsync()
     //国际化 CN 
     if (i18n_zh) {
         addLocale(
@@ -101,7 +101,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths }) => {
             const { childfacets, targetData } = a
             if (childfacets) {
                 for (let b of childfacets) {
-                    const { childfacets, targetData } = b
+                    const { targetData } = b
                     addValueToResult(targetData)
 
                 }
@@ -170,18 +170,30 @@ const getIdentificationByAnnotations = (currentAnnotations, currentRecord) => {
         for (let a of collection) {
             const { record } = a
             for (let b of record) {
-                const obj = Utils.getDataFieldByRecord(b)
-                const { annotation: fieldannotation } = b
+                const { type, propertyValue, annotation: fieldannotation } = b
+                const { SemanticObject, Action, Label } = Utils.parsePropertyValue(propertyValue)
+                const { Fields, annoRequest } = Utils.parseActionByName(Action)
+                const obj = {
+                    SemanticObject,
+                    Action,
+                    Label,
+                    hiddenPath: null,
+                    isHidden: null as any,
+                    MediaUploadLink: null,
+                    type,
+                    Fields,
+                    annoRequest,
+                }
+                //是否隐藏 是否是链接
                 if (fieldannotation) {
-                    //是否隐藏
                     const { hiddenPath, isHidden } = Utils.isHiddenByAnnotation(fieldannotation, currentRecord)
                     //console.log({ hiddenPath, isHidden, currentRecord, fieldannotation })
                     obj.hiddenPath = hiddenPath
                     obj.isHidden = isHidden
                     for (let c of fieldannotation) {
-                        const { term, path, string } = c
-                        if (term === 'Common.MediaUploadLink' && string) {
-                            obj.MediaUploadLink = string
+                        const { term } = c
+                        if (term === 'Common.MediaUploadLink') {
+                            obj.MediaUploadLink = Utils.getTextValueByData('string', c);
                         }
                     }
                 }
