@@ -16,7 +16,7 @@ export default () => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
     const [searchVal, setSearchVal] = useState<any>({});
     const [currentTabs, setCurrentTabs] = useState<any>(null)
-    
+    const [loading, setLoading] = useState(true);
     const [activeTabKey, setActiveTabKey] = useState(0)
     const formRef = useRef();
     //初始化方法
@@ -24,6 +24,8 @@ export default () => {
         const result = await getConfig()
         if (result) {
             setCurrentState(result);
+        } else {
+            setLoading(false);
         }
     }
 
@@ -47,63 +49,93 @@ export default () => {
             setCurrentTabs(tabs)
         }
     }
-
+    const _renderSkeleton = () => {
+        return <div>
+            <div style={{ backgroundColor: '#fff', padding: 24 }}>
+                <Space>
+                    <Skeleton.Input size="large" active />
+                </Space>
+                <br />
+                <br />
+                <Skeleton active />
+            </div>
+            <div style={{ backgroundColor: '#fff', padding: 24, marginTop: 10 }}>
+                <br />
+                <br />
+                <Skeleton active />
+                <br />
+                <br />
+                <Skeleton active />
+                <br />
+                <br />
+                <Skeleton active />
+                <br />
+                <br />
+                <Skeleton active />
+            </div>
+        </div>
+    }
     const renderContent = () => {
         const { tabs } = (currentState || {});
         if (currentState) {
             const { entitySet, navigationRoute } = currentState
             return (
                 <>
-                    <SmartFilterBar formRef={formRef} setSearchVal={setSearchVal} entitySet={entitySet} />
-                    {tabs?.length ? <Tabs
-                        type="card"
-                        size='middle'
-                        onChange={(params) => {
-                            setActiveTabKey(Number(params))
-                        }}>
-                        {currentTabs && currentTabs.map((item, i) => {
-                            const { text, Selection, Presentation } = item
-                            if (Presentation) {
-                                const { Visualizations } = Presentation
-                                const { term } = Visualizations
-                                switch (term) {
-                                    case '@UI.LineItem':
-                                        let filterDefaultValue
-                                        if (Selection && Selection.filter) {
-                                            filterDefaultValue = filterDefaultValue ? `${filterDefaultValue} and ${Selection.filter}` : Selection.filter
-                                        }
-                                        return <TabPane tab={<>
-                                            {tabs[i].Text} {text}
-                                        </>} key={i}>
-                                            <div key={`table${i}`}>
-                                                {
-                                                    activeTabKey === i && <SmartTable
-                                                        entitySet={entitySet}
-                                                        navigationRoute={navigationRoute}
-                                                        searchVal={searchVal}
-                                                        filterDefaultValue={filterDefaultValue}
-                                                    />
-                                                }
-                                            </div>
-                                        </TabPane>
-                                    default:
-                                        break;
+                    <div style={{ display: loading ? "" : "none" }}>{_renderSkeleton()}</div>
+                    <div style={{ display: loading ? "none" : "" }}>
+                        <SmartFilterBar formRef={formRef} setSearchVal={setSearchVal} entitySet={entitySet} />
+                        {tabs?.length ? <Tabs
+                            type="card"
+                            size='middle'
+                            onChange={(params) => {
+                                setActiveTabKey(Number(params))
+                            }}>
+                            {currentTabs && currentTabs.map((item, i) => {
+                                const { text, Selection, Presentation } = item
+                                if (Presentation) {
+                                    const { Visualizations } = Presentation
+                                    const { term } = Visualizations
+                                    switch (term) {
+                                        case '@UI.LineItem':
+                                            let filterDefaultValue
+                                            if (Selection && Selection.filter) {
+                                                filterDefaultValue = filterDefaultValue ? `${filterDefaultValue} and ${Selection.filter}` : Selection.filter
+                                            }
+                                            return <TabPane tab={<>
+                                                {tabs[i].Text} {text}
+                                            </>} key={i}>
+                                                <div key={`table${i}`}>
+                                                    {
+                                                        activeTabKey === i && <SmartTable
+                                                            entitySet={entitySet}
+                                                            navigationRoute={navigationRoute}
+                                                            searchVal={searchVal}
+                                                            filterDefaultValue={filterDefaultValue}
+                                                            onLoad={() => {
+                                                                setLoading(false);
+                                                            }}
+                                                        />
+                                                    }
+                                                </div>
+                                            </TabPane>
+                                        default:
+                                            break;
+                                    }
                                 }
-                            }
-                        })}
-                    </Tabs> :
-                        <SmartTable searchVal={searchVal} entitySet={entitySet} navigationRoute={navigationRoute} />}
+                            })}
+                        </Tabs> :
+                            <SmartTable
+                                searchVal={searchVal}
+                                entitySet={entitySet}
+                                navigationRoute={navigationRoute}
+                                onLoad={() => {
+                                    setLoading(false);
+                                }}
+                            />}
+                    </div>
                 </>
             )
         }
     }
-
-    return currentState ? renderContent() : <div style={{ backgroundColor: '#fff', padding: 24 }}>
-        <Space>
-            <Skeleton.Input size="large" active />
-        </Space>
-        <br />
-        <br />
-        <Skeleton active />
-    </div>
+    return currentState ? renderContent() : _renderSkeleton();
 }

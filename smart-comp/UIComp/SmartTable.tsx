@@ -33,7 +33,8 @@ export default (props) => {
         parentColumns,
         filterDefaultValue,
         queryEntity,
-        targetNavigation
+        targetNavigation,
+        onLoad
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -85,6 +86,9 @@ export default (props) => {
                 })
             }
             setColumns([...columns]);
+            onLoad && onLoad();
+        } else {
+            onLoad && onLoad();
         }
     }
 

@@ -14,10 +14,11 @@ import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
+import SmartModalForm from '../UIComp/SmartModalForm';
 
 export default (props) => {
     const { location } = props;
-    const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any }>()
+    const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState(null);
     // 展示的数据 默认设置为第一条数据的id, 根据id进行展示
@@ -32,8 +33,10 @@ export default (props) => {
             let data = await result.annoRequest({});
             result = await getConfig({ location, currentRecord: data.data });
             data = await result.annoRequest({});
-            console.log("ObjectPage-data", { data });
-            console.log("ObjectPage-getConfig", { result });
+            console.log({
+                "ObjectPage-getConfig": result,
+                "ObjectPage-data": data
+            });
             setCurrentRecord(data.data);
             if (result.Facets?.length) {
                 setActiveValue(result.Facets[0].id);
@@ -94,7 +97,7 @@ export default (props) => {
                                             level={2}
                                             style={{ marginLeft: 10, color: '#6a6d70', fontSize: 26 }
                                             }>
-                                            111111
+                                            btn
                                         </Typography.Title>
                                     </ProFormGroup>
                                 </ProForm>
@@ -121,6 +124,7 @@ export default (props) => {
         }
         return contents
     }, [currentState, currentRecord])
+
     // 解析tab数据
     const _getObjectPageTabOptions = () => {
         let { Facets } = (currentState || {});
@@ -137,7 +141,7 @@ export default (props) => {
     }
     //解析头数据
     const _getObjectPageHeaderOptions = useMemo(() => {
-        const { HeaderInfo, entitySet } = (currentState || {});
+        const { HeaderInfo, entitySet, Identification } = (currentState || {});
         if (HeaderInfo) {
             const { Title, Description } = HeaderInfo;
             const titleOption = {
@@ -152,13 +156,26 @@ export default (props) => {
                 path: Description.Value,
                 record: currentRecord,
             }
+            let extra = Identification?.map((item, index) => {
+                return <SmartModalForm
+                    key={index}
+                    formType={item.type}
+                    entitySet={entitySet}
+                    content={{
+                        title: item.Label,
+                        btnText: item.Label
+                    }}
+                    fields={item.Fields}
+                    onSubmit={(params) => {
+                        item.annoRequest?.post(params)
+                    }}
+                />
+            })
             return {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
                     subTitle: Description && <SmartField {...subTitleOption} />,
-                    extra: [
-                        // <Button>按钮</Button>
-                    ], // 右侧按钮
+                    extra: extra, // 右侧按钮
                 },
                 content: (
                     <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>

@@ -8,7 +8,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateRangePicker, ProFormSelect, ProFormText } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
@@ -38,7 +38,7 @@ export default (props) => {
     let [currentFieldProps, setCurrentFieldProps] = useState<any>({
         //1.tabel内不显示label 2.优先使用父级传递的label
         name: path,
-        colProps: colProps || { md: 8, xl: 6 },
+        colProps: colProps || { md: 8, xl: 6, xxl: 6, span: 6 },
         fieldProps: {
         }
     });
@@ -175,9 +175,7 @@ export default (props) => {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
                 if (showLabel) {
-                    console.log(record[valueColor], valueColor);
-
-                    if (typeof (record[valueColor]) === "number") {
+                    if (record && typeof (record[valueColor]) === "number") {
                         return <div id='label-color'>
                             <div>{currentFieldProps.label}</div>
                             <div style={{ color: Criticality[record[valueColor]] || "" }}>{currentFieldProps.value}</div>
@@ -193,7 +191,7 @@ export default (props) => {
                 }
             case 'Text':
                 return <div>
-                    <ProFormText {...currentFieldProps} />
+                    <ProFormText {...currentFieldProps} width="lg" />
                 </div>
             case 'Select':
                 //lookup 弹框图片&按钮
