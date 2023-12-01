@@ -28,7 +28,7 @@ export default (props) => {
         valueColor,
         action
     } = props;
-    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any }>()
+    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any, defaultValue: string }>()
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
     const [currentSelected, setCurrentSelected] = useState<any>(null);//lookup选中项
@@ -170,8 +170,7 @@ export default (props) => {
     };
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue, valueListConfig } = currentState || {}
-
+        const { fieldType, displayValue, valueListConfig, defaultValue } = currentState || {}
         switch (fieldType) {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
@@ -191,9 +190,7 @@ export default (props) => {
                     return <div>{displayValue}</div>
                 }
             case 'Text':
-                return <div>
-                    <ProFormText {...currentFieldProps} width="lg" />
-                </div>
+                return <ProFormText {...currentFieldProps} width="lg" />
             case 'Select':
                 //lookup 弹框图片&按钮
                 currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool) => {
@@ -256,6 +253,9 @@ export default (props) => {
                 />
             case 'DateTime':
                 return <ProFormDateRangePicker {...currentFieldProps} />
+            case "Hidden":
+                currentFieldProps.initialValue = defaultValue;
+                return <ProFormText {...currentFieldProps} hidden />
             default:
                 return <div></div>
         }

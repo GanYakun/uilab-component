@@ -11,7 +11,7 @@ import { Button, Form } from 'antd';
 import React, { useState } from 'react';
 import SmartField from './SmartField';
 
-export default ({ entitySet, content, onSubmit, fields, formType,action }) => {
+export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
     console.log('smartModalForm-log', {
         entitySet,
         content,
@@ -76,7 +76,7 @@ export default ({ entitySet, content, onSubmit, fields, formType,action }) => {
             }}
             submitTimeout={1000}
             onFinish={async (values) => {
-                console.log('FormSumbit',{ values, form })
+                console.log('FormSumbit', { values, form })
                 //onSubmit(values);
                 form?.resetFields();
                 return true
