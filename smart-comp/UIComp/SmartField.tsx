@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
 import { ProFormDatePicker, ProFormDateRangePicker, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
-import { Modal, message } from 'antd';
+import { Modal, Typography, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
@@ -24,7 +24,7 @@ export default (props) => {
         path,
         isReadOnly,
         formRef, // 表单的钩子函数
-        showLabel, // 是否显示label字段
+        showLabel, // 是否显示label字段，与isReadOnly配合使用
         colProps,
         valueColor,
         action,
@@ -268,6 +268,13 @@ export default (props) => {
                     max={2}
                     fieldProps={{ name: "file" }}
                 />
+            case "DataPoint":
+                return <Typography.Title
+                    level={2}
+                    style={{ marginLeft: 10, color: '#6a6d70', fontSize: 26 }
+                    }>
+                    {displayValue}
+                </Typography.Title>
             default:
                 return <div></div>
         }
