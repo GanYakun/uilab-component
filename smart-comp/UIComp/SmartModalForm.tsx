@@ -38,6 +38,14 @@ export default ({ entitySet, content, onSubmit, fields, formType }) => {
                 })
                 break;
             case 'UI.DataFieldForAction':
+                return fields && fields.map((item, index) => {
+                    const option = {
+                        key: `${item.name}-${index}`,
+                        entitySet,
+                        path: item.name,
+                    }
+                    return <SmartField {...option} />
+                })
                 break;
             default:
                 break;
