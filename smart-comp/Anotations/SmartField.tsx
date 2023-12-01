@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 15:36:53
+ * @LastEditTime: 2023-12-01 16:12:35
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -263,8 +263,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
  * @param {*} currentPropertyType 当前字段，例：Edm.String、Edm.Int64、Edm.DateTimeOffset、Edm.Date
  * @returns 
  */
-const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => {
-
+const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly, dataPoint = null) => {
     let result = {
         fieldType: 'Text',
         valueListConfig: null as any,
@@ -347,6 +346,22 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => 
         result.fieldType = 'Hidden';
     }
 
+    //dataPoint
+    if (dataPoint) {
+        const { Visualization } = dataPoint
+        switch (Visualization) {
+            case 'UI.VisualizationType/Rating':
+                result.fieldType = 'Rating'
+                break;
+            case 'UI.VisualizationType/Progress':
+                result.fieldType = 'Progress'
+                break;
+            default:
+                result.fieldType = 'DataPoint';
+                break;
+        }
+    }
+
     return result
 }
 
@@ -406,9 +421,9 @@ const getUnit = (currentAnnotations) => {
 }
 
 export const getConfig = async (params) => {
-    const { record, entitySet, path, isReadOnly, action } = params
+    const { record, entitySet, path, isReadOnly, action, dataPoint } = params
     const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action)
-    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
+    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
@@ -416,7 +431,7 @@ export const getConfig = async (params) => {
     const unit = getUnit(currentAnnotations)
 
     //调试用
-    if (path === 'file') {
+    if (path === 'ddFormType') {
         console.log('SmartField-Log', {
             path,
             currentPropertyType,
