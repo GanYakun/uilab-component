@@ -31,7 +31,9 @@ export default (props) => {
         rowSelection,
         onSelect,
         parentColumns,
-        filterDefaultValue
+        filterDefaultValue,
+        queryEntity,
+        targetNavigation
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -146,7 +148,7 @@ export default (props) => {
                     if (filterDefaultValue) {
                         option.filterDefaultValue = filterDefaultValue;
                     }
-                    const result = await currentState.annoRequest(option, parentColumns);
+                    const result = await currentState.annoRequest(option, parentColumns, queryEntity, targetNavigation);
                     const { value, msg } = result.data;
                     //1.设置key
                     value.map((item) => {
