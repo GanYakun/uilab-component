@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 12:33:11
+ * @LastEditTime: 2023-12-01 13:53:44
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -339,6 +339,11 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly) => 
             break;
     }
 
+    //是否 IsImage 数据库存储
+    if (Utils.getTermAnnotations(currentAnnotations, 'UI.Hidden')) {
+        result.fieldType = 'Hidden';
+    }
+
     return result
 }
 
@@ -382,6 +387,15 @@ const isNullable = (currentAnnotations, entitySet, path) => {
     return result
 }
 
+/**
+ * 获取字段默认值
+ * @param {*} currentAnnotations 
+ */
+const getParameterDefaultValue = (currentAnnotations) => {
+    const record = Utils.getTermAnnotations(currentAnnotations, 'UI.ParameterDefaultValue');
+    return Utils.getTextValueByData(`string`, record) ? Utils.getTextValueByData(`string`, record) : Utils.getTextValueByData(`bool`, record) === 'true'
+}
+
 export const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly, action } = params
     const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action)
@@ -389,10 +403,11 @@ export const getConfig = async (params) => {
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
+    const defaultValue = getParameterDefaultValue(currentAnnotations)
 
     //调试用
-    if (path === 'file') {
-        console.log({
+    if (path === 'source') {
+        console.log('SmartField-Log',{
             path,
             currentPropertyType,
             isReadOnly,
@@ -403,7 +418,8 @@ export const getConfig = async (params) => {
             valueListConfig,
             label,
             nullable,
-            action
+            action,
+            defaultValue
         })
     }
     return {
@@ -413,5 +429,6 @@ export const getConfig = async (params) => {
         valueListConfig,//Select的类型需要的参数
         label,//表单的label
         nullable,//是否必填字段 true:必填
+        defaultValue,//默认值
     }
 }
