@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 10:38:02
+ * @LastEditTime: 2023-12-01 12:18:53
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -169,13 +169,13 @@ const getMetadata = async (url) => {
             window.history.pushState(null, '', `${loginPath}`)
             message.open({
                 type: 'error',
-                content: '登录状态失效，请重新登录!',
+                content: statusCode,
             });
         } else {
             window.history.pushState(null, '', `${loginPath}`)
             message.open({
                 type: 'error',
-                content: `服务器请求异常，状态码:${statusCode}`,
+                content: statusCode,
             });
         }
     }
@@ -1815,8 +1815,9 @@ const parseActionByName = (actionName) => {
             const { name } = a
             if (actionName === `${namespace}.${name}`) {
                 let { isBound, parameter, entitySetPath, returnType, name } = a
+                isBound === 'true' && parameter && parameter.shift()
                 result.isBound = isBound === 'true'
-                result.Fields = isBound ? parameter.shift() : parameter;//isBound true 去除第一个参数
+                result.Fields = parameter
                 break
             }
         }

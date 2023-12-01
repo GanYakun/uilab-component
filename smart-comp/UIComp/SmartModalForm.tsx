@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 10:49:37
+ * @LastEditTime: 2023-12-01 12:08:13
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,13 @@ import React, { useState } from 'react';
 import SmartField from './SmartField';
 
 export default ({ entitySet, content, onSubmit, fields, formType }) => {
+    console.log('smartModalForm-log', {
+        entitySet,
+        content,
+        onSubmit,
+        fields,
+        formType
+    })
     const { title, btnText } = content;
     const [form] = Form.useForm<{ name: string; company: string }>();
 
@@ -21,7 +28,7 @@ export default ({ entitySet, content, onSubmit, fields, formType }) => {
     const renderContent = () => {
         switch (formType) {
             case 'UI.QuickCreateFacets':
-                fields && fields.map((item, index) => {
+                return fields && fields.map((item, index) => {
                     const option = {
                         key: `${item.Value}-${index}`,
                         entitySet,
@@ -66,7 +73,7 @@ export default ({ entitySet, content, onSubmit, fields, formType }) => {
                 return true
             }}
         >
-            {renderContent}
+            {renderContent()}
         </ModalForm>
     );
 };
