@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 18:32:12
+ * @LastEditTime: 2023-11-30 19:03:07
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -66,7 +66,7 @@ const getUi5Config = async (reload = false) => {
     const metadata = await getMetadata(requestUri)
 
     //合并annotations
-    if (annotations && annotations.dataServices) {
+    if (annotations && annotations.dataServices&&metadata) {
         metadata.dataServices.schema[0].annotations = metadata.dataServices.schema[0].annotations ? metadata.dataServices.schema[0].annotations : []
         metadata.dataServices.schema[0].annotations = annotations.dataServices.schema[0].annotations ? metadata.dataServices.schema[0].annotations.concat(annotations.dataServices.schema[0].annotations) : metadata.dataServices.schema[0].annotations
     }
@@ -187,8 +187,6 @@ const getMetadata = async (url) => {
  * @param {object} metadata 
  */
 const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
-    const { metadata, manifest } = getUi5ConfigAsync()
-    const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
     let result = {
         currentEntitySetName,
         currentEntitySetData: null,
@@ -200,91 +198,95 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
         currentSortRestrictions: null
     };
 
-    //查找主对象的entityType
-    const { entitySet } = entityContainer
-    let currentEntityTypeName, currentEntitySetData
-    entitySet.map((item) => {
-        const { name, entityType } = item
-        if (name === currentEntitySetName) {
-            const arr = entityType.split('.')
-            currentEntityTypeName = arr[arr.length - 1]
-            currentEntitySetData = item
-        }
-    })
+    const { metadata } = getUi5ConfigAsync()
+    if (metadata){
+        const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
+        //查找主对象的entityType
+        const { entitySet } = entityContainer
+        let currentEntityTypeName, currentEntitySetData
+        entitySet.map((item) => {
+            const { name, entityType } = item
+            if (name === currentEntitySetName) {
+                const arr = entityType.split('.')
+                currentEntityTypeName = arr[arr.length - 1]
+                currentEntitySetData = item
+            }
+        })
 
-    //递归处理 查找annotation等页面需要的配置文件
-    const _nbff = (arr = []) => {
-        let index = 0
-        function query(currentEntityTypeName, navigationPropertyName, currentEntitySetName) {
-            //遍历
-            allEntityTypes.map((item) => {
-                const { name, navigationProperty } = item
+        //递归处理 查找annotation等页面需要的配置文件
+        const _nbff = (arr = []) => {
+            let index = 0
+            function query(currentEntityTypeName, navigationPropertyName, currentEntitySetName) {
+                //遍历
+                allEntityTypes.map((item) => {
+                    const { name, navigationProperty } = item
 
-                if (name === currentEntityTypeName) {
-                    result.currentEntityTypeData = item
-                    //不含字段的情况
-                    if (!navigationPropertyName || !arr && arr.length === 0) {
-                        result.currentEntitySetData = currentEntitySetData
-                        result.currentEntityTypeName = currentEntityTypeName
-                        result.currentAnnotations = getAnnotationByTarget(annotations, `${namespace}.${currentEntityTypeName}`)
-                        return
-                    } else {
-                        //对应绑定的entitySet  没有绑定设置为null
-                        let targetEntitySetName = null
-                        if (arr.length > 1) {
-                            entitySet.map((item) => {
-                                const { name, navigationPropertyBinding } = item
-                                if (name === currentEntitySetName) {
-                                    //递归查找关联对象，直到最后一层
-                                    navigationPropertyBinding && navigationPropertyBinding.map((d) => {
-                                        const { path, target } = d
-                                        if (path === navigationPropertyName) {
-                                            targetEntitySetName = target
-                                            result.currentEntitySetName = target
-                                        }
-                                    })
+                    if (name === currentEntityTypeName) {
+                        result.currentEntityTypeData = item
+                        //不含字段的情况
+                        if (!navigationPropertyName || !arr && arr.length === 0) {
+                            result.currentEntitySetData = currentEntitySetData
+                            result.currentEntityTypeName = currentEntityTypeName
+                            result.currentAnnotations = getAnnotationByTarget(annotations, `${namespace}.${currentEntityTypeName}`)
+                            return
+                        } else {
+                            //对应绑定的entitySet  没有绑定设置为null
+                            let targetEntitySetName = null
+                            if (arr.length > 1) {
+                                entitySet.map((item) => {
+                                    const { name, navigationPropertyBinding } = item
+                                    if (name === currentEntitySetName) {
+                                        //递归查找关联对象，直到最后一层
+                                        navigationPropertyBinding && navigationPropertyBinding.map((d) => {
+                                            const { path, target } = d
+                                            if (path === navigationPropertyName) {
+                                                targetEntitySetName = target
+                                                result.currentEntitySetName = target
+                                            }
+                                        })
+                                    }
+                                })
+                            }
+
+                            //数组的最后一个
+                            if (index === arr.length - 1) {
+                                const target = `${namespace}.${currentEntityTypeName}/${arr[index]}`
+                                result.currentAnnotations = getAnnotationByTarget(annotations, target)
+                                result.currentPropertyType = getPropertyType(result.currentEntityTypeData, arr[index]);
+                                //action 配置的annotation
+                                if (ActionName) {
+                                    const actionTarget = `${ActionName}/${navigationPropertyName}`
+                                    const actionData = getAnnotationByTarget(annotations, actionTarget)
+                                    result.currentAnnotations = result.currentAnnotations.concat(actionData)
+                                }
+                                return
+                            }
+
+                            //递归查找关联对象，直到最后一层
+                            navigationProperty && navigationProperty.map((d) => {
+                                const { name, type } = d
+                                if (name === navigationPropertyName) {
+                                    const typeName = getNameSpaceEntityTypeName(type)
+                                    const typeArr = typeName.split('.')
+                                    const typeEntityTypeName = typeArr[typeArr.length - 1]
+                                    index++
+                                    query(typeEntityTypeName, arr[index], targetEntitySetName)
                                 }
                             })
                         }
-
-                        //数组的最后一个
-                        if (index === arr.length - 1) {
-                            const target = `${namespace}.${currentEntityTypeName}/${arr[index]}`
-                            result.currentAnnotations = getAnnotationByTarget(annotations, target)
-                            result.currentPropertyType = getPropertyType(result.currentEntityTypeData, arr[index]);
-                            //action 配置的annotation
-                            if (ActionName) {
-                                const actionTarget = `${ActionName}/${navigationPropertyName}`
-                                const actionData = getAnnotationByTarget(annotations, actionTarget)
-                                result.currentAnnotations = result.currentAnnotations.concat(actionData)
-                            }
-                            return
-                        }
-
-                        //递归查找关联对象，直到最后一层
-                        navigationProperty && navigationProperty.map((d) => {
-                            const { name, type } = d
-                            if (name === navigationPropertyName) {
-                                const typeName = getNameSpaceEntityTypeName(type)
-                                const typeArr = typeName.split('.')
-                                const typeEntityTypeName = typeArr[typeArr.length - 1]
-                                index++
-                                query(typeEntityTypeName, arr[index], targetEntitySetName)
-                            }
-                        })
                     }
-                }
-            })
+                })
+            }
+            query(currentEntityTypeName, arr ? arr[index] : null, currentEntitySetName)
         }
-        query(currentEntityTypeName, arr ? arr[index] : null, currentEntitySetName)
-    }
 
-    //判断是否需要获取关联对象的currentAnnotations,多段式兼容
-    if (currentPath) {
-        let arr = currentPath.search('/') !== -1 ? currentPath.split('/') : [currentPath]
-        _nbff(arr)
-    } else {
-        _nbff()
+        //判断是否需要获取关联对象的currentAnnotations,多段式兼容
+        if (currentPath) {
+            let arr = currentPath.search('/') !== -1 ? currentPath.split('/') : [currentPath]
+            _nbff(arr)
+        } else {
+            _nbff()
+        }
     }
 
     return result;
@@ -296,7 +298,7 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
  * @param {string} target 
  */
 const getAnnotationByTarget = (annotations, target) => {
-    let result = [];
+    let result = [] as any;
     annotations.map((item) => {
         if (target) {
             if (item.annotation && item.target === target) {
@@ -411,7 +413,7 @@ const getQueryContitionsByAnnotations = (
     entitySetName
 ) => {
     const { metadata } = getUi5ConfigAsync()
-    const { entityContainer, annotations, entityType, namespace } = metadata.dataServices.schema[0];
+    const { entityContainer, annotations, namespace } = metadata.dataServices.schema[0];
 
     let currentExpand = {},
         currentSelect = []//最外层需要的$select
@@ -432,7 +434,7 @@ const getQueryContitionsByAnnotations = (
     }
 
     //判断当前字段是否配置了Common.Text
-    const _nbff = (arr, field) => {
+    const _nbff = (arr) => {
         let parseData = [], index = 0, unitData, isImageData, selectData, primaryKey
         const find = (entitySetName, navigationPropertyName, entityTypeName) => {
             const { entitySet } = entityContainer
@@ -958,7 +960,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                             let and_eq = and[0].eq, and_eq_val
                             if (and_eq) {
                                 and_eq_val = and_eq.findIndex((item) => {
-                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
+                                    const { path, boolText } = _getEqAndNe('eq', item, dibool)
                                     //console.log({ path, string, boolText })
                                     result.hiddenPath = path
                                     return boolText
@@ -971,7 +973,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                             let or_eq = or[0].eq, or_eq_val
                             if (or_eq) {
                                 or_eq_val = or_eq.findIndex((item) => {
-                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
+                                    const { path, boolText } = _getEqAndNe('eq', item, dibool)
                                     result.hiddenPath = path
                                     return boolText
                                 }) !== -1
@@ -989,7 +991,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                         }
                         //不等于
                         if (ne) {
-                            const { path, string, boolText } = _getEqAndNe('ne', ne[0], bool)
+                            const { path, boolText } = _getEqAndNe('ne', ne[0], bool)
                             if (path) {
                                 result.hiddenPath = path
                                 result.isHidden = boolText ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)
@@ -1263,7 +1265,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                 for (let d of collection) {
                     const { record } = d;
                     for (let e of record) {
-                        const { type, propertyValue, annotation } = e;
+                        const { type, propertyValue } = e;
                         if (type === 'UI.ReferenceFacet') {
                             const ReferenceFacetData = _getReferenceFacet(propertyValue);
                             childfacets.push(ReferenceFacetData);
@@ -1331,7 +1333,7 @@ const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
     targetPath,
 ) => {
     const { metadata } = getUi5ConfigAsync()
-    const { namespace, annotations, entityContainer } = metadata.dataServices.schema[0];
+    const { entityContainer } = metadata.dataServices.schema[0];
     const { entitySet } = entityContainer
     let result;
     if (targetPath.search('/') === -1 && currentEntitySetData) {
