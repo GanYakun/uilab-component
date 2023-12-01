@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 15:52:54
+ * @LastEditTime: 2023-12-01 18:03:35
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1869,7 +1869,8 @@ const parseActionByName = (actionName) => {
         isBound: false,
         Fields: [] as any,
         SideEffects: [] as any,
-        annoRequest: null as any
+        annoRequest: null as any,
+        isUpload: false,
     }
     const { metadata } = getUi5ConfigAsync()
     const { action, complexType, namespace, annotations } = metadata.dataServices.schema[0];
@@ -1879,7 +1880,8 @@ const parseActionByName = (actionName) => {
         for (let a of action) {
             const { name } = a
             if (actionName === `${namespace}.${name}`) {
-                let { isBound, parameter, entitySetPath, returnType, name } = a
+                let { isBound, parameter, entitySetPath, returnType, name, type } = a
+                result.isUpload = parameter.findIndex((item) => item.type === 'Edm.Stream') !== -1
                 isBound === 'true' && parameter && parameter.shift()
                 result.isBound = isBound === 'true'
                 result.Fields = parameter
@@ -1913,7 +1915,7 @@ const parseActionByName = (actionName) => {
     }
 
     //处理请求
-    result.annoRequest = async ({ boundActionData, body }) => {
+    result.annoRequest = async ({ boundActionData, body, path }) => {
         //是否为批量提交场景 
         if (boundActionData && boundActionData.length > 0) {
             const arr = [] as any
@@ -1928,13 +1930,40 @@ const parseActionByName = (actionName) => {
             })
             return await Odata.submit(arr);
         } else {
-            let option = {
-                path: actionName,
-                method: 'POST',
-                headers: {},
-                body: body,
-            };
-            return await Odata.submit(option);
+            //处理单个提交场景
+            if (result.isUpload) {
+                const fileList = body.file
+                if (fileList.length === 0) {
+                    message.error(< FormattedMessage id='smart.required' />);
+                    return
+                }
+                const formData = new FormData();
+                formData.append('file', fileList[0].originFileObj);
+                const { protocol, host } = window.location
+                let actionUrl = `${protocol}//${host}/${window.serviceUrl}${path}`
+                fetch(actionUrl, {
+                    method: 'POST',
+                    body: formData,
+                })
+                    // .then((res) => res&&res.json())
+                    .then(() => {
+                        //message.success(< FormattedMessage id='smart.success' />);
+                    })
+                    .catch((err) => {
+                        //message.error(< FormattedMessage id='smart.error' />);
+                    })
+                    .finally(() => {
+                        
+                    });
+            } else {
+                let option = {
+                    path,
+                    method: 'POST',
+                    headers: {},
+                    body: body,
+                };
+                return await Odata.submit(option);
+            }
         }
     }
 

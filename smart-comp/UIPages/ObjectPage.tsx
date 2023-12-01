@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 16:19:00
+ * @LastEditTime: 2023-12-01 18:04:07
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -85,7 +85,7 @@ export default (props) => {
                     }
 
                 case "UI.DataPoint":
-                    const { Title, Value,Criticality } = value
+                    const { Title, Value, Criticality } = value
                     const DataPointTitle = Title ? Title : Value;
                     const option = {
                         dataPoint: value,
@@ -167,8 +167,8 @@ export default (props) => {
                     }}
                     action={item.Action}
                     fields={item.Fields}
-                    onSubmit={(params) => {
-                        item.annoRequest?.post(params)
+                    onSubmit={async (body) => {
+                        await item.annoRequest({ body, path: `${location.query.queryEntity}/${item.Action}` })
                     }}
                 />
             })
