@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 12:18:53
+ * @LastEditTime: 2023-12-01 12:27:12
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -899,7 +899,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
     }
     //目前只支持 path 一段式
     const _getEqAndNe = (condition, data) => {
-        let result: any = {}
+        let result = {} as any
         let path = getTextValueByData('path', data)
         let string = getTextValueByData('string', data)
         result.path = path
@@ -960,7 +960,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                             let and_eq = and[0].eq, and_eq_val
                             if (and_eq) {
                                 and_eq_val = and_eq.findIndex((item) => {
-                                    const { path, boolText } = _getEqAndNe('eq', item, dibool)
+                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
                                     //console.log({ path, string, boolText })
                                     result.hiddenPath = path
                                     return boolText
@@ -973,7 +973,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                             let or_eq = or[0].eq, or_eq_val
                             if (or_eq) {
                                 or_eq_val = or_eq.findIndex((item) => {
-                                    const { path, boolText } = _getEqAndNe('eq', item, dibool)
+                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
                                     result.hiddenPath = path
                                     return boolText
                                 }) !== -1
@@ -991,7 +991,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                         }
                         //不等于
                         if (ne) {
-                            const { path, boolText } = _getEqAndNe('ne', ne[0], bool)
+                            const { path, string, boolText } = _getEqAndNe('ne', ne[0], bool)
                             if (path) {
                                 result.hiddenPath = path
                                 result.isHidden = boolText ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)

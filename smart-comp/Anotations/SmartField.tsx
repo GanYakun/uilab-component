@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 17:49:57
+ * @LastEditTime: 2023-12-01 12:33:11
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -383,27 +383,29 @@ const isNullable = (currentAnnotations, entitySet, path) => {
 }
 
 export const getConfig = async (params) => {
-    const { record, entitySet, path, isReadOnly } = params
-    const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path)
+    const { record, entitySet, path, isReadOnly, action } = params
+    const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
 
     //调试用
-    // if (path === 'description') {
-    //     console.log({
-    //         path,
-    //         isReadOnly,
-    //         fieldType,
-    //         displayValue,
-    //         currentValue,
-    //         currentAnnotations,
-    //         valueListConfig,
-    //         label,
-    //         nullable
-    //     })
-    // }
+    if (path === 'file') {
+        console.log({
+            path,
+            currentPropertyType,
+            isReadOnly,
+            fieldType,
+            displayValue,
+            currentValue,
+            currentAnnotations,
+            valueListConfig,
+            label,
+            nullable,
+            action
+        })
+    }
     return {
         fieldType,//表单类型
         displayValue,//用户显示的值
