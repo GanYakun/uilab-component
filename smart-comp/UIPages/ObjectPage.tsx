@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { getConfig } from '../Anotations/ObjectPage';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card, Space, Skeleton, Typography, Button } from 'antd';
+import { Card } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
@@ -86,23 +86,20 @@ export default (props) => {
 
                 case "UI.DataPoint":
                     const { Title, Value } = value
-                    const DataPointTitle = Title ? Title : Value
+                    const DataPointTitle = Title ? Title : Value;
+                    const option = {
+                        isReadOnly: true,
+                        entitySet: currentState?.entitySet,
+                        path: Value,
+                        record: currentRecord,
+                    }
                     return {
                         type,
                         label,
                         content: (
                             <div>
-                                <div style={{ whiteSpace: 'nowrap', fontFamily: '"72","72full",Arial,Helvetica,sans-serif', fontSize: '14px', color: '#32363a', fontWeight: 400, marginBottom: 10 }}>( {DataPointTitle} )</div>
-                                <ProForm submitter={false} grid={true} key={id} >
-                                    <ProFormGroup >
-                                        <Typography.Title
-                                            level={2}
-                                            style={{ marginLeft: 10, color: '#6a6d70', fontSize: 26 }
-                                            }>
-                                            btn
-                                        </Typography.Title>
-                                    </ProFormGroup>
-                                </ProForm>
+                                <div style={{ fontSize: '14px', color: '#000000d9', fontWeight: 600, marginBottom: 10 }}>{DataPointTitle}</div>
+                                <SmartField {...option} />
                             </div>
                         )
                     }
@@ -199,7 +196,7 @@ export default (props) => {
                 case "UI.FieldGroup":
                     return <div key={`section-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
                         <Card title={targetName} bordered={false}>
-                            <ProForm grid={true} submitter={false}>
+                            <ProForm submitter={false} grid={true}>
                                 <ProFormGroup>
                                     {
                                         targetData?.Fields?.map((childItem, childIndex) => {
@@ -211,9 +208,7 @@ export default (props) => {
                                                 showLabel: true
                                             }
                                             if (childItem.type === "UI.DataField") {
-                                                return <React.Fragment key={`card-${childIndex}-${index}`}>
-                                                    <SmartField {...option} />
-                                                </React.Fragment>
+                                                return <SmartField {...option} key={`card-${childIndex}-${index}`} />
                                             } else if (childItem.type === "UI.DataFieldForAction") {
                                                 return <React.Fragment key={`card-${childIndex}-${index}`}></React.Fragment>
                                             } else {

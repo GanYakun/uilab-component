@@ -24,7 +24,7 @@ export default () => {
             </Space>
             <br />
             <br />
-            <Space>
+            <Space wrap>
                 <Skeleton.Image active={true} />
                 <Skeleton.Input active={true} size='default' />
                 <Skeleton.Input active={true} size='default' />

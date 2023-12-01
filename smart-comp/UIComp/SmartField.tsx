@@ -8,13 +8,14 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormSelect, ProFormText } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateRangePicker, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
 import { Criticality } from "../Process/config";
+import { FormattedMessage } from "react-intl";
 
 export default (props) => {
     const {
@@ -28,7 +29,7 @@ export default (props) => {
         valueColor,
         action
     } = props;
-    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any, defaultValue: string }>()
+    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any, defaultValue: string, label: string }>()
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
     const [currentSelected, setCurrentSelected] = useState<any>(null);//lookup选中项
@@ -39,9 +40,10 @@ export default (props) => {
     let [currentFieldProps, setCurrentFieldProps] = useState<any>({
         //1.tabel内不显示label 2.优先使用父级传递的label
         name: path,
-        colProps: colProps || { md: 8, xl: 6, xxl: 6, span: 6 },
+        colProps: colProps || { md: 8, xl: 6 },
         fieldProps: {
-        }
+        },
+        width: "lg"
     });
 
     //初始化方法
@@ -170,7 +172,8 @@ export default (props) => {
     };
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue, valueListConfig, defaultValue } = currentState || {}
+        const { fieldType, displayValue, valueListConfig, defaultValue } = (currentState || {})
+
         switch (fieldType) {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
@@ -190,7 +193,7 @@ export default (props) => {
                     return <div>{displayValue}</div>
                 }
             case 'Text':
-                return <ProFormText {...currentFieldProps} width="lg" />
+                return <ProFormText {...currentFieldProps} />
             case 'Select':
                 //lookup 弹框图片&按钮
                 currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool) => {
@@ -256,6 +259,14 @@ export default (props) => {
             case "Hidden":
                 currentFieldProps.initialValue = defaultValue;
                 return <ProFormText {...currentFieldProps} hidden />
+            case "Upload":
+                currentFieldProps.label = "";
+                currentFieldProps.title = <FormattedMessage id='smart.upload' />;
+                return <ProFormUploadButton
+                    {...currentFieldProps}
+                    max={2}
+                    fieldProps={{ name: "file" }}
+                />
             default:
                 return <div></div>
         }

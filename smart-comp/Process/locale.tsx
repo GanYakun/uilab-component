@@ -9,10 +9,12 @@
 export const enUS={
     //smart组件
     'smart.true': 'Yes',
-    'smart.false': 'No'
+    'smart.false': 'No',
+    'smart.upload': 'Select File',
 }
 export const zhCN = {
     //smart组件
    'smart.true': '是',
-   'smart.false': '否'
+   'smart.false': '否',
+   'smart.upload': '选择文件',
 }
