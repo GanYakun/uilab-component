@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 14:08:05
+ * @LastEditTime: 2023-12-01 15:30:16
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -399,6 +399,12 @@ const getParameterDefaultValue = (currentAnnotations) => {
     return Utils.getTextValueByData(`string`, record) ? Utils.getTextValueByData(`string`, record) : Utils.getTextValueByData(`bool`, record) === 'true'
 }
 
+//获取单位
+const getUnit = (currentAnnotations) => {
+    const record = Utils.getTermAnnotations(currentAnnotations, 'Measures.Unit')
+    return Utils.getTextValueByData('string', record)
+}
+
 export const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly, action } = params
     const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action)
@@ -407,10 +413,11 @@ export const getConfig = async (params) => {
     const label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
     const defaultValue = getParameterDefaultValue(currentAnnotations)
+    const unit = getUnit(currentAnnotations)
 
     //调试用
     if (path === 'file') {
-        console.log('SmartField-Log',{
+        console.log('SmartField-Log', {
             path,
             currentPropertyType,
             isReadOnly,
@@ -422,7 +429,8 @@ export const getConfig = async (params) => {
             label,
             nullable,
             action,
-            defaultValue
+            defaultValue,
+            unit
         })
     }
     return {
@@ -433,5 +441,6 @@ export const getConfig = async (params) => {
         label,//表单的label
         nullable,//是否必填字段 true:必填
         defaultValue,//默认值
+        unit,//单位
     }
 }

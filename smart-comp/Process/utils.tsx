@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 14:09:12
+ * @LastEditTime: 2023-12-01 15:27:40
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -13,7 +13,7 @@ import { message } from 'antd';
 import storage from '../../utils/storage/metadataStorage';
 import lodash from 'lodash';
 import moment from 'moment';
-import { FormattedMessage } from 'umi'
+import { FormattedMessage, getLocale } from 'umi'
 
 /**
  * 获取当前路由名称
@@ -290,11 +290,11 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
 
         //ActionName propertyType
         if (ActionName) {
-            const { Fields }= parseActionByName(ActionName)
-            if (Fields){
-                for(let item of Fields){
-                    const {name,type}=item
-                    if (name === currentPath){
+            const { Fields } = parseActionByName(ActionName)
+            if (Fields) {
+                for (let item of Fields) {
+                    const { name, type } = item
+                    if (name === currentPath) {
                         result.currentPropertyType = type
                     }
                 }
@@ -816,6 +816,16 @@ const getFieldDisplayValueAndCurrentValue = (
         displayValue = displayValue.join(',')
     }
 
+    //将数字转换成带逗号的显示方式，例： 123,456,789
+    if (getLocale() === 'en-US' && displayValue && typeof displayValue === 'number') {
+        displayValue = displayValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+    }
+
+    //判断是布尔值
+    if (typeof displayValue === 'boolean') {
+        displayValue = displayValue ? <FormattedMessage id='smart.true' /> : <FormattedMessage id='smart.false' />
+    }
+
     //console.log({ displayValue, currentPathText, currentValue, moment, currentPropertyType })
     return { displayValue, currentPathText, currentValue };
 };
@@ -1069,6 +1079,24 @@ const getTextByI18n = (label) => {
 }
 
 /**
+ * 判断navigation 是否是Collection 1vs多
+ * @param {array} navigationProperty 当前对象的关联对象
+ * @param {*} navigationPropertyPath 
+ * @returns 
+ */
+const isCollection = (navigationProperty, navigationPropertyPath) => {
+    let result = false;
+    if (navigationProperty) {
+        navigationProperty.map((item) => {
+            if (item.name === navigationPropertyPath && item.type.search('Collection') !== -1) {
+                result = true;
+            }
+        });
+    }
+    return result;
+};
+
+/**
  * 解析PropertyValue属性值
  * @param {*} data 
  * @returns 
@@ -1087,6 +1115,12 @@ const parsePropertyValue = (data) => {
         Criticality: null as any,
         SemanticObject: '' as any,
         Action: '' as any,
+        Facets: null as any,
+        Data: null as any,
+        TargetValue: null as any,
+        Visualization: null as any,
+        ValueFormat: null as any,
+        MaximuValue: null as any,
     }
 
     const _getValueByRecord = (record, property) => {
@@ -1102,13 +1136,16 @@ const parsePropertyValue = (data) => {
 
     if (Array.isArray(data)) {
         for (let a of data) {
-            const { property, record } = a
+            const { property, record, collection } = a
             if (record) {
                 _getValueByRecord(record, property)
             } else {
                 switch (property) {
                     case 'ID':
                         result.ID = getTextValueByData('string', a)
+                        break;
+                    case 'Title':
+                        result.Title = getTextValueByData('string', a)
                         break;
                     case 'Label':
                         result.Label = getTextByI18n(getTextValueByData('string', a))
@@ -1133,6 +1170,24 @@ const parsePropertyValue = (data) => {
                         break;
                     case 'Action':
                         result.Action = getTextValueByData('string', a)
+                        break;
+                    case 'Facets':
+                        result.Facets = collection
+                        break;
+                    case 'Data':
+                        result.Data = collection
+                        break;
+                    case 'TargetValue':
+                        result.TargetValue = getTextValueByData('decimal', a)
+                        break;
+                    case 'Visualization':
+                        result.Visualization = getTextValueByData('enumMember', a)
+                        break;
+                    case 'ValueFormat':
+                        result.ValueFormat = getTextValueByData('string', a)
+                        break;
+                    case 'MaximuValue':
+                        result.MaximuValue = getTextValueByData('decimal', a)
                         break;
                     default:
                         break;
@@ -1188,27 +1243,18 @@ const getTargetAnnotationProcessed = (
             const { record } = data
             for (let a of record) {
                 const { type, propertyValue } = a
+                const { Label, Data } = parsePropertyValue(propertyValue)
+
                 if (type === 'UI.FieldGroupType') {
-                    let Label, Fields = [] as any
-                    for (let b of propertyValue) {
-                        const { property, collection } = b
-                        switch (property) {
-                            case 'Label':
-                                Label = getTextValueByData('string', b)
-                                break;
-                            case 'Data':
-                                const record = collection[0]?.record
-                                for (let c of record) {
-                                    const { type, propertyValue } = c
-                                    const { Value, Criticality } = parsePropertyValue(propertyValue)
-                                    Fields.push({ type, Value, Criticality })
-                                }
-                                break;
-                            default:
-                                break;
+                    let Fields = [] as any
+                    if (Data && Data.length > 0) {
+                        const record = Data[0]?.record
+                        for (let c of record) {
+                            const { type, propertyValue } = c
+                            const { Value, Criticality } = parsePropertyValue(propertyValue)
+                            Fields.push({ type, Value, Criticality })
                         }
                     }
-
                     return {
                         facetType: 'UI.FieldGroup',
                         Label,
@@ -1218,24 +1264,52 @@ const getTargetAnnotationProcessed = (
             }
         }
     }
-};
 
-/**
- * 判断navigation 是否是Collection 1vs多
- * @param {array} navigationProperty 当前对象的关联对象
- * @param {*} navigationPropertyPath 
- * @returns 
- */
-const isCollection = (navigationProperty, navigationPropertyPath) => {
-    let result = false;
-    if (navigationProperty) {
-        navigationProperty.map((item) => {
-            if (item.name === navigationPropertyPath && item.type.search('Collection') !== -1) {
-                result = true;
+    //DataPoint类型
+    if (target && target.search('UI.DataPoint') !== -1) {
+        let dataPointProperty
+        //获取DataPoint当前字段的类型
+        const _getDataPointProperty = (currentAnnotations, currentQualifier) => {
+            if (currentAnnotations) {
+                for (let a of currentAnnotations) {
+                    const { term, qualifier, record } = a
+                    if (term === 'UI.DataPoint') {
+                        if (currentQualifier && currentQualifier === qualifier) {
+                            for (let b of record) {
+                                const { type, propertyValue } = b
+                                if (type === 'UI.DataPointType') {
+                                    const { Title, Value, TargetValue, Visualization, ValueFormat, Criticality } = parsePropertyValue(propertyValue)
+                                    return {
+                                        Title: getTextByI18n(Title),
+                                        Value,
+                                        TargetValue,
+                                        Visualization,
+                                        ValueFormat,
+                                        Criticality
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
-        });
+            return false
+        }
+
+        //判断是否显示为关联对象
+        if (targetNavigation) {
+            const navigationEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(currentEntitySetData, targetNavigation)
+            let { currentAnnotations: navigationAnotations } = getEntitySetConfig(navigationEntitySet)
+            dataPointProperty = _getDataPointProperty(navigationAnotations, targetQualifier)
+        } else {
+            dataPointProperty = _getDataPointProperty(currentAnnotations, targetQualifier)
+        }
+
+        return {
+            value: dataPointProperty,
+            facetType: 'dataPoint',
+        };
     }
-    return result;
 };
 
 /**
@@ -1251,65 +1325,40 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
         HiddenPaths: [] as any
     }
 
-    const facetsData = getTermAnnotations(currentAnnotations, 'UI.Facets');
-    const headerFacetsData = getTermAnnotations(currentAnnotations, 'UI.HeaderFacets');
-
     //解析ReferenceFacet
     const _getReferenceFacet = (propertyValue) => {
-        let result = {} as any;
-        for (let f of propertyValue) {
-            const { property } = f;
-            if (property === 'ID') {
-                result.id = getTextValueByData('string', f);
-            } else {
-                result.id = generateKey()
-            }
-            if (property === 'Label') {
-                result.label = getTextByI18n(getTextValueByData('string', f))
-            }
-            if (property === 'Target') {
-                result.target = getTextValueByData(`annotationPath`, f);
-                result.targetData = getTargetAnnotationProcessed(
-                    currentAnnotations,
-                    result.target,
-                    currentEntitySetData
-                );
-            }
+        const { ID, Label, Target } = parsePropertyValue(propertyValue)
+        return {
+            id: ID,
+            label: Label,
+            target: Target,
+            targetData: getTargetAnnotationProcessed(currentAnnotations, Target, currentEntitySetData)
         }
-        return result;
     };
 
     //解析CollectionFacet
     const _getCollectionFacet = (propertyValue) => {
-        let id,
-            label,
-            childfacets = [] as any;
-        for (let c of propertyValue) {
-            const { property, collection } = c;
-            if (property === 'ID') {
-                id = getTextValueByData('string', c);
-            }
-            if (property === 'Label') {
-                label = getTextByI18n(getTextValueByData('string', c))
-            }
-            if (property === 'Facets') {
-                for (let d of collection) {
-                    const { record } = d;
-                    for (let e of record) {
-                        const { type, propertyValue } = e;
-                        if (type === 'UI.ReferenceFacet') {
-                            const ReferenceFacetData = _getReferenceFacet(propertyValue);
-                            childfacets.push(ReferenceFacetData);
-                        }
-                        if (type === 'UI.CollectionFacet') {
-                            const CollectionFacetData = _getCollectionFacet(propertyValue);
-                            childfacets.push(CollectionFacetData);
-                        }
-                    }
+        const { ID, Label, Facets } = parsePropertyValue(propertyValue)
+        let childfacets = [] as any;
+        for (let d of Facets) {
+            const { record } = d;
+            for (let e of record) {
+                const { type, propertyValue } = e;
+                if (type === 'UI.ReferenceFacet') {
+                    const ReferenceFacetData = _getReferenceFacet(propertyValue);
+                    childfacets.push(ReferenceFacetData);
+                }
+                if (type === 'UI.CollectionFacet') {
+                    const CollectionFacetData = _getCollectionFacet(propertyValue);
+                    childfacets.push(CollectionFacetData);
                 }
             }
         }
-        return { id, label, childfacets };
+        return {
+            id: ID,
+            label: Label,
+            childfacets
+        };
     };
 
     //解析Facets
@@ -1344,6 +1393,9 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
         return arr
     }
 
+    //开始解析Facets
+    const facetsData = getTermAnnotations(currentAnnotations, 'UI.Facets');
+    const headerFacetsData = getTermAnnotations(currentAnnotations, 'UI.HeaderFacets');
     if (facetsData) {
         result.Facets = _parseFacets(facetsData)
     }
@@ -1896,6 +1948,7 @@ export default {
     getEntitySetConfig,
     getTermAnnotations,
     getTextValueByData,
+    getTextByI18n,
     getLabelByAnnotation,
     getQueryContitionsByAnnotations,
     getPrimaryKeys,
