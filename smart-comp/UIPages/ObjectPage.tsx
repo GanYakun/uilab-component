@@ -141,6 +141,7 @@ export default (props) => {
     //解析头数据
     const _getObjectPageHeaderOptions = useMemo(() => {
         const { HeaderInfo, entitySet, Identification } = (currentState || {});
+
         if (HeaderInfo) {
             const { Title, Description } = HeaderInfo;
             const titleOption = {

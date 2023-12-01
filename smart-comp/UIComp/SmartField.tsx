@@ -14,7 +14,7 @@ import { Modal, Typography, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
-import { Criticality } from "../Process/config";
+import { Criticality, dataPointCriticality } from "../Process/config";
 import { FormattedMessage } from "react-intl";
 
 export default (props) => {
@@ -28,7 +28,9 @@ export default (props) => {
         colProps,
         valueColor,
         action,
-        dataPoint
+        dataPoint,
+        rules, // 是否为必填字段
+        nullable,
     } = props;
     const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any, defaultValue: string, label: string }>()
 
@@ -44,15 +46,25 @@ export default (props) => {
         colProps: colProps || { md: 8, xl: 6 },
         fieldProps: {
         },
-        width: "lg"
+        width: "lg",
+        rules
     });
 
     //初始化方法
     const init = async () => {
-        const result = await getConfig({ record, entitySet, path, isReadOnly, action, dataPoint })
+        const result = await getConfig({ record, entitySet, path, isReadOnly, action, dataPoint, nullable })
         if (result) {
             const { label } = result || {};
             currentFieldProps.label = label;
+            //设置必填
+            if (result.nullable) {
+                currentFieldProps.rules = [
+                    {
+                        required: true,
+                        message: <FormattedMessage id="smart.required" />,
+                    },
+                ];
+            }
             setCurrentState(result)
         }
     }
@@ -270,7 +282,7 @@ export default (props) => {
             case "DataPoint":
                 return <Typography.Title
                     level={2}
-                    style={{ marginLeft: 10, color: '#6a6d70', fontSize: 26 }
+                    style={{ marginLeft: 10, color: record && typeof (record[valueColor]) === "number" ? dataPointCriticality[record[valueColor]] : '#6a6d70', fontSize: 26 }
                     }>
                     {displayValue}
                 </Typography.Title>

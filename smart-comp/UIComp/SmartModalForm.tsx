@@ -33,6 +33,7 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
                         key: `${item.Value}-${index}`,
                         entitySet,
                         path: item.Value,
+
                     }
                     return <SmartField {...option} />
                 })
@@ -43,7 +44,8 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
                         key: `${item.name}-${index}`,
                         entitySet,
                         path: item.name,
-                        action
+                        action,
+                        nullable: item.nullable
                     }
                     return <SmartField {...option} />
                 })
