@@ -32,14 +32,16 @@ export default (props) => {
             // 获取数据
             let data = await result.annoRequest({});
             result = await getConfig({ location, currentRecord: data.data });
-            data = await result.annoRequest({});
             console.log({
                 "ObjectPage-getConfig": result,
                 "ObjectPage-data": data
             });
             setCurrentRecord(data.data);
+            // 默认选中第一个不隐藏的数据
             if (result.Facets?.length) {
-                setActiveValue(result.Facets[0].id);
+                // 过滤隐藏的数据
+                result.Facets = result.Facets.filter((e) => (!e.isHidden));
+                setActiveValue("tabs-" + 0);
             }
             setCurrentState(result)
         }
@@ -130,10 +132,10 @@ export default (props) => {
         let { Facets } = (currentState || {});
         let arr: any[] = [];
         // 切换的列表大于1时才显示
-        Facets?.length > 1 && Facets.forEach((item) => {
+        Facets?.length > 1 && Facets.forEach((item, i) => {
             !item.isHidden && arr.push({
                 tab: item.label,
-                key: item.id,
+                key: "tabs-" + i,
                 closable: false,
             })
         })
@@ -157,7 +159,7 @@ export default (props) => {
                 record: currentRecord,
             }
             let extra = Identification?.map((item, index) => {
-                return <SmartModalForm
+                return item.isHidden ? null : <SmartModalForm
                     key={index}
                     formType={item.type}
                     entitySet={entitySet}
@@ -239,7 +241,7 @@ export default (props) => {
         if (Facets) {
             return Facets.map((item, index) => {
                 const { targetData, childfacets } = (item || {});
-                if (item.id === activeValue) {
+                if (("tabs-" + index) === activeValue) {
                     // 循环多层
                     if (childfacets) {
                         return <React.Fragment key={`Facets-${index}`}>{childfacets.map((targetItem, targetIndex) => {
