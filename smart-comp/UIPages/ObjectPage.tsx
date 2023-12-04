@@ -169,6 +169,8 @@ export default (props) => {
                     fields={item.Fields}
                     onSubmit={async (body) => {
                         await item.annoRequest({ body, path: `${location.query.queryEntity}/${item.Action}` })
+                        setCurrentState(null);
+                        init();
                     }}
                 />
             })

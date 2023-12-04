@@ -218,10 +218,6 @@ export default (props) => {
                 return <ProFormSelect
                     {...currentFieldProps}
                     valueEnum={currentValueEnum ? currentValueEnum : {}}
-                // request={async () => {
-                //     const result = await valueListConfig.annoRequest()
-                //     return result
-                // }} 
                 />
             case 'LookUp':
                 const { Parameters } = valueListConfig
