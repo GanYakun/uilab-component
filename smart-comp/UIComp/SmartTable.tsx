@@ -229,6 +229,7 @@ export default (props) => {
                 //快速创建按钮
                 currentState?.headerBtns && (currentState?.headerBtns?.map((item, index) => {
                     return <SmartModalForm
+                        key={index}
                         formType={item.type}
                         entitySet={entitySet}
                         content={{

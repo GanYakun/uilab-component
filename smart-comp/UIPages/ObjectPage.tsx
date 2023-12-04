@@ -43,6 +43,7 @@ export default (props) => {
                 result.Facets = result.Facets.filter((e) => (!e.isHidden));
                 setActiveValue("tabs-" + 0);
             }
+            console.log({ result });
             setCurrentState(result)
         }
     }
@@ -72,13 +73,20 @@ export default (props) => {
                                         showLabel: true,
                                         valueColor: item.Criticality
                                     }
-                                    return (
-                                        <div id={`target-${index}`} key={`target-${index}-${id}`}>
-                                            <ProFormGroup>
-                                                <SmartField {...option} />
-                                            </ProFormGroup>
-                                        </div>
-                                    )
+                                    switch (item.type) {
+                                        case "UI.DataField":
+                                            return <div id={`target-${index}`} key={`target-${index}-${id}`}>
+                                                <ProFormGroup>
+                                                    <SmartField {...option} />
+                                                </ProFormGroup>
+                                            </div>
+                                        case "UI.DataFieldForAnnotation":
+                                            return <div key={`target-${index}-${id}`}>
+                                                
+                                            </div>
+                                        default:
+                                            return <div key={`target-${index}-${id}`}></div>;
+                                    }
                                 })}
                             </div>
                         )
