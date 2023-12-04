@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:22:11
+ * @LastEditTime: 2023-12-04 15:43:51
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -27,6 +27,7 @@ const getValueListProperty = (
         Parameters: [] as any,
         currentExpand: null as any,
         currentSelect: null as any,
+        isMultiple: false
     };
 
     //解析返回  LocalDataProperty、ValueListProperty
@@ -428,6 +429,7 @@ export const getConfig = async (params) => {
     const nullable = isNullable(currentAnnotations, entitySet, path)
     const defaultValue = getParameterDefaultValue(currentAnnotations)
     const unit = getUnit(currentAnnotations)
+    const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
     if (path === 'geoId') {
@@ -446,7 +448,8 @@ export const getConfig = async (params) => {
             action,
             defaultValue,
             unit,
-            dataPoint
+            dataPoint,
+            isMultiple
         })
     }
     return {
@@ -458,5 +461,6 @@ export const getConfig = async (params) => {
         nullable,//是否必填字段 true:必填
         defaultValue,//默认值
         unit,//单位
+        isMultiple,//是否多选
     }
 }

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:23:18
+ * @LastEditTime: 2023-12-04 15:43:44
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1997,6 +1997,22 @@ const parseActionByName = (actionName) => {
     return result
 }
 
+//判断是否为多选
+const isMultiSelect = (action, path) => {
+    if (action) {
+        const { Fields } = action
+        if (Fields) {
+            for (let item of Fields) {
+                const { name, type } = item
+                if (name === path) {
+                    return type === 'Collection(Edm.String)'
+                }
+            }
+        }
+    }
+    return false
+}
+
 export default {
     getRouteName,
     getUi5Config,
@@ -2018,5 +2034,6 @@ export default {
     getPresentationVariantByAnnotations,
     getSelectionPresentationVariantByAnnotations,
     isHiddenByAnnotation,
-    parseActionByName
+    parseActionByName,
+    isMultiSelect
 }
