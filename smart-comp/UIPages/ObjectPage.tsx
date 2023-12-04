@@ -165,9 +165,9 @@ export default (props) => {
                         btnText: item.Label
                     }}
                     action={item.Action}
-                    fields={item.Fields}
+                    fields={item.Action.Fields}
                     onSubmit={async (body) => {
-                        await item.annoRequest({ body, path: `${location.query.queryEntity}/${item?.Action?.name}` })
+                        await item.Action.annoRequest({ body, path: `${location.query.queryEntity}/${item?.Action?.name}` })
                         setCurrentState(null);
                         init();
                     }}
@@ -210,7 +210,6 @@ export default (props) => {
                             action={extra.Action}
                             fields={extra.Action.Fields}
                             onSubmit={async (body) => {
-                                console.log(`${location.query.queryEntity}/${extra.Action}`);
                                 await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra?.Action?.name}` })
                                 setCurrentState(null);
                                 init();

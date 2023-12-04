@@ -37,7 +37,7 @@ export default (props) => {
         onLoad,
         qualifier
     } = props;
-    const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
+    const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any, headerBtns: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
 
     //表格选中项
@@ -226,6 +226,24 @@ export default (props) => {
                         }}
                     />
                 ),
+                //快速创建按钮
+                currentState?.headerBtns && (currentState?.headerBtns?.map((item, index) => {
+                    return <SmartModalForm
+                        formType={item.type}
+                        entitySet={entitySet}
+                        content={{
+                            title: item.Label,
+                            btnText: item.Label
+                        }}
+                        fields={item.Action.Fields}
+                        onSubmit={(params) => {
+                            item.Action.annoRequest?.post(params)
+                        }}
+                        action={""}
+                    />
+                })
+
+                )
             ]}
             rowSelection={currentRowSelection ? _rowSelection() : false}
         />

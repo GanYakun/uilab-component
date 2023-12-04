@@ -8,7 +8,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateRangePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
@@ -185,7 +185,7 @@ export default (props) => {
     };
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue, valueListConfig, defaultValue } = (currentState || {})
+        const { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
 
         switch (fieldType) {
             case 'ReadOnly':
@@ -215,6 +215,9 @@ export default (props) => {
                     }
                 };
                 currentFieldProps.fieldProps.loading = selectLoading;
+                if (isMultiple) {
+                    currentFieldProps.mode = "multiple";
+                }
                 return <ProFormSelect
                     {...currentFieldProps}
                     valueEnum={currentValueEnum ? currentValueEnum : {}}
@@ -224,7 +227,7 @@ export default (props) => {
                 const LocalDataPropertyArr: any = []
                 if (Parameters) {
                     for (let a of Parameters) {
-                        const { type, LocalDataProperty, ValueListProperty } = a
+                        const { type, LocalDataProperty } = a
                         if (type === 'ValueListParameterIn') {
                             LocalDataPropertyArr.push(LocalDataProperty)
                         }
@@ -283,7 +286,7 @@ export default (props) => {
                     {displayValue}
                 </Typography.Title>
             case 'Number':
-                return <ProFormText {...currentFieldProps} />
+                return <ProFormDigit {...currentFieldProps} />
             default:
                 return <div></div>
         }
