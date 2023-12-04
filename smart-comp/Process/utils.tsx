@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:43:44
+ * @LastEditTime: 2023-12-04 16:43:31
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1101,7 +1101,7 @@ const isCollection = (navigationProperty, navigationPropertyPath) => {
  * @param {*} data 
  * @returns 
  */
-const parsePropertyValue = (data, entitySetName='') => {
+const parsePropertyValue = (data, entitySetName = '') => {
     const result = {
         ID: '' as any,
         Label: '' as any,
@@ -1124,7 +1124,7 @@ const parsePropertyValue = (data, entitySetName='') => {
         Inline: null as any,
         Url: null as any,
         TargetType: null as any,
-        NavigationPropertyPath:null as any
+        NavigationPropertyPath: null as any
     }
 
     const _getValueByRecord = (record, property) => {
@@ -1204,7 +1204,7 @@ const parsePropertyValue = (data, entitySetName='') => {
                         break;
                     case 'Url':
                         result.Url = getTextValueByData('path', a)
-                        break; 
+                        break;
                     default:
                         break;
                 }
@@ -1267,7 +1267,7 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value, Criticality, Action,Label } = parsePropertyValue(propertyValue)
+                            const { Value, Criticality, Action, Label } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
                                 Value,
@@ -1895,6 +1895,7 @@ const parseActionByName = (actionName) => {
         name: actionName,
         isBound: false,
         Fields: [] as any,
+        BoundData: null as any,
         SideEffects: [] as any,
         annoRequest: null as any,
         isUpload: false,
@@ -1909,7 +1910,10 @@ const parseActionByName = (actionName) => {
             if (actionName === `${namespace}.${name}`) {
                 let { isBound, parameter, entitySetPath, returnType, name, type } = a
                 result.isUpload = parameter.findIndex((item) => item.type === 'Edm.Stream') !== -1
-                isBound === 'true' && parameter && parameter.shift()
+                //可用参数
+                if (isBound === 'true' && parameter) {
+                    result.BoundData = parameter.shift()
+                }
                 result.isBound = isBound === 'true'
                 result.Fields = parameter
                 break
@@ -1942,7 +1946,7 @@ const parseActionByName = (actionName) => {
     }
 
     //处理请求
-    result.annoRequest = async ({ boundActionData, body, path='' }) => {
+    result.annoRequest = async ({ boundActionData, body, path = '' }) => {
         //是否为批量提交场景 
         if (boundActionData && boundActionData.length > 0) {
             const arr = [] as any

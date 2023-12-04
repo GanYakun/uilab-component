@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:48:47
+ * @LastEditTime: 2023-12-04 16:44:18
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -409,9 +409,18 @@ const isNullable = (currentAnnotations, entitySet, path) => {
  * 获取字段默认值
  * @param {*} currentAnnotations 
  */
-const getParameterDefaultValue = (currentAnnotations) => {
-    const record = Utils.getTermAnnotations(currentAnnotations, 'UI.ParameterDefaultValue');
-    return Utils.getTextValueByData(`string`, record) ? Utils.getTextValueByData(`string`, record) : Utils.getTextValueByData(`bool`, record) === 'true'
+const getParameterDefaultValue = (currentAnnotations, record) => {
+    const anno = Utils.getTermAnnotations(currentAnnotations, 'UI.ParameterDefaultValue');
+    if (anno) {
+        if (Utils.getTextValueByData(`string`, anno)) {
+            return Utils.getTextValueByData(`string`, anno)
+        } else if (Utils.getTextValueByData(`bool`, anno)) {
+            return Utils.getTextValueByData(`bool`, anno) === 'true'
+        } else if (Utils.getTextValueByData(`path`, anno)) {
+            const path = Utils.getTextValueByData(`path`, anno)
+            //console.log({path})
+        }
+    }
 }
 
 //获取单位
@@ -427,12 +436,12 @@ export const getConfig = async (params) => {
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const Label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
-    const defaultValue = getParameterDefaultValue(currentAnnotations)
+    const defaultValue = getParameterDefaultValue(currentAnnotations, record)
     const unit = getUnit(currentAnnotations)
     const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
-    if (path === 'target') {
+    if (path === 'ddFormType') {
         console.log('SmartField-Log', {
             path,
             record,
