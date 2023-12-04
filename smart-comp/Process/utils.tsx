@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 14:47:50
+ * @LastEditTime: 2023-12-04 15:23:18
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1892,6 +1892,7 @@ const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
  */
 const parseActionByName = (actionName) => {
     let result = {
+        name: actionName,
         isBound: false,
         Fields: [] as any,
         SideEffects: [] as any,
@@ -1941,7 +1942,7 @@ const parseActionByName = (actionName) => {
     }
 
     //处理请求
-    result.annoRequest = async ({ boundActionData, body, path }) => {
+    result.annoRequest = async ({ boundActionData, body, path='' }) => {
         //是否为批量提交场景 
         if (boundActionData && boundActionData.length > 0) {
             const arr = [] as any

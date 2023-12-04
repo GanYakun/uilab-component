@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:04:38
+ * @LastEditTime: 2023-12-04 15:22:11
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -421,7 +421,7 @@ const getUnit = (currentAnnotations) => {
 
 export const getConfig = async (params) => {
     const { record, entitySet, path, isReadOnly, action, dataPoint } = params
-    const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action)
+    const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action?.name)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const Label = Utils.getLabelByAnnotation(currentAnnotations)
@@ -430,7 +430,7 @@ export const getConfig = async (params) => {
     const unit = getUnit(currentAnnotations)
 
     //调试用
-    if (path === 'annualRevenue') {
+    if (path === 'geoId') {
         console.log('SmartField-Log', {
             path,
             record,
