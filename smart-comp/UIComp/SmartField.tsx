@@ -61,7 +61,7 @@ export default (props) => {
                 currentFieldProps.rules = [
                     {
                         required: true,
-                        message: <FormattedMessage id="smart.required" />,
+                        message: <FormattedMessage id="smart.errRule" />,
                     },
                 ];
             }

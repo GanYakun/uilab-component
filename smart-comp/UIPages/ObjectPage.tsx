@@ -141,7 +141,6 @@ export default (props) => {
     //解析头数据
     const _getObjectPageHeaderOptions = useMemo(() => {
         const { HeaderInfo, entitySet, Identification } = (currentState || {});
-
         if (HeaderInfo) {
             const { Title, Description } = HeaderInfo;
             const titleOption = {
@@ -193,12 +192,34 @@ export default (props) => {
     }, [currentState, currentRecord])
     //渲染section
     const _renderSection = useMemo(() => {
-        const { Facets } = (currentState || {});
+        const { Facets, entitySet } = (currentState || {});
         const _renderSectionContent = (targetData, targetName, index) => {
             switch (targetData?.facetType) {
                 case "UI.FieldGroup":
+                    let extra = targetData?.Fields?.find((e) => (e.type === "UI.DataFieldForAction"));
+                    let renderExtra: any = null;
+                    if (extra) {
+                        renderExtra = <SmartModalForm
+                            key={index}
+                            formType={extra.type}
+                            entitySet={entitySet}
+                            content={{
+                                title: extra.Label,
+                                btnText: extra.Label
+                            }}
+                            action={extra.Action}
+                            fields={extra.Action.Fields}
+                            onSubmit={async (body) => {
+                                console.log(`${location.query.queryEntity}/${extra.Action}`);
+                                
+                                await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra.Action}` })
+                                setCurrentState(null);
+                                init();
+                            }}
+                        />
+                    }
                     return <div key={`section-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                        <Card title={targetName} bordered={false}>
+                        <Card title={targetName} bordered={false} extra={renderExtra}>
                             <ProForm submitter={false} grid={true}>
                                 <ProFormGroup>
                                     {
