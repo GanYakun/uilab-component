@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 18:27:52
+ * @LastEditTime: 2023-12-04 15:51:03
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -184,17 +184,14 @@ const getIdentificationByAnnotations = (currentAnnotations, currentRecord) => {
             for (let b of record) {
                 const { type, propertyValue, annotation: fieldannotation } = b
                 const { SemanticObject, Action, Label } = Utils.parsePropertyValue(propertyValue)
-                const { Fields, annoRequest } = Utils.parseActionByName(Action)
                 const obj = {
                     SemanticObject,
-                    Action,
+                    Action: Utils.parseActionByName(Action),
                     Label,
                     hiddenPath: null,
                     isHidden: null as any,
                     MediaUploadLink: null,
                     type,
-                    Fields,
-                    annoRequest,
                 }
                 //是否隐藏 是否是链接
                 if (fieldannotation) {
