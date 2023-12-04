@@ -211,7 +211,6 @@ export default (props) => {
                             fields={extra.Action.Fields}
                             onSubmit={async (body) => {
                                 console.log(`${location.query.queryEntity}/${extra.Action}`);
-                                
                                 await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra.Action}` })
                                 setCurrentState(null);
                                 init();
@@ -250,6 +249,7 @@ export default (props) => {
                             entitySet={targetData?.targetEntitySet}
                             queryEntity={location?.query?.queryEntity}
                             targetNavigation={targetData?.targetNavigation}
+                            qualifier={targetData?.headerBtns}
                         />
                     </div>
                 default:

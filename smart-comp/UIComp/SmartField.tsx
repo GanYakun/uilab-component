@@ -54,8 +54,8 @@ export default (props) => {
     const init = async () => {
         const result = await getConfig({ record, entitySet, path, isReadOnly, action, dataPoint, nullable })
         if (result) {
-            const { label } = result || {};
-            currentFieldProps.label = label;
+            const { label, Label } = result || {};
+            currentFieldProps.label = (label || Label);
             //设置必填
             if (result.nullable) {
                 currentFieldProps.rules = [
@@ -177,7 +177,7 @@ export default (props) => {
             setSelectLoading(false);
             result?.map((item) => {
                 obj[item.value] = {
-                    text: item.label
+                    text: item.label || item.Label
                 }
             })
             setCurrentValueEnum(obj);
@@ -282,6 +282,8 @@ export default (props) => {
                     }>
                     {displayValue}
                 </Typography.Title>
+            case 'Number':
+                return <ProFormText {...currentFieldProps} />
             default:
                 return <div></div>
         }
