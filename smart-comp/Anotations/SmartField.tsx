@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 18:16:30
+ * @LastEditTime: 2023-12-04 15:04:38
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -120,9 +120,9 @@ const getValueListProperty = (
                                     const { LocalDataProperty, ValueListProperty } = _getProperty(propertyValue);
                                     if (ValueListProperty && type !== 'Common.ValueListParameterIn') {
                                         const { currentAnnotations } = Utils.getEntitySetConfig(result.collectionPath, ValueListProperty)
-                                        const label = Utils.getLabelByAnnotation(currentAnnotations)
+                                        const Label = Utils.getLabelByAnnotation(currentAnnotations)
                                         if (result.columns.findIndex((columnItem) => columnItem.path === ValueListProperty) === -1) {
-                                            result.columns.push({ path: ValueListProperty, label, type: 'UI.DataField' });
+                                            result.columns.push({ path: ValueListProperty, Label, type: 'UI.DataField' });
                                         }
                                     }
                                     _setParameters(type, LocalDataProperty, ValueListProperty);
@@ -249,7 +249,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
             value.map((item) => {
                 const val = _getDisplayText(item, DisplayProperty, _ValueListProperty)
                 arr.push({
-                    label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty]
+                    Label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty]
                 })
             });
             return arr
@@ -424,13 +424,13 @@ export const getConfig = async (params) => {
     const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
-    const label = Utils.getLabelByAnnotation(currentAnnotations)
+    const Label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
     const defaultValue = getParameterDefaultValue(currentAnnotations)
     const unit = getUnit(currentAnnotations)
 
     //调试用
-    if (path === 'ddFormDealStatus') {
+    if (path === 'annualRevenue') {
         console.log('SmartField-Log', {
             path,
             record,
@@ -441,7 +441,7 @@ export const getConfig = async (params) => {
             currentValue,
             currentAnnotations,
             valueListConfig,
-            label,
+            Label,
             nullable,
             action,
             defaultValue,
@@ -454,7 +454,7 @@ export const getConfig = async (params) => {
         displayValue,//用户显示的值
         currentValue,//表单的值value
         valueListConfig,//Select的类型需要的参数
-        label,//表单的label
+        Label,//表单的label
         nullable,//是否必填字段 true:必填
         defaultValue,//默认值
         unit,//单位
