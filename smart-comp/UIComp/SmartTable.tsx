@@ -34,7 +34,8 @@ export default (props) => {
         filterDefaultValue,
         queryEntity,
         targetNavigation,
-        onLoad
+        onLoad,
+        qualifier
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any }>()
     const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -46,7 +47,7 @@ export default (props) => {
     const actionRef = useRef<ActionType>();
     //初始化方法
     const init = async () => {
-        const result = await getConfig({ entitySet })
+        const result = await getConfig({ entitySet, qualifier })
         if (result) {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns

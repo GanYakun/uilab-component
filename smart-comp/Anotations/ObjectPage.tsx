@@ -247,6 +247,7 @@ export const getConfig = async ({ location, currentRecord }) => {
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
     const Identification = getIdentificationByAnnotations(currentAnnotations, currentRecord)
     const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }))
+    const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
 
     //调试使用
     if (currentRecord) {
@@ -261,7 +262,8 @@ export const getConfig = async ({ location, currentRecord }) => {
             Facets,
             HeaderFacets,
             annoRequest,
-            Identification
+            Identification,
+            quickCreate
         })
     }
 
@@ -272,5 +274,6 @@ export const getConfig = async ({ location, currentRecord }) => {
         Facets,//内容区构件
         annoRequest,//请求
         Identification,//头部按钮 [{Label:btnText/title,Fields:表单字段，annoRequest:提交请求（body）,isHidden:是否隐藏,type：表单提交类型}]
+        quickCreate,//是否支持quickCreate
     }
 }

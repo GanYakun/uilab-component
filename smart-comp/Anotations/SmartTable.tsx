@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 11:16:25
+ * @LastEditTime: 2023-12-04 14:57:30
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,7 @@ import moment from 'moment'
  * @param currentAnnotations
  * @returns
  */
-const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
+const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualifier) => {
     const result = {
         columns: [] as any,
         inLineBtns: [] as any,
@@ -23,74 +23,11 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
     }
 
     //LineItem
-    const lineItem = Utils.getTermAnnotations(currentAnnotations, 'UI.LineItem')
-    //console.log({ lineItem })
+    const lineItem = Utils.getTermAnnotations(currentAnnotations, 'UI.LineItem', qualifier)
     if (lineItem) {
         //遍历collection数组 返回property配置
         const { collection } = lineItem
         if (collection) {
-            //解析LineItem 的Collection
-            const _getPropertyValue = (propertyValue, annotation) => {
-                const result = {
-                    Label: null,
-                    Path: null,
-                    Url: null,
-                    SemanticObject: null,
-                    Action: null,
-                    Inline: null,
-                    HiddenPath: null,
-                    IsHidden: null,
-                    MediaUploadLink: null,
-                    TargetType: null,
-                    TargetValue: null,
-                    NavigationPropertyPath: null
-                }
-
-                //解析
-                for (let c of propertyValue) {
-                    const { property, annotationPath } = c
-                    switch (property) {
-                        case 'Label':
-                            result.Label = Utils.getTextValueByData('string', c)
-                            break;
-                        case 'Value':
-                            result.Path = Utils.getTextValueByData('path', c)
-                            //当前LineItem上的Label优先级最高，如果未设置去查询当前字段时候配置Label 关联对象label
-                            if (!result.Label) {
-                                const { currentAnnotations } = Utils.getEntitySetConfig(entitySetName, result.Path)
-                                result.Label = Utils.getLabelByAnnotation(currentAnnotations)
-                            }
-                            break;
-                        case 'Inline':
-                            result.Inline = Utils.getTextValueByData('bool', c)
-                            break;
-                        case 'SemanticObject':
-                            result.SemanticObject = Utils.getTextValueByData('string', c)
-                            break;
-                        case 'Action':
-                            result.Action = Utils.getTextValueByData('string', c)
-                            break;
-                        case 'Target':
-                            break;
-                        case 'Url':
-                            result.Url = Utils.getTextValueByData('path', c)
-                            break;
-                        default:
-                            break;
-                    }
-                }
-
-                //处理annotation
-                if (annotation) {
-                }
-
-                //如果没有配置Label  使用 Path
-                if (!result.Label) {
-                    result.Label = result.Path
-                }
-                return result
-            }
-
             //解析LineItem 添加到 columns
             const _addToColumns = (obj: any) => {
                 const idx = result.columns.findIndex((item: any) => item.path === obj.path)
@@ -98,39 +35,38 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
                     result.columns.push(obj)
                 }
             }
-
             for (let a of collection) {
                 const { record } = a
                 for (let b of record) {
                     const { type, propertyValue, annotation } = b
-                    const {
+                    let {
                         Label,
-                        Path,
+                        Value,
                         Url,
                         Inline,
                         SemanticObject,
                         Action,
-                        HiddenPath,
-                        MediaUploadLink,
-                        TargetType,
                         TargetValue,
-                        NavigationPropertyPath
-                    } = _getPropertyValue(propertyValue, annotation)
+                        TargetType,
+                        NavigationPropertyPath,
+                    } = Utils.parsePropertyValue(propertyValue, entitySetName)
+
                     switch (type) {
                         case 'UI.DataField':
                             _addToColumns({
                                 type: type,
-                                path: Path,
+                                path: Value,
                                 label: Label,
                                 show: true
                             })
                             break;
                         case 'UI.DataFieldForAction':
+                            const ActionData = Utils.parseActionByName(Action)
                             //判断是行内还是头部
                             if (Inline === 'true') {
-                                result.inLineBtns.push({ Action, Label, HiddenPath, MediaUploadLink })
+                                result.inLineBtns.push({ Action: ActionData, Label })
                             } else {
-                                result.headerBtns.push({ Action, Label, HiddenPath, MediaUploadLink })
+                                result.headerBtns.push({ Action: ActionData, Label })
                             }
                             break
                         case 'UI.DataFieldForAnnotation':
@@ -145,7 +81,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
                         case 'UI.DataFieldWithNavigationPath':
                             _addToColumns({
                                 type: type,
-                                path: Path,
+                                path: Value,
                                 label: Label,
                                 navigationPropertyPath: NavigationPropertyPath,
                                 show: true
@@ -154,7 +90,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
                         case 'UI.DataFieldForIntentBasedNavigation':
                             _addToColumns({
                                 type: type,
-                                path: Path,
+                                path: Value,
                                 label: Label,
                                 semanticObject: SemanticObject,
                                 action: Action,
@@ -164,7 +100,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
                         case 'UI.DataFieldWithUrl':
                             _addToColumns({
                                 type: type,
-                                path: Path,
+                                path: Value,
                                 label: Label,
                                 url: Url,
                                 show: true
@@ -176,7 +112,6 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string) => {
                 }
             }
         }
-
     }
     return result
 }
@@ -284,9 +219,9 @@ const _setRequest = (entitySet, columns) => {
 }
 
 export const getConfig = async (params) => {
-    const { entitySet } = params
+    const { entitySet, qualifier } = params
     const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
-    const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet)
+    const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet, qualifier)
     const annoRequest = _setRequest(entitySet, columns)
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
     console.log('SmartTable-Log', {
@@ -295,7 +230,9 @@ export const getConfig = async (params) => {
         columns,
         inLineBtns,
         headerBtns,
-        quickCreate
+        quickCreate,
+        currentAnnotations,
+        qualifier
     })
     return {
         entitySet,

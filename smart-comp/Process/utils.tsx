@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 14:04:04
+ * @LastEditTime: 2023-12-04 14:47:50
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1101,7 +1101,7 @@ const isCollection = (navigationProperty, navigationPropertyPath) => {
  * @param {*} data 
  * @returns 
  */
-const parsePropertyValue = (data) => {
+const parsePropertyValue = (data, entitySetName='') => {
     const result = {
         ID: '' as any,
         Label: '' as any,
@@ -1121,6 +1121,10 @@ const parsePropertyValue = (data) => {
         Visualization: null as any,
         ValueFormat: null as any,
         MaximuValue: null as any,
+        Inline: null as any,
+        Url: null as any,
+        TargetType: null as any,
+        NavigationPropertyPath:null as any
     }
 
     const _getValueByRecord = (record, property) => {
@@ -1152,6 +1156,12 @@ const parsePropertyValue = (data) => {
                         break;
                     case 'Value':
                         result.Value = getTextValueByData('path', a)
+                        //当前LineItem上的Label优先级最高，如果未设置去查询当前字段时候配置Label 关联对象label
+                        if (!result.Label) {
+                            const { currentAnnotations } = getEntitySetConfig(entitySetName, result.Value)
+                            result.Label = getLabelByAnnotation(currentAnnotations)
+                        }
+
                         break;
                     case 'TypeName':
                         result.TypeName = getTextValueByData('string', a);
@@ -1189,6 +1199,12 @@ const parsePropertyValue = (data) => {
                     case 'MaximuValue':
                         result.MaximuValue = getTextValueByData('decimal', a)
                         break;
+                    case 'Inline':
+                        result.Inline = getTextValueByData('bool', a)
+                        break;
+                    case 'Url':
+                        result.Url = getTextValueByData('path', a)
+                        break; 
                     default:
                         break;
                 }
