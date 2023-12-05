@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 15:39:22
+ * @LastEditTime: 2023-12-05 17:44:22
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,8 +19,8 @@ import { FormattedMessage, getLocale } from 'umi'
  * 获取当前路由名称
  */
 const getRouteName = () => {
-    const { pathname } = window.location;
-    const hrefArr = pathname.split('/');
+    const { hash } = window.location;
+    const hrefArr = hash.split('/');
     if (hrefArr.length > 1) {
         const path = hrefArr[hrefArr.length - 1];
         const appName = hrefArr.length === 4 ? hrefArr[hrefArr.length - 2] : hrefArr[hrefArr.length - 3]//目前是两个页面布局，后期优化
