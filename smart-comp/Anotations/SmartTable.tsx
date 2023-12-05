@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 13:41:13
+ * @LastEditTime: 2023-12-05 14:55:42
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -66,9 +66,9 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             const ActionData = Utils.parseActionByName(Action)
                             //判断是行内还是头部
                             if (Inline === 'true') {
-                                result.inLineBtns.push({ Action: ActionData, Label })
+                                result.inLineBtns.push({ Action: ActionData, Label, type })
                             } else {
-                                result.headerBtns.push({ Action: ActionData, Label })
+                                result.headerBtns.push({ Action: ActionData, Label, type })
                             }
                             break
                         case 'UI.DataFieldForAnnotation':

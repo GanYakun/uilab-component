@@ -52,7 +52,7 @@ export default (props) => {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
             Array.isArray(currentColumns) && currentColumns.forEach((item, index) => {
-                const { path, Label, Criticality} = item || {};
+                const { path, Label, Criticality } = item || {};
                 columns?.push({
                     title: Label,
                     key: path,
@@ -229,7 +229,7 @@ export default (props) => {
 
                     />
                 ),
-                //快速创建按钮
+                //headerBtns
                 currentState?.headerBtns && (currentState?.headerBtns?.map((item, index) => {
                     return <SmartModalForm
                         key={index}
@@ -241,10 +241,15 @@ export default (props) => {
                             btnType: 'link'
                         }}
                         fields={item.Action.Fields}
-                        onSubmit={(params) => {
-                            item.Action.annoRequest?.post(params)
+                        onSubmit={async (body) => {
+                            let path = entitySet
+                            //当前table为object子对象
+                            if (queryEntity && targetNavigation) {
+                                path = `${queryEntity}/${targetNavigation}/${item?.Action?.name}`
+                            }
+                            await item.Action.annoRequest({ body, path })
                         }}
-                        action={""}
+                        action={item.Action.name}
                     />
                 })
 
