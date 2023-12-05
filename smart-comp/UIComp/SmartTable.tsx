@@ -218,12 +218,14 @@ export default (props) => {
                         entitySet={entitySet}
                         content={{
                             title: currentState?.quickCreate?.Label,
-                            btnText: currentState?.quickCreate?.Label
+                            btnText: currentState?.quickCreate?.Label,
+                            btnType: 'link'
                         }}
                         fields={currentState?.quickCreate?.Fields}
                         onSubmit={(params) => {
                             currentState?.quickCreate?.annoRequest?.post(params)
                         }}
+
                     />
                 ),
                 //快速创建按钮
@@ -234,7 +236,8 @@ export default (props) => {
                         entitySet={entitySet}
                         content={{
                             title: item.Label,
-                            btnText: item.Label
+                            btnText: item.Label,
+                            btnType: 'link'
                         }}
                         fields={item.Action.Fields}
                         onSubmit={(params) => {

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 17:31:22
+ * @LastEditTime: 2023-12-05 12:08:33
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,7 +20,7 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
         formType,
         action
     })
-    const { title, btnText } = content;
+    const { title, btnText, btnType } = content;
     const [form] = Form.useForm<{ name: string; company: string }>();
 
     /**
@@ -63,7 +63,7 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
             layout='vertical'
             title={title}
             trigger={
-                <Button type="primary">
+                <Button type={btnType?btnType:'primary'}>
                     {btnText}
                 </Button>
             }
