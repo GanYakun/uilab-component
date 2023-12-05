@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:24:15
+ * @LastEditTime: 2023-12-05 11:43:49
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -22,7 +22,7 @@ export default (props) => {
     const { location } = props;
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
     //数据暂存
-    const [currentRecord, setCurrentRecord] = useState(null);
+    const [currentRecord, setCurrentRecord] = useState<any>(null);
     // 展示的数据 默认设置为第一条数据的id, 根据id进行展示
     const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
@@ -89,16 +89,18 @@ export default (props) => {
                             <div>
                                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
-                                    const option = {
-                                        isReadOnly: true,
-                                        entitySet: currentState?.entitySet,
-                                        path: item.Value,
-                                        record: currentRecord,
-                                        showLabel: true,
-                                        valueColor: item.Criticality
-                                    }
-                                    switch (item.type) {
+                                    const { type, Url, Value, Criticality } = item
+                                    switch (type) {
                                         case "UI.DataField":
+                                            const option = {
+                                                isReadOnly: true,
+                                                entitySet: currentState?.entitySet,
+                                                path: Value,
+                                                record: currentRecord,
+                                                showLabel: true,
+                                                valueColor: Criticality
+                                            }
+
                                             return <div id={`target-${index}`} key={`target-${index}-${id}`}>
                                                 <ProFormGroup>
                                                     <SmartField {...option} />
@@ -108,6 +110,20 @@ export default (props) => {
                                             return <div key={`target-${index}-${id}`}>
 
                                             </div>
+                                        case "UI.DataFieldWithUrl":
+                                            //判断是否为多段式
+                                            if (Url.search('/') === -1) {
+                                                return <a href={currentRecord[Url]} target="_blank">{currentRecord[Value]}</a>
+                                            } else {
+                                                let pathArr = Value.split('/'), urlArr = Url.split('/'), pathValue, urlValue;
+                                                for (let a of pathArr) {
+                                                    pathValue = pathValue ? pathValue[a] : currentRecord[a];
+                                                }
+                                                for (let a of urlArr) {
+                                                    urlValue = urlValue ? urlValue[a] : currentRecord[a];
+                                                }
+                                                return (pathValue && <a href={urlValue} target="_blank">{pathValue}</a>)
+                                            }
                                         default:
                                             return <div key={`target-${index}-${id}`}></div>;
                                     }

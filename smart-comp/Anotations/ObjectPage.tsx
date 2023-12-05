@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 15:51:03
+ * @LastEditTime: 2023-12-05 11:38:30
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -87,10 +87,15 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
                 const { facetType, Fields,value } = targetData
                 if (facetType === 'UI.FieldGroup') {
                     for (let b of Fields) {
-                        const { type, Value, Criticality } = b
+                        const { type, Value, Criticality,Url } = b
                         if (type === 'UI.DataField' && Value) {
                             Value && result.push(Value)
                             Criticality && result.push(Criticality)
+                            Url&&result.push(Url)
+                        }
+                        if (type === 'UI.DataFieldWithUrl' && Url && Value) {
+                            Value && result.push(Value)
+                            Url && result.push(Url)
                         }
                     }
                 } else if (facetType === 'UI.DataPoint' && value) {
