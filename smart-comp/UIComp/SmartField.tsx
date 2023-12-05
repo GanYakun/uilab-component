@@ -280,7 +280,7 @@ export default (props) => {
             case "DataPoint":
                 return <Typography.Title
                     level={2}
-                    style={{ marginLeft: 10, color: record && typeof (record[valueColor]) === "number" ? dataPointCriticality[record[valueColor]] : '#6a6d70', fontSize: 26 }
+                    style={{ color: record && typeof (record[valueColor]) === "number" ? dataPointCriticality[record[valueColor]] : '#6a6d70', fontSize: 26 }
                     }>
                     {displayValue}
                 </Typography.Title>
