@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 11:04:33
+ * @LastEditTime: 2023-12-05 14:11:07
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -195,12 +195,14 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
         currentPropertyType: null,
         currentAnnotations: null as any,
         currentStickySessionData: null,
-        currentSortRestrictions: null
+        currentSortRestrictions: null,
+        namespace: null as any,
     };
 
     const { metadata } = getUi5ConfigAsync()
     if (metadata) {
         const { namespace, entityContainer, annotations, entityType: allEntityTypes } = metadata.dataServices.schema[0];
+        result.namespace = namespace;
         //查找主对象的entityType
         const { entitySet } = entityContainer
         let currentEntityTypeName, currentEntitySetData

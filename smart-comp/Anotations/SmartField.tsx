@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 12:20:43
+ * @LastEditTime: 2023-12-05 14:40:25
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -409,7 +409,7 @@ const isNullable = (currentAnnotations, entitySet, path) => {
  * 获取字段默认值
  * @param {*} currentAnnotations 
  */
-const getParameterDefaultValue = (currentAnnotations, record) => {
+const getParameterDefaultValue = (currentAnnotations, record = null, stateTree = null, action = null, namespace = null) => {
     const anno = Utils.getTermAnnotations(currentAnnotations, 'UI.ParameterDefaultValue');
     if (anno) {
         if (Utils.getTextValueByData(`string`, anno)) {
@@ -418,7 +418,32 @@ const getParameterDefaultValue = (currentAnnotations, record) => {
             return Utils.getTextValueByData(`bool`, anno) === 'true'
         } else if (Utils.getTextValueByData(`path`, anno)) {
             const path = Utils.getTextValueByData(`path`, anno)
-            //console.log({path})
+            if (stateTree && action) {
+                const { BoundData } = action
+                let arr = path.split('/')
+                if (BoundData) {
+                    let value
+                    const { name, type } = BoundData
+                    const key = type.replace(`${namespace}.`, '')
+                    for (let a of arr) {
+                        if (name === a) {
+                            value = stateTree[key]?.data
+                        } else {
+                            if (Array.isArray(value)) {
+                                const val = [] as any
+                                for (let b of value) {
+                                    val.push(b[a])
+                                }
+                                value = val
+                            } else {
+                                value = value[a]
+                            }
+                        }
+                    }
+                    return value
+                }
+
+            }
         }
     }
 }
@@ -430,18 +455,18 @@ const getUnit = (currentAnnotations) => {
 }
 
 export const getConfig = async (params) => {
-    const { record, entitySet, path, isReadOnly, action, dataPoint } = params
-    const { currentAnnotations, currentPropertyType } = Utils.getEntitySetConfig(entitySet, path, action?.name)
+    const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree } = params
+    const { currentAnnotations, currentPropertyType, namespace } = Utils.getEntitySetConfig(entitySet, path, action?.name)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const Label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
-    const defaultValue = getParameterDefaultValue(currentAnnotations, record)
+    const defaultValue = getParameterDefaultValue(currentAnnotations, record, stateTree, action, namespace)
     const unit = getUnit(currentAnnotations)
     const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
-    if (path === 'applicationWorkStatus') {
+    if (path === 'ddFormType') {
         console.log('SmartField-Log', {
             path,
             record,
@@ -458,7 +483,8 @@ export const getConfig = async (params) => {
             defaultValue,
             unit,
             dataPoint,
-            isMultiple
+            isMultiple,
+            stateTree
         })
     }
     return {

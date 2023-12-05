@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 13:54:54
+ * @LastEditTime: 2023-12-05 14:22:40
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,6 +16,7 @@ import SmartTable from './SmartTable';
 import "./index.less";
 import { Criticality as SmartCriticality, dataPointCriticality } from "../Process/config";
 import { FormattedMessage } from "react-intl";
+import { useModel } from 'umi';
 
 export default (props) => {
     const {
@@ -32,6 +33,7 @@ export default (props) => {
         rules, // 是否为必填字段
         nullable,
     } = props;
+    let { initialState, setInitialState } = useModel('@@initialState');
     const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any, defaultValue: string, label: string }>()
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
@@ -52,7 +54,16 @@ export default (props) => {
 
     //初始化方法
     const init = async () => {
-        const result = await getConfig({ record, entitySet, path, isReadOnly, action, dataPoint, nullable })
+        const result = await getConfig({
+            record,
+            entitySet,
+            path,
+            isReadOnly,
+            action,
+            dataPoint,
+            nullable,
+            stateTree: initialState?.stateTree
+        })
         if (result) {
             const { label, Label } = result || {};
             currentFieldProps.label = (label || Label);
@@ -186,6 +197,12 @@ export default (props) => {
     //根据fiedType类型渲染内容
     const renderContent = () => {
         const { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
+
+        //设置默认值
+        if (defaultValue) {
+            currentFieldProps.initialValue = defaultValue;
+        }
+
         switch (fieldType) {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
@@ -270,7 +287,6 @@ export default (props) => {
             case 'DateTime':
                 return <ProFormDateTimePicker {...currentFieldProps} />
             case "Hidden":
-                currentFieldProps.initialValue = defaultValue;
                 return <ProFormText {...currentFieldProps} hidden />
             case "Upload":
                 currentFieldProps.label = "";
