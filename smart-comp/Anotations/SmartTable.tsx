@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-04 14:57:30
+ * @LastEditTime: 2023-12-05 13:41:13
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -38,7 +38,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
             for (let a of collection) {
                 const { record } = a
                 for (let b of record) {
-                    const { type, propertyValue, annotation } = b
+                    const { type, propertyValue, annotation, } = b
                     let {
                         Label,
                         Value,
@@ -49,6 +49,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                         TargetValue,
                         TargetType,
                         NavigationPropertyPath,
+                        Criticality
                     } = Utils.parsePropertyValue(propertyValue, entitySetName)
 
                     switch (type) {
@@ -56,8 +57,9 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             _addToColumns({
                                 type: type,
                                 path: Value,
-                                label: Label,
-                                show: true
+                                Label,
+                                show: true,
+                                Criticality
                             })
                             break;
                         case 'UI.DataFieldForAction':
@@ -127,10 +129,11 @@ const _setRequest = (entitySet, columns) => {
         //列查询字段
         const fieldArr = [] as any
         currentColumns.map((item) => {
-            const { path, type, value, show, url } = item
+            const { path, type, value, show, url, Criticality } = item
             switch (type) {
                 case 'UI.DataField':
                     fieldArr.push(path)
+                    Criticality && fieldArr.push(Criticality)
                     break;
                 default:
                     break;

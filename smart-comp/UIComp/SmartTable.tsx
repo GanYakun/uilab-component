@@ -52,9 +52,9 @@ export default (props) => {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
             Array.isArray(currentColumns) && currentColumns.forEach((item, index) => {
-                const { path } = item || {};
+                const { path, Label, Criticality} = item || {};
                 columns?.push({
-                    title: item.label,
+                    title: Label,
                     key: path,
                     dataIndex: path,
                     render: (text, record) => {
@@ -62,7 +62,8 @@ export default (props) => {
                             entitySet,
                             path,
                             record,
-                            isReadOnly: true
+                            isReadOnly: true,
+                            Criticality
                         }
                         return <SmartField {...option} />
                     }

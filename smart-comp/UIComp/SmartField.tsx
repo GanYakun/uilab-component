@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-01 18:02:54
+ * @LastEditTime: 2023-12-05 13:51:25
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,7 +14,7 @@ import { Modal, Typography, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
-import { Criticality, dataPointCriticality } from "../Process/config";
+import { Criticality as SmartCriticality , dataPointCriticality } from "../Process/config";
 import { FormattedMessage } from "react-intl";
 
 export default (props) => {
@@ -26,7 +26,7 @@ export default (props) => {
         formRef, // 表单的钩子函数
         showLabel, // 是否显示label字段，与isReadOnly配合使用
         colProps,
-        valueColor,
+        Criticality,
         action,
         dataPoint,
         rules, // 是否为必填字段
@@ -190,10 +190,10 @@ export default (props) => {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
                 if (showLabel) {
-                    if (record && typeof (record[valueColor]) === "number") {
+                    if (record && typeof (record[Criticality]) === "number") {
                         return <div id='label-color'>
                             <div>{currentFieldProps.label}</div>
-                            <div style={{ color: Criticality[record[valueColor]] || "" }}>{currentFieldProps.value}</div>
+                            <div style={{ color: SmartCriticality[record[Criticality]] || "" }}>{currentFieldProps.value}</div>
                         </div>
                     } else {
                         return <ProFormText
@@ -202,7 +202,11 @@ export default (props) => {
                         />
                     }
                 } else {
-                    return <div>{displayValue}</div>
+                    return (
+                        <div id='label-color'>
+                            <div style={{ color: record && SmartCriticality[record[Criticality]] || "" }}>{currentFieldProps.value}</div>
+                        </div>
+                    )
                 }
             case 'Text':
                 return <ProFormText {...currentFieldProps} />
@@ -280,7 +284,7 @@ export default (props) => {
             case "DataPoint":
                 return <Typography.Title
                     level={2}
-                    style={{ color: record && typeof (record[valueColor]) === "number" ? dataPointCriticality[record[valueColor]] : '#6a6d70', fontSize: 26 }
+                    style={{ color: record && typeof (record[Criticality]) === "number" ? dataPointCriticality[record[Criticality]] : '#6a6d70', fontSize: 26 }
                     }>
                     {displayValue}
                 </Typography.Title>
