@@ -32,7 +32,12 @@ const typeList = {
         "UI.LineItem",    // 以表格的形式展示
     ]
 }
+
+//default image
+const defaultImageUrl = 'https://gw.alipayobjects.com/zos/antfincdn/K%24NnlsB%26hz/pageHeader.svg'
+
 export {
     Criticality,
-    dataPointCriticality
+    dataPointCriticality,
+    defaultImageUrl
 }

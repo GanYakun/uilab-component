@@ -2,20 +2,21 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 14:49:00
+ * @LastEditTime: 2023-12-05 16:54:21
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { getConfig } from '../Anotations/ObjectPage';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card } from 'antd';
+import { Card, Image } from 'antd';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
+import { defaultImageUrl } from '../Process/config'
 
 export default (props) => {
     let { initialState, setInitialState } = useModel('@@initialState');
@@ -190,7 +191,7 @@ export default (props) => {
     const _getObjectPageHeaderOptions = useMemo(() => {
         const { HeaderInfo, entitySet, Identification } = (currentState || {});
         if (HeaderInfo) {
-            const { Title, Description } = HeaderInfo;
+            const { Title, Description, ImageUrl } = HeaderInfo;
             const titleOption = {
                 isReadOnly: true,
                 entitySet: entitySet,
@@ -221,6 +222,7 @@ export default (props) => {
                     }}
                 />
             })
+            console.log({ ImageUrl, currentRecord, defaultImageUrl })
             return {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
@@ -229,6 +231,17 @@ export default (props) => {
                 },
                 content: (
                     <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '0 24px' }}>
+                        <div style={{ marginRight: 32, marginBottom: 16 }}>
+                            {
+                                ImageUrl && <Image
+                                    preview={false}
+                                    src={currentRecord[ImageUrl] ? currentRecord[ImageUrl] : defaultImageUrl}
+                                    alt="content"
+                                    height={100}
+                                />
+                            }
+                        </div>
+
                         {_renderHeaderFacetContents}
                     </div>
                 ),

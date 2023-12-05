@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 11:38:30
+ * @LastEditTime: 2023-12-05 16:20:01
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -73,6 +73,9 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
                     result.push(Value)
                 }
             }
+            if (key ==='ImageUrl') {
+                result.push(HeaderInfo[key])
+            }
         }
     }
 
@@ -84,14 +87,14 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
     if (facetsData) {
         const addValueToResult = (targetData) => {
             if (targetData) {
-                const { facetType, Fields,value } = targetData
+                const { facetType, Fields, value } = targetData
                 if (facetType === 'UI.FieldGroup') {
                     for (let b of Fields) {
-                        const { type, Value, Criticality,Url } = b
+                        const { type, Value, Criticality, Url } = b
                         if (type === 'UI.DataField' && Value) {
                             Value && result.push(Value)
                             Criticality && result.push(Criticality)
-                            Url&&result.push(Url)
+                            Url && result.push(Url)
                         }
                         if (type === 'UI.DataFieldWithUrl' && Url && Value) {
                             Value && result.push(Value)
@@ -100,7 +103,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
                     }
                 } else if (facetType === 'UI.DataPoint' && value) {
                     const { Value, Criticality } = value
-                    Value&&result.push(value.Value)
+                    Value && result.push(value.Value)
                     Criticality && result.push(Criticality)
                 }
             }
@@ -118,7 +121,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
         }
     }
 
-    if (Identification){
+    if (Identification) {
         for (let a of Identification) {
             const { hiddenPath } = a
             if (hiddenPath) {
@@ -132,7 +135,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
         return result.indexOf(item) === index
     })
 
-    //console.log({ result, HeaderFacets, Facets, facetsData })
+    console.log({ result, HeaderFacets, Facets, facetsData })
     return result
 }
 
@@ -227,18 +230,16 @@ const getIdentificationByAnnotations = (currentAnnotations, currentRecord) => {
  * @returns 
  */
 const getHeaderInfoOptions = (currentAnnotations) => {
-    let result
     const headerInfo = Utils.getTermAnnotations(currentAnnotations, 'UI.HeaderInfo');
     if (headerInfo) {
         const { record } = headerInfo;
         for (let a of record) {
             const { propertyValue, type } = a;
             if (type === 'UI.HeaderInfoType') {
-                result = Utils.parsePropertyValue(propertyValue);
+                return Utils.parsePropertyValue(propertyValue);
             }
         }
     }
-    return result;
 };
 
 export const getConfig = async ({ location, currentRecord }) => {
