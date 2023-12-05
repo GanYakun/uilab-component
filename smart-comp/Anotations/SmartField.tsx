@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 15:01:54
+ * @LastEditTime: 2023-12-05 17:02:12
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -285,6 +285,18 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly, dat
         return result
     }
 
+    //是否 IsImageURL 远端图片地址
+    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImageURL')) {
+        result.fieldType = 'IsImageURL';
+        return result 
+    }
+
+    //是否 IsImage 数据库存储
+    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImage')) {
+        result.fieldType = 'IsImage';
+        return result
+    }
+
     //只读返回
     if (isReadOnly) {
         result.fieldType = 'ReadOnly'
@@ -294,16 +306,6 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly, dat
     //判断是否是长文本
     if (Utils.getTermAnnotations(currentAnnotations, 'UI.MultiLineText')) {
         result.fieldType = 'TextArea';
-    }
-
-    //是否 IsImageURL 远端图片地址
-    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImageURL')) {
-        result.fieldType = 'ImageURL';
-    }
-
-    //是否 IsImage 数据库存储
-    if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImage')) {
-        result.fieldType = 'IsImage';
     }
 
     //下拉选择 通过annotation 设置对应的查询对象、显示字段信息
@@ -466,7 +468,7 @@ export const getConfig = async (params) => {
     const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
-    if (path === 'amount') {
+    if (path === 'logoImageUrl') {
         console.log('SmartField-Log', {
             path,
             record,

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 15:00:07
+ * @LastEditTime: 2023-12-05 17:16:35
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,13 +10,14 @@ import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
 import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
-import { Modal, Typography, message } from 'antd';
+import { Modal, Typography, message, Image } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
 import { Criticality as SmartCriticality, dataPointCriticality } from "../Process/config";
 import { FormattedMessage } from "react-intl";
 import { useModel } from 'umi';
+import { defaultImageUrl } from '../Process/config'
 
 export default (props) => {
     const {
@@ -34,7 +35,7 @@ export default (props) => {
         nullable,
     } = props;
     let { initialState, setInitialState } = useModel('@@initialState');
-    const [currentState, setCurrentState] = useState<{ fieldType: string, displayValue: any, valueListConfig: any, defaultValue: string, label: string }>()
+    const [currentState, setCurrentState] = useState<any>()
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
     const [currentSelected, setCurrentSelected] = useState<any>(null);//lookup选中项
@@ -314,6 +315,12 @@ export default (props) => {
                         ]}
                     />
                 );
+            case 'IsImageURL':
+                let imageProps = {
+                    src: currentState?.currentValue ? currentState.currentValue : defaultImageUrl,
+                    width: 60
+                };
+                return <Image {...imageProps} style={{ background: '#eee' }} onClick={(e)=>e.stopPropagation()}/>
             default:
                 return <div></div>
         }
