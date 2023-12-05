@@ -272,5 +272,6 @@ export const getConfig = async ({ location, currentRecord }) => {
         annoRequest,//请求
         Identification,//头部按钮 [{Label:btnText/title,Fields:表单字段，annoRequest:提交请求（body）,isHidden:是否隐藏,type：表单提交类型}]
         quickCreate,//是否支持quickCreate
+        currentEntityTypeData
     }
 }

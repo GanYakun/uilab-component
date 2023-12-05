@@ -17,7 +17,8 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
         content,
         onSubmit,
         fields,
-        formType
+        formType,
+        action
     })
     const { title, btnText } = content;
     const [form] = Form.useForm<{ name: string; company: string }>();
@@ -37,19 +38,17 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
                     }
                     return <SmartField {...option} />
                 })
-                break;
             case 'UI.DataFieldForAction':
                 return fields && fields.map((item, index) => {
                     const option = {
                         key: `${item.name}-${index}`,
                         entitySet,
                         path: item.name,
-                        action,
+                        action: action,
                         nullable: item.nullable
                     }
                     return <SmartField {...option} />
                 })
-                break;
             default:
                 break;
         }

@@ -8,7 +8,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message } from 'antd';
 import { BlockOutlined } from '@ant-design/icons';
@@ -186,7 +186,6 @@ export default (props) => {
     //根据fiedType类型渲染内容
     const renderContent = () => {
         const { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
-
         switch (fieldType) {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
@@ -267,7 +266,7 @@ export default (props) => {
                     }}
                 />
             case 'DateTime':
-                return <ProFormDateRangePicker {...currentFieldProps} />
+                return <ProFormDateTimePicker {...currentFieldProps} />
             case "Hidden":
                 currentFieldProps.initialValue = defaultValue;
                 return <ProFormText {...currentFieldProps} hidden />

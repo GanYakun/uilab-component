@@ -15,8 +15,10 @@ import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
+import { useModel } from 'umi';
 
 export default (props) => {
+    let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
     //数据暂存
@@ -25,31 +27,53 @@ export default (props) => {
     const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
+    const [loading, setLoading] = useState(false)
     //初始化方法
     const init = async () => {
         let result = await getConfig({ location, currentRecord: {} })
         if (result) {
             // 获取数据
-            let data = await result.annoRequest({});
-            result = await getConfig({ location, currentRecord: data.data });
-            console.log({
-                "ObjectPage-getConfig": result,
-                "ObjectPage-data": data
+            fetch(result).then(async (data) => {
+                result = await getConfig({ location, currentRecord: data.data });
+                console.log("ObjectPage", {
+                    "ObjectPage-getConfig": result,
+                    "ObjectPage-data": data
+                });
+                // 默认选中第一个不隐藏的数据
+                if (result.Facets?.length) {
+                    // 过滤隐藏的数据
+                    result.Facets = result.Facets.filter((e) => (!e.isHidden));
+                    setActiveValue("tabs-" + 0);
+                }
+                setCurrentState(result)
             });
-            setCurrentRecord(data.data);
-            // 默认选中第一个不隐藏的数据
-            if (result.Facets?.length) {
-                // 过滤隐藏的数据
-                result.Facets = result.Facets.filter((e) => (!e.isHidden));
-                setActiveValue("tabs-" + 0);
-            }
-            console.log({ result });
-            setCurrentState(result)
         }
     }
     useEffect(() => {
         !currentState && init();
     }, [])
+    //获取详情页数据
+    const fetch = async (saveState) => {
+        const { annoRequest, currentEntityTypeData } = saveState;
+        setLoading(true)
+        const result = await annoRequest()
+        if (result) {
+            setLoading(false)
+            //处理对象的关系树
+            initialState.stateTree = {
+                [currentEntityTypeData.name]: {
+                    data: result.data,
+                    navigationProperty: currentEntityTypeData.navigationProperty
+                },
+            }
+            initialState.actionRefObj = {}//需要刷新的钩子 暂存
+            setInitialState(initialState)
+            setCurrentRecord(result.data)
+            return result;
+        } else {
+            // umiHistory.goBack()
+        }
+    }
     //解析并渲染facet内容
     const _renderFacetContents = (sectionItem) => {
         const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
@@ -82,7 +106,7 @@ export default (props) => {
                                             </div>
                                         case "UI.DataFieldForAnnotation":
                                             return <div key={`target-${index}-${id}`}>
-                                                
+
                                             </div>
                                         default:
                                             return <div key={`target-${index}-${id}`}></div>;
@@ -291,7 +315,7 @@ export default (props) => {
 
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header'>
-            {currentState ? <PageContainer
+            {loading ? <SmartSKeleton /> : <PageContainer
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
@@ -310,7 +334,7 @@ export default (props) => {
                 <div ref={pageContent}>
                     {_renderSection}
                 </div>
-            </PageContainer> : <SmartSKeleton />}
+            </PageContainer>}
         </div>
     )
 }
