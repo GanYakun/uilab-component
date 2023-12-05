@@ -6,6 +6,7 @@ import SmartField from './SmartField';
 import SmartModalForm from './SmartModalForm';
 import { history as umiHistory } from 'umi';
 import { RightOutlined } from '@ant-design/icons';
+import { mergeSource } from "../../utils/mergeSource";
 
 type GithubIssueItem = {
     url: string;
@@ -35,10 +36,11 @@ export default (props) => {
         queryEntity,
         targetNavigation,
         onLoad,
-        qualifier
+        qualifier,
+        SmartProps
     } = props;
     const [currentState, setCurrentState] = useState<{ annoRequest: any, quickCreate: any, headerBtns: any }>()
-    const [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
+    let [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
 
     //表格选中项
     const [currentRowSelection, setCurrentRowSelection] = useState(rowSelection)
@@ -51,6 +53,10 @@ export default (props) => {
         if (result) {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
+
+            if (SmartProps?.length) {
+                columns = [...columns, ...(mergeSource(SmartProps, "SmartTable").columns || [])];
+            }
             Array.isArray(currentColumns) && currentColumns.forEach((item, index) => {
                 const { path, Label, Criticality } = item || {};
                 columns?.push({

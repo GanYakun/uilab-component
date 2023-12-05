@@ -198,7 +198,6 @@ export default (props) => {
     //根据fiedType类型渲染内容
     const renderContent = () => {
         const { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
-
         //设置默认值
         if (defaultValue) {
             currentFieldProps.initialValue = defaultValue;

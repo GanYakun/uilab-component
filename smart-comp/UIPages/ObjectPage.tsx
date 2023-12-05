@@ -17,10 +17,14 @@ import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
 import { defaultImageUrl } from '../Process/config'
+import { mergeSource } from '../../utils/mergeSource';
 
 export default (props) => {
     let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
+    const SmartProps = useMemo(() => {
+        return props.SmartProps || [];
+    }, [props.SmartProps])
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState<any>(null);
@@ -40,6 +44,11 @@ export default (props) => {
                     "ObjectPage-getConfig": result,
                     "ObjectPage-data": data
                 });
+
+                // 处理父元素的数据
+                if (SmartProps?.length) {
+                    result.HeaderFacets = [...result.HeaderFacets, ...(mergeSource(SmartProps, "").HeaderFacets || [])];
+                }
                 // 默认选中第一个不隐藏的数据
                 if (result.Facets?.length) {
                     // 过滤隐藏的数据
@@ -150,6 +159,14 @@ export default (props) => {
                                 <div style={{ fontSize: '14px', color: '#000000d9', fontWeight: 600, marginBottom: 10 }}>{Title}</div>
                                 <SmartField {...option} />
                             </div>
+                        )
+                    }
+                case "step":
+                    return {
+                        type,
+                        label,
+                        content: (
+                            <div>{contentValue?.render()}</div>
                         )
                     }
                 default:

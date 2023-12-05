@@ -6,19 +6,22 @@
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 import SmartTable from '../UIComp/SmartTable'
 import SmartFilterBar from '../UIComp/SmartFilterBar'
 import { getConfig } from '../Anotations/ListReport';
 import { Skeleton, Space, Tabs } from 'antd';
 const { TabPane } = Tabs
-export default () => {
+export default (props) => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
     const [searchVal, setSearchVal] = useState<any>({});
     const [currentTabs, setCurrentTabs] = useState<any>(null)
     const [loading, setLoading] = useState(true);
     const [activeTabKey, setActiveTabKey] = useState(0)
     const formRef = useRef();
+    const SmartProps = useMemo(() => {
+        return props.SmartProps || [];
+    }, [props.SmartProps])
     //初始化方法
     const init = async () => {
         const result = await getConfig()
@@ -94,7 +97,7 @@ export default () => {
                                 const { text, Selection, Presentation } = item
                                 if (Presentation) {
                                     const { Visualizations } = Presentation
-                                    const { term, qualifier} = Visualizations
+                                    const { term, qualifier } = Visualizations
                                     switch (term) {
                                         case '@UI.LineItem':
                                             let filterDefaultValue
@@ -115,6 +118,7 @@ export default () => {
                                                             onLoad={() => {
                                                                 setLoading(false);
                                                             }}
+                                                            SmartProps={SmartProps}
                                                         />
                                                     }
                                                 </div>
@@ -132,6 +136,7 @@ export default () => {
                                 onLoad={() => {
                                     setLoading(false);
                                 }}
+                                SmartProps={SmartProps}
                             />}
                     </div>
                 </>
