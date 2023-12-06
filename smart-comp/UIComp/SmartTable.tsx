@@ -38,7 +38,7 @@ export default (props: any) => {
         onLoad,
         qualifier,
         SmartProps,
-        actionRef
+        actionRef: parentActionRef
     } = props;
     const [currentState, setCurrentState] = useState<any>()
     let [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -46,6 +46,7 @@ export default (props: any) => {
     //表格选中项
     const [currentRowSelection, setCurrentRowSelection] = useState(rowSelection)
     let [currentSelectedRowsItem, setCurrentSelectedRowsItem] = useState([])
+    const actionRef = parentActionRef ? parentActionRef : useRef()
 
     //初始化方法
     const init = async () => {
@@ -115,7 +116,6 @@ export default (props: any) => {
                         let ele = [] as any
                         inLineBtns.map((item: any, index: number) => {
                             const { Action, Label, type } = item
-                            console.log({ Action, Label, type, entitySet })
                             ele.push(
                                 <SmartModalForm
                                     key={index}
@@ -300,7 +300,6 @@ export default (props: any) => {
                         }}
                         fields={currentState?.quickCreate?.Fields}
                         onSubmit={async (params: any) => {
-                            console.log({ params, actionRef })
                             await currentState?.quickCreate?.annoRequest?.post(params);
                             actionRef?.current?.reload();
                         }}

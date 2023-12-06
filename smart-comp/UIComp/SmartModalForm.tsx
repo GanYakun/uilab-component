@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 13:56:59
+ * @LastEditTime: 2023-12-06 16:28:25
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -78,7 +78,7 @@ export default (props: { entitySet: string; content: any; onSubmit: any; fields:
             }}
             submitTimeout={1000}
             onFinish={async (values) => {
-                console.log('FormSumbit', { values, form })
+                //console.log('FormSumbit', { values, form })
                 onSubmit(values);
                 form?.resetFields();
                 return true
