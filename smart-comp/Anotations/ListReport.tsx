@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-30 12:27:38
+ * @LastEditTime: 2023-12-06 09:14:57
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,7 +20,7 @@ import znCN from 'antd/es/locale/zh_CN';
  * @returns 
  */
 const _getManifestConfig = async () => {
-    const { manifest, routeName, i18n_en, i18n_zh, i18n } = await Utils.getUi5Config(true)
+    const { manifest, routeName, i18n_en, i18n_zh } = await Utils.getUi5Config(true)
     //国际化 CN 
     if (i18n_zh) {
         addLocale(
@@ -45,7 +45,7 @@ const _getManifestConfig = async () => {
     }
     if (manifest && routeName) {
         const { id, dataSources } = manifest['sap.app']
-        const { annotation, mainService } = dataSources
+        const { mainService } = dataSources
         const serviceUrl = mainService.uri.slice(1)
         window.serviceUrl = serviceUrl//设置当前应用请求地址
         const { options, name, controlAggregation } = manifest['sap.ui5']['routing']['targets'][routeName]
@@ -54,7 +54,7 @@ const _getManifestConfig = async () => {
         //设置跳转
         let routing = manifest['sap.ui5']['routing'], navigationRoute
         if (routing && name === 'sap.fe.templates.ListReport') {
-            const { routes, targets } = routing
+            const { targets } = routing
             const targetRoute = targets[routeName]?.options?.settings?.navigation[entitySet]?.detail?.route
             navigationRoute = targetRoute
         }
@@ -79,12 +79,12 @@ const _getManifestConfig = async () => {
  * @param {*} currentEntityTypeData 
  * @returns 
  */
-const _setTabs = (views, currentAnnotations, currentEntityTypeData) => {
+const _setTabs = (views: { showCounts?: any; paths?: any; }, currentAnnotations: any[], currentEntityTypeData: null) => {
     let tabs: any[] = [], showCounts = false
     if (views) {
         const { paths } = views
         showCounts = views.showCounts
-        const findAnnotation = (term, qualifier, key) => {
+        const findAnnotation = (term: any, qualifier: any) => {
             switch (term) {
                 case 'com.sap.vocabularies.UI.v1.PresentationVariant':
                     const PresentationVariantIdx = currentAnnotations.findIndex((item) => {
@@ -108,9 +108,9 @@ const _setTabs = (views, currentAnnotations, currentEntityTypeData) => {
             }
         }
         for (let a of paths) {
-            const { key, annotationPath } = a
+            const { annotationPath } = a
             const arr = annotationPath.split('#')
-            findAnnotation(arr[0], arr[1], key)
+            findAnnotation(arr[0], arr[1])
         }
     }
     return {
@@ -120,7 +120,7 @@ const _setTabs = (views, currentAnnotations, currentEntityTypeData) => {
 }
 
 //设置请求
-const _setRequest = (entitySet, tabs) => {
+const _setRequest = (entitySet: any, tabs: any[]) => {
     const batchArr = [] as any
     if (Array.isArray(tabs)) {
         tabs.map((item) => {

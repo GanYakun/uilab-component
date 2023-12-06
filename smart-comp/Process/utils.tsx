@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 17:44:22
+ * @LastEditTime: 2023-12-06 09:28:02
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -103,7 +103,7 @@ const getUi5ConfigAsync = () => {
  * 获取xml文档
  * @param {string} path xml文档路径
  */
-const getXmlDoc = async (path) => {
+const getXmlDoc = async (path: string) => {
     return new Promise<string>((resolve, reject) => {
         let oReq = new XMLHttpRequest();
         oReq.open('GET', path);
@@ -125,7 +125,7 @@ const getXmlDoc = async (path) => {
  * @param {string} path 
  * @returns 
  */
-const getI18nJson = async (i18nUrl) => {
+const getI18nJson = async (i18nUrl: string) => {
     const i18nJson = {}
     let i18nData = await getXmlDoc(i18nUrl)
     if (i18nData && i18nData.search('DOCTYPE html') === -1) {
@@ -148,7 +148,7 @@ const getI18nJson = async (i18nUrl) => {
  * @param {string} path 
  * @returns 
  */
-const getMetadata = async (url) => {
+const getMetadata = async (url: string) => {
     //url去掉第一个/
     if (url.startsWith('/')) {
         url = url.slice(1)
@@ -186,13 +186,13 @@ const getMetadata = async (url) => {
  * @param {string} currentEntitySetName 
  * @param {object} metadata 
  */
-const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, ActionName = null as any) => {
+const getEntitySetConfig = (currentEntitySetName: string, currentPath = null as any, ActionName = null as any) => {
     let result = {
         currentEntitySetName,
-        currentEntitySetData: null,
-        currentEntityTypeName: null,
-        currentEntityTypeData: null,
-        currentPropertyType: null,
+        currentEntitySetData: null as any,
+        currentEntityTypeName: null as any,
+        currentEntityTypeData: null as any,
+        currentPropertyType: null as any,
         currentAnnotations: null as any,
         currentStickySessionData: null,
         currentSortRestrictions: null,
@@ -205,8 +205,8 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
         result.namespace = namespace;
         //查找主对象的entityType
         const { entitySet } = entityContainer
-        let currentEntityTypeName, currentEntitySetData
-        entitySet.map((item) => {
+        let currentEntityTypeName: any, currentEntitySetData: null
+        entitySet.map((item: any) => {
             const { name, entityType } = item
             if (name === currentEntitySetName) {
                 const arr = entityType.split('.')
@@ -218,9 +218,9 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
         //递归处理 查找annotation等页面需要的配置文件
         const _nbff = (arr = []) => {
             let index = 0
-            function query(currentEntityTypeName, navigationPropertyName, currentEntitySetName) {
+            function query(currentEntityTypeName: null, navigationPropertyName: null, currentEntitySetName: string) {
                 //遍历
-                allEntityTypes.map((item) => {
+                allEntityTypes.map((item: any) => {
                     const { name, navigationProperty } = item
 
                     if (name === currentEntityTypeName) {
@@ -233,13 +233,13 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
                             return
                         } else {
                             //对应绑定的entitySet  没有绑定设置为null
-                            let targetEntitySetName = null
+                            let targetEntitySetName: any = null
                             if (arr.length > 1) {
-                                entitySet.map((item) => {
+                                entitySet.map((item: any) => {
                                     const { name, navigationPropertyBinding } = item
                                     if (name === currentEntitySetName) {
                                         //递归查找关联对象，直到最后一层
-                                        navigationPropertyBinding && navigationPropertyBinding.map((d) => {
+                                        navigationPropertyBinding && navigationPropertyBinding.map((d: { path: any; target: any; }) => {
                                             const { path, target } = d
                                             if (path === navigationPropertyName) {
                                                 targetEntitySetName = target
@@ -265,7 +265,7 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
                             }
 
                             //递归查找关联对象，直到最后一层
-                            navigationProperty && navigationProperty.map((d) => {
+                            navigationProperty && navigationProperty.map((d: any) => {
                                 const { name, type } = d
                                 if (name === navigationPropertyName) {
                                     const typeName = getNameSpaceEntityTypeName(type)
@@ -312,7 +312,7 @@ const getEntitySetConfig = (currentEntitySetName, currentPath = null as any, Act
  * @param {array} annotations 
  * @param {string} target 
  */
-const getAnnotationByTarget = (annotations, target) => {
+const getAnnotationByTarget = (annotations: any[], target: string) => {
     let result = [] as any;
     annotations.map((item) => {
         if (target) {
@@ -334,7 +334,7 @@ const getAnnotationByTarget = (annotations, target) => {
  * @param {string} term 
  * @returns 
  */
-const getTermAnnotations = (annotations, term, qualifier = null) => {
+const getTermAnnotations = (annotations: any[], term: string, qualifier = null) => {
     let result: any[] = [];
     if (Array.isArray(annotations)) {
         //目前匹配到最后
@@ -362,7 +362,7 @@ const getTermAnnotations = (annotations, term, qualifier = null) => {
  * @param {object} data 
  * @returns 
  */
-const getTextValueByData = (label, data) => {
+const getTextValueByData = (label: string, data: any) => {
     if (data) {
         if (data[label] instanceof Array) {
             return data[label][0].text;
@@ -378,7 +378,7 @@ const getTextValueByData = (label, data) => {
  * @param {*} annotations 当前对象的所有annotations
  * @returns 
  */
-const getLabelByAnnotation = (annotations) => {
+const getLabelByAnnotation = (annotations: any[]) => {
     let result;
     annotations && annotations.map((item) => {
         if (item.term === 'Common.Label') {
@@ -394,7 +394,7 @@ const getLabelByAnnotation = (annotations) => {
  * @param {string} property 需要获取的字段名称
  * @returns Edm.String、Edm.Boolean
  */
-const getPropertyType = (entityTypeArray, property) => {
+const getPropertyType = (entityTypeArray: { property: any[]; }, property: never) => {
     let result;
     entityTypeArray.property.map((d) => {
         if (d.name === property) {
@@ -410,7 +410,7 @@ const getPropertyType = (entityTypeArray, property) => {
  * @param {*} typeName 
  * @returns 
  */
-const getNameSpaceEntityTypeName = (typeName) => {
+const getNameSpaceEntityTypeName = (typeName: string) => {
     let end = typeName.indexOf(')', 10);
     return typeName.indexOf('Collection(') === 0 && end > 0 ? typeName.substring(11, end) : typeName;
 };
@@ -424,17 +424,17 @@ const getNameSpaceEntityTypeName = (typeName) => {
  * @returns {object} currentExpand,currentSelect
  */
 const getQueryContitionsByAnnotations = (
-    fieldArr,
-    entitySetName
+    fieldArr: any[],
+    entitySetName: any
 ) => {
     const { metadata } = getUi5ConfigAsync()
     const { entityContainer, annotations, namespace } = metadata.dataServices.schema[0];
 
     let currentExpand = {},
-        currentSelect = []//最外层需要的$select
+        currentSelect: any[] = []//最外层需要的$select
 
     //添加$select
-    const _setSelect = (value, unitData) => {
+    const _setSelect = (value: any, unitData?: any) => {
         if (currentSelect.findIndex((item) => item === value) === -1) {
             currentSelect.push(value)
         }
@@ -449,11 +449,11 @@ const getQueryContitionsByAnnotations = (
     }
 
     //判断当前字段是否配置了Common.Text
-    const _nbff = (arr) => {
-        let parseData = [], index = 0, unitData, isImageData, selectData, primaryKey
-        const find = (entitySetName, navigationPropertyName, entityTypeName) => {
+    const _nbff = (arr: string | any[]) => {
+        let parseData: any[] = [], index = 0, unitData, isImageData, selectData, primaryKey
+        const find = (entitySetName: any, navigationPropertyName: any, entityTypeName: any) => {
             const { entitySet } = entityContainer
-            entitySet.map((item) => {
+            entitySet.map((item: { name: any; navigationPropertyBinding: any; entityType: any; }) => {
                 const { name, navigationPropertyBinding, entityType } = item
                 if (name === entitySetName) {
                     //数组的最后一个元素为字段信息，是否配置Common.Text
@@ -466,13 +466,13 @@ const getQueryContitionsByAnnotations = (
                         fieldAnnotations = fieldAnnotations1.concat(fieldAnnotations2)
 
                         const { pathText } = getCommonTextByAnnotatons(fieldAnnotations);
-                        const { currentEntityTypeData } = getUi5ConfigAsync(name)
+                        const { currentEntityTypeData } = getUi5ConfigAsync()
                         //是否配置Text
                         if (pathText) {
                             if (pathText.search('/') !== -1) {
                                 const textArr = pathText.split('/')
                                 //配置了Text 关联对象也要配置在主对象entitySet的navigationPropertyBinding
-                                if (navigationPropertyBinding && navigationPropertyBinding.findIndex((item) => item.path === textArr[0]) !== -1) {
+                                if (navigationPropertyBinding && navigationPropertyBinding.findIndex((item: { path: any; }) => item.path === textArr[0]) !== -1) {
                                     parseData = parseData.concat(textArr)
                                 } else {
                                     console.error(`entitySet:${entitySetName} 中 navigationPropertyBinding 没有定义===> ${textArr[0]}`)
@@ -516,7 +516,7 @@ const getQueryContitionsByAnnotations = (
                     }
 
                     //递归查找关联对象，直到最后一层
-                    navigationPropertyBinding && navigationPropertyBinding.map((d) => {
+                    navigationPropertyBinding && navigationPropertyBinding.map((d: { path: any; target: any; }) => {
                         const { path, target } = d
                         if (path === navigationPropertyName) {
                             index++
@@ -541,9 +541,9 @@ const getQueryContitionsByAnnotations = (
     }
 
     //4.拼装expand select
-    const getMultistage = (arr, unitData, isImageData, selectData = null, primaryKey = null) => {
-        let floatObj = currentExpand;
-        function create(index) {
+    const getMultistage = (arr: string | any[], unitData: { index?: any; value: any; } | undefined, isImageData: { value: any; } | undefined, selectData:any = null, primaryKey:any = null) => {
+        let floatObj:any = currentExpand;
+        function create(index: number) {
             //处理单位
             if (unitData && unitData.index !== 0) {
                 const { value } = unitData
@@ -649,13 +649,13 @@ const getQueryContitionsByAnnotations = (
         if (item) {
             if (item.search('/') !== -1) {
                 let arr = item.split('/')
-                const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr, item)
+                const { parseData, unitData, isImageData, selectData, primaryKey } = _nbff(arr)
                 if (parseData.length === 0) {
                     console.error(`annotation配置错误： ${item} => 没有配置主对象（${entitySetName}）对应的navigationPropertyBinding`)
                 }
                 getMultistage(parseData, unitData, isImageData, selectData, primaryKey)
             } else {
-                const { parseData, unitData, isImageData } = _nbff([item], item)
+                const { parseData, unitData, isImageData } = _nbff([item])
                 getMultistage(parseData, unitData, isImageData)
                 _setSelect(item, unitData)
             }
@@ -673,7 +673,7 @@ const getQueryContitionsByAnnotations = (
  * @param {*} currentEntityTypeData 当前对象的entityType数据
  * @returns 
  */
-const getPrimaryKeys = (currentEntityTypeData) => {
+const getPrimaryKeys = (currentEntityTypeData: { key: any; }) => {
     const result = [];
     if (currentEntityTypeData) {
         const { key } = currentEntityTypeData;
@@ -706,10 +706,10 @@ const getPrimaryKeys = (currentEntityTypeData) => {
  * @returns {object}displayValue:只读显示的文本
  */
 const getFieldDisplayValueAndCurrentValue = (
-    record,
-    fieldValue,
-    currentAnnotations,
-    currentPropertyType
+    record: { [x: string]: any; },
+    fieldValue: string,
+    currentAnnotations: any,
+    currentPropertyType: string
 ) => {
     let displayValue, currentPathText, currentValue;
 
@@ -717,7 +717,7 @@ const getFieldDisplayValueAndCurrentValue = (
     let { pathText, enumMemberText } = getCommonTextByAnnotatons(currentAnnotations);
 
     //获取readonlyText
-    const _getReadonlyText = (value1, value2) => {
+    const _getReadonlyText = (value1: any, value2: any) => {
         if (!value1) return value2;
         switch (enumMemberText) {
             case 'UI.TextArrangementType/TextFirst':
@@ -731,7 +731,7 @@ const getFieldDisplayValueAndCurrentValue = (
     };
 
     //获取对应字段在record中的值 通过目标数组
-    const _getRecordDataByTargetArr = (record, targetArr) => {
+    const _getRecordDataByTargetArr = (record: any, targetArr: any) => {
         let data = record
         for (let i of targetArr) {
             if (data) {
@@ -785,7 +785,7 @@ const getFieldDisplayValueAndCurrentValue = (
             const value2 = _getRecordDataByTargetArr(record, arr1)
             //处理字段是列表
             if (value1 instanceof Array) {
-                const arr = []
+                const arr: any[] = []
                 value1.map((item, index) => {
                     arr.push(_getReadonlyText(item, value2[index]))
                 })
@@ -839,15 +839,15 @@ const getFieldDisplayValueAndCurrentValue = (
  * @param {string} fieldValue      smartfield当前显示字段 判断是否显示
  * @returns {name: 'Parties', entityType: 'com.dpbird.Party', navigationPropertyBinding: Array(6)}
  */
-const getEntitySetData = (entityContainer, entitySetName, fieldValue = null) => {
+const getEntitySetData = (entityContainer: { entitySet: any; }, entitySetName: any, fieldValue = null) => {
     let result = {
         entitySetData: null,
         property: null
     };
     const { entitySet } = entityContainer;
 
-    const _getEntitySet = (targetName) => {
-        entitySet.map((item) => {
+    const _getEntitySet = (targetName: any) => {
+        entitySet.map((item: { name: any; } | null) => {
             const { name } = item;
             if (name === targetName) {
                 result.entitySetData = item;
@@ -857,7 +857,7 @@ const getEntitySetData = (entityContainer, entitySetName, fieldValue = null) => 
     _getEntitySet(entitySetName)
     if (fieldValue && fieldValue.search('/') !== -1) {
         const arr = fieldValue.split('/')
-        arr.map((item, index) => {
+        arr.map((item: null, index: number) => {
             if (index !== arr.length - 1) {
                 const { navigationPropertyBinding } = result.entitySetData
                 for (let a of navigationPropertyBinding) {
@@ -883,10 +883,10 @@ const getEntitySetData = (entityContainer, entitySetName, fieldValue = null) => 
  * @param {array} currentAnnotations
  * @returns {object}
  */
-const getCommonTextByAnnotatons = (currentAnnotations) => {
+const getCommonTextByAnnotatons = (currentAnnotations: any) => {
     const result = {
-        pathText: null,
-        enumMemberText: null,
+        pathText: '' as string,
+        enumMemberText: '' as string,
     };
 
     if (currentAnnotations) {
@@ -916,24 +916,24 @@ const getCommonTextByAnnotatons = (currentAnnotations) => {
  * @param {object} currentRecord 当前对象的数据
  * @return {boolean}
  */
-const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidden') => {
+const isHiddenByAnnotation = (annotation: any, currentRecord: { [x: string]: boolean; } | null, currentTerm = 'UI.Hidden') => {
     let result = {
         hiddenPath: null,
         isHidden: false,
         hiddenQueryPath: null
     }
     //目前只支持 path 一段式
-    const _getEqAndNe = (condition, data) => {
+    const _getEqAndNe = (condition: string, data: any) => {
         let result = {} as any
         let path = getTextValueByData('path', data)
         let string = getTextValueByData('string', data)
         result.path = path
         result.string = string
         if (currentRecord && JSON.stringify(currentRecord) !== '{}') {
-            let val
+            let val: any
             if (path.search('/') !== -1) {
                 const arr = path.split('/')
-                arr.map((item, index) => {
+                arr.map((item: string | number, index: number) => {
                     if (index === 0 && currentRecord[item]) {
                         val = currentRecord[item]
                     } else {
@@ -984,8 +984,8 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                             //bug and没实现
                             let and_eq = and[0].eq, and_eq_val
                             if (and_eq) {
-                                and_eq_val = and_eq.findIndex((item) => {
-                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
+                                and_eq_val = and_eq.findIndex((item: any) => {
+                                    const { path, boolText } = _getEqAndNe('eq', item)
                                     //console.log({ path, string, boolText })
                                     result.hiddenPath = path
                                     return boolText
@@ -997,8 +997,8 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                         if (or) {
                             let or_eq = or[0].eq, or_eq_val
                             if (or_eq) {
-                                or_eq_val = or_eq.findIndex((item) => {
-                                    const { path, string, boolText } = _getEqAndNe('eq', item, dibool)
+                                or_eq_val = or_eq.findIndex((item: any) => {
+                                    const { path, boolText } = _getEqAndNe('eq', item)
                                     result.hiddenPath = path
                                     return boolText
                                 }) !== -1
@@ -1016,7 +1016,7 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
                         }
                         //不等于
                         if (ne) {
-                            const { path, string, boolText } = _getEqAndNe('ne', ne[0], bool)
+                            const { path, boolText } = _getEqAndNe('ne', ne[0])
                             if (path) {
                                 result.hiddenPath = path
                                 result.isHidden = boolText ? JSON.parse(dibool[0]?.text) : JSON.parse(dibool[1]?.text)
@@ -1043,31 +1043,6 @@ const isHiddenByAnnotation = (annotation, currentRecord, currentTerm = 'UI.Hidde
     return result
 }
 
-/**
- * 随机生成Key 供无逻辑组件使用
- * @param {*} keyLength 
- * @returns 
- */
-const generateKey = (keyLength = 18) => {
-    let rlt = ''
-    for (let i = 0; i < keyLength; i++) {
-        if (Math.round(Math.random())) {
-            rlt += Math.ceil(Math.random() * 9)
-        } else {
-            const ranNum = Math.ceil(Math.random() * 23)
-            if (Math.round(Math.random())) {
-                rlt += String.fromCharCode(65 + ranNum)
-            } else {
-                rlt += String.fromCharCode(97 + ranNum)
-            }
-        }
-        //加上-，不要的可以去掉
-        if ((i + 1) % 6 === 0 && i > 2 && i < 17) {
-            rlt += '-'
-        }
-    }
-    return rlt
-}
 
 /**
  * 
@@ -1076,7 +1051,7 @@ const generateKey = (keyLength = 18) => {
  * @param {*} formatMessage 工具类 
  * @returns 
  */
-const getTextByI18n = (label) => {
+const getTextByI18n = (label: string) => {
     return label && label.search('@i18n>') === -1 ? label : <FormattedMessage id={label} />
 }
 
@@ -1086,10 +1061,10 @@ const getTextByI18n = (label) => {
  * @param {*} navigationPropertyPath 
  * @returns 
  */
-const isCollection = (navigationProperty, navigationPropertyPath) => {
+const isCollection = (navigationProperty: any[], navigationPropertyPath: any) => {
     let result = false;
     if (navigationProperty) {
-        navigationProperty.map((item) => {
+        navigationProperty.map((item: { name: any; type: string; }) => {
             if (item.name === navigationPropertyPath && item.type.search('Collection') !== -1) {
                 result = true;
             }
@@ -1103,7 +1078,7 @@ const isCollection = (navigationProperty, navigationPropertyPath) => {
  * @param {*} data 
  * @returns 
  */
-const parsePropertyValue = (data, entitySetName = '') => {
+const parsePropertyValue = (data: any, entitySetName = '') => {
     const result = {
         ID: '' as any,
         Label: '' as any,
@@ -1129,7 +1104,7 @@ const parsePropertyValue = (data, entitySetName = '') => {
         NavigationPropertyPath: null as any
     }
 
-    const _getValueByRecord = (record, property) => {
+    const _getValueByRecord = (record: any, property: string | number) => {
         for (let b of record) {
             const { type, propertyValue } = b
             const { Value } = parsePropertyValue(propertyValue)
@@ -1224,9 +1199,9 @@ const parsePropertyValue = (data, entitySetName = '') => {
  * @param annotations
  */
 const getTargetAnnotationProcessed = (
-    currentAnnotations,
-    target,
-    currentEntitySetData
+    currentAnnotations: any[],
+    target: string,
+    currentEntitySetData: any
 ) => {
 
     let targetNavigation, targetQualifier;
@@ -1270,7 +1245,7 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value, Criticality, Action, Label ,Url} = parsePropertyValue(propertyValue)
+                            const { Value, Criticality, Action, Label, Url } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
                                 Value,
@@ -1280,7 +1255,7 @@ const getTargetAnnotationProcessed = (
                             if (type === 'UI.DataFieldForAction' && Action) {
                                 obj.Action = parseActionByName(Action)
                             }
-                            if (type ==='UI.DataFieldWithUrl'){
+                            if (type === 'UI.DataFieldWithUrl') {
                                 obj.Url = Url
                             }
                             Fields.push(obj)
@@ -1300,7 +1275,7 @@ const getTargetAnnotationProcessed = (
     if (target && target.search('UI.DataPoint') !== -1) {
         let dataPointProperty
         //获取DataPoint当前字段的类型
-        const _getDataPointProperty = (currentAnnotations, currentQualifier) => {
+        const _getDataPointProperty = (currentAnnotations: any, currentQualifier: any) => {
             if (currentAnnotations) {
                 for (let a of currentAnnotations) {
                     const { term, qualifier, record } = a
@@ -1341,6 +1316,8 @@ const getTargetAnnotationProcessed = (
             facetType: 'UI.DataPoint',
         };
     }
+
+    return false
 };
 
 /**
@@ -1349,7 +1326,7 @@ const getTargetAnnotationProcessed = (
  * @param {*} currentAnnotations 
  * @returns 
  */
-const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetData, currentRecord = null) => {
+const getObjectPageFacetsByAnnotations = (currentAnnotations: any[], currentEntitySetData: any, currentRecord = null) => {
     const result = {
         Facets: [] as any,
         HeaderFacets: [] as any,
@@ -1357,7 +1334,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
     }
 
     //解析ReferenceFacet
-    const _getReferenceFacet = (propertyValue) => {
+    const _getReferenceFacet = (propertyValue: any) => {
         const { ID, Label, Target } = parsePropertyValue(propertyValue)
         return {
             id: ID,
@@ -1368,7 +1345,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
     };
 
     //解析CollectionFacet
-    const _getCollectionFacet = (propertyValue) => {
+    const _getCollectionFacet = (propertyValue: any) => {
         const { ID, Label, Facets } = parsePropertyValue(propertyValue)
         let childfacets = [] as any;
         for (let d of Facets) {
@@ -1393,7 +1370,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
     };
 
     //解析Facets
-    const _parseFacets = (data) => {
+    const _parseFacets = (data: { collection: any; }) => {
         const { collection } = data;
         const arr = [] as any
         if (collection) {
@@ -1406,7 +1383,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
                         const { isHidden, hiddenPath } = isHiddenByAnnotation(annotation, currentRecord)
                         //console.log({ isHidden, hiddenPath, currentRecord, b, propertyValue })
                         if (hiddenPath) {
-                            result.HiddenPaths.findIndex((item) => item === hiddenPath) === -1 && result.HiddenPaths.push(hiddenPath)
+                            result.HiddenPaths.findIndex((item: any) => item === hiddenPath) === -1 && result.HiddenPaths.push(hiddenPath)
                         }
 
                         if (type === 'UI.CollectionFacet') {
@@ -1443,8 +1420,8 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations, currentEntitySetDa
  * @returns 关联对象的entitySet name
  */
 const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
-    currentEntitySetData,
-    targetPath,
+    currentEntitySetData: { navigationPropertyBinding: any; },
+    targetPath: string,
 ) => {
     const { metadata } = getUi5ConfigAsync()
     const { entityContainer } = metadata.dataServices.schema[0];
@@ -1466,10 +1443,10 @@ const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
             for (let a of navigationPropertyBinding) {
                 const { path, target } = a;
                 if (path === arr[0]) {
-                    entitySet.map((b) => {
+                    entitySet.map((b: { name: any; navigationPropertyBinding: any; }) => {
                         const { name, navigationPropertyBinding } = b
                         if (name === target) {
-                            navigationPropertyBinding.map((c) => {
+                            navigationPropertyBinding.map((c: { path: any; target: any; }) => {
                                 const { path, target } = c
                                 if (path === arr[1]) {
                                     result = target;
@@ -1490,7 +1467,7 @@ const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
  * 解析
  * @param {*} currentAnnotations 
  */
-const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
+const parseQuickCreateFacets = (currentAnnotations: any[], entitySet: string) => {
     let result = {
         ID: null,
         Label: null,
@@ -1572,7 +1549,7 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
 
     //设置请求
     if (result.Fields.length > 0) {
-        const _getCurrentBody = (body) => {
+        const _getCurrentBody = (body: { [x: string]: any; }) => {
             let result = {}
             for (let key of Object.keys(body)) {
                 if (key.search('/') === -1) {
@@ -1605,7 +1582,7 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
                 };
                 return await Odata.submit(option);
             },
-            patch: async (record, body) => {
+            patch: async (record: { [x: string]: any; }, body: any) => {
                 let option = {
                     path: record['@Odata.id'],
                     method: 'PATCH',
@@ -1613,7 +1590,7 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
                 };
                 return await Odata.submit(option);
             },
-            delete: async (record) => {
+            delete: async (record: { [x: string]: any; }) => {
                 let option = {
                     path: record['@Odata.id'],
                     method: 'DELETE',
@@ -1633,7 +1610,7 @@ const parseQuickCreateFacets = (currentAnnotations, entitySet) => {
  * @param {*} obj 
  * @returns 
  */
-const getPresentationVariantByAnnotations = (obj) => {
+const getPresentationVariantByAnnotations = (obj: { term: any; record: any; property: any; }) => {
     const { term, record, property } = obj;
     let result = {
         orderby: null as any,
@@ -1702,9 +1679,9 @@ const getPresentationVariantByAnnotations = (obj) => {
  * @param {*} obj 
  * @returns 
  */
-const getSelectionPresentationVariantByAnnotations = (obj, currentEntityTypeData) => {
+const getSelectionPresentationVariantByAnnotations = (obj: { term: any; record: any; }, currentEntityTypeData: any) => {
     const result = {
-        Text: null,
+        Text: null as any,
         Presentation: null as any,
         Selection: null as any
     }
@@ -1745,9 +1722,9 @@ const getSelectionPresentationVariantByAnnotations = (obj, currentEntityTypeData
  * @param {*} obj 
  * @returns 
  */
-const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
+const getSelectionVariantByAnnotations = (obj: { property: any; record: any; }, currentEntityTypeData: { navigationProperty: any; }) => {
     const result = {
-        filter: null,
+        filter: null as any,
         PropertyNames: [] as any
     };
     const { property, record } = obj;
@@ -1775,28 +1752,22 @@ const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
                                             if (property === 'Ranges' && collection) {
                                                 for (let f of collection) {
                                                     const { record } = f;
-                                                    //是否有多项 多项为or
                                                     if (record) {
                                                         let $filter;
                                                         for (let g of record) {
                                                             let Option, Low, condition, lambda = {};
                                                             const { propertyValue } = g;
-                                                            //if (type === 'UI.SelectionRangeType') {
                                                             for (let h of propertyValue) {
                                                                 const { property } = h;
                                                                 if (property === 'Option') {
                                                                     Option = getTextValueByData('enumMember', h);
                                                                 }
                                                                 if (property === 'Low') {
-                                                                    Low = h[null] ? null : getTextValueByData('string', h) || getTextValueByData('bool', h);
+                                                                    Low = getTextValueByData('string', h) || getTextValueByData('bool', h);
                                                                 }
-                                                                // if (property === 'Sign') {
-                                                                //     Sign = getTextValueByData('enumMember', h);
-                                                                // }
                                                             }
-                                                            //}
 
-                                                            //查询 eq ne gt lt
+                                                            //条件
                                                             switch (Option) {
                                                                 case 'UI.SelectionRangeOptionType/EQ':
                                                                     condition = 'eq'
@@ -1849,7 +1820,7 @@ const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
                                                                 let lambdaUrl = '',
                                                                     lambdaUrlItem = '';
                                                                 for (let key of Object.keys(lambda)) {
-                                                                    lambda[key].map((item) => {
+                                                                    lambda[key].map((item: any) => {
                                                                         if (lambdaUrlItem === '') {
                                                                             lambdaUrlItem = `c:c/${item}`;
                                                                         } else {
@@ -1895,7 +1866,7 @@ const getSelectionVariantByAnnotations = (obj, currentEntityTypeData) => {
  * @param {*} actionName 
  * @returns 
  */
-const parseActionByName = (actionName) => {
+const parseActionByName = (actionName: string) => {
     let result = {
         name: actionName,
         isBound: false,
@@ -1906,15 +1877,15 @@ const parseActionByName = (actionName) => {
         isUpload: false,
     }
     const { metadata } = getUi5ConfigAsync()
-    const { action, complexType, namespace, annotations } = metadata.dataServices.schema[0];
+    const { action, namespace, annotations } = metadata.dataServices.schema[0];
 
     //查找anction对应的参数数据
     if (action && actionName) {
         for (let a of action) {
             const { name } = a
             if (actionName === `${namespace}.${name}`) {
-                let { isBound, parameter, entitySetPath, returnType, name, type } = a
-                result.isUpload = parameter.findIndex((item) => item.type === 'Edm.Stream') !== -1
+                let { isBound, parameter } = a
+                result.isUpload = parameter.findIndex((item: { type: string; }) => item.type === 'Edm.Stream') !== -1
                 //可用参数
                 if (isBound === 'true' && parameter) {
                     result.BoundData = parameter.shift()
@@ -1951,11 +1922,11 @@ const parseActionByName = (actionName) => {
     }
 
     //处理请求
-    result.annoRequest = async ({ boundActionData, body, path = '' }) => {
+    result.annoRequest = async ({ boundActionData=[], body={} as any, path = '' }) => {
         //是否为批量提交场景 
         if (boundActionData && boundActionData.length > 0) {
             const arr = [] as any
-            boundActionData.map((item) => {
+            boundActionData.map((item: { [x: string]: any; }) => {
                 let option = {
                     path: `${item['@Odata.id']}/${actionName}`,
                     method: 'POST',
@@ -1985,7 +1956,7 @@ const parseActionByName = (actionName) => {
                     .then(() => {
                         //message.success(< FormattedMessage id='smart.success' />);
                     })
-                    .catch((err) => {
+                    .catch(() => {
                         //message.error(< FormattedMessage id='smart.error' />);
                     })
                     .finally(() => {
@@ -2007,7 +1978,7 @@ const parseActionByName = (actionName) => {
 }
 
 //判断是否为多选
-const isMultiSelect = (action, path) => {
+const isMultiSelect = (action: { Fields: any; }, path: any) => {
     if (action) {
         const { Fields } = action
         if (Fields) {

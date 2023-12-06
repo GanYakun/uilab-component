@@ -73,7 +73,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
                     result.push(Value)
                 }
             }
-            if (key ==='ImageUrl') {
+            if (key === 'ImageUrl') {
                 result.push(HeaderInfo[key])
             }
         }
@@ -243,7 +243,8 @@ const getHeaderInfoOptions = (currentAnnotations: any) => {
     return false
 };
 
-export const getConfig = async ({ location, currentRecord }) => {
+export const getConfig = async (props: any) => {
+    const { location, currentRecord } = props
     const { queryEntity } = location?.query
     const { entitySet } = _getManifestConfig()
     const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
