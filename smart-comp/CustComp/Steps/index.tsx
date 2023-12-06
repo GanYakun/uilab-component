@@ -2,14 +2,13 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-06 08:09:21
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 10:47:35
+ * @LastEditTime: 2023-12-06 11:02:40
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/CustComp/Steps/index.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import { Steps } from 'ant5';
 import Odata from '../../../utils/odata/odata'
-import React, { useEffect, useState } from 'react';
-import moment from 'moment';
+import { useEffect, useState } from 'react';
 
 /**
  * @param {type} props.queryEntity 例子：SupplierParties('10602') 
@@ -40,7 +39,6 @@ export default (props) => {
                     current = index
                 }
             })
-            console.log({ items, current })
             setCurrentRecord({
                 items,
                 current

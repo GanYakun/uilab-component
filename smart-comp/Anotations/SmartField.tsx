@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 08:47:58
+ * @LastEditTime: 2023-12-06 12:01:45
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -262,10 +262,22 @@ const _setRequest = (collectionPath: null, columns: any[], Parameters: any) => {
  * @param {*} currentPropertyType 当前字段，例：Edm.String、Edm.Int64、Edm.DateTimeOffset、Edm.Date
  * @returns 
  */
-const _setFieldValue = (currentAnnotations: any, currentPropertyType: null, isReadOnly: any, dataPoint = null) => {
+const _setFieldValue = (
+    currentAnnotations: any,
+    currentPropertyType: any,
+    isReadOnly: any,
+    dataPoint = null,
+    DataFieldWithUrl: any,
+) => {
     let result = {
         fieldType: 'Text',
         valueListConfig: null as any,
+    }
+
+    //DataFieldWithUrl
+    if (DataFieldWithUrl){
+        result.fieldType = 'DataFieldWithUrl';
+        return result
     }
 
     //dataPoint
@@ -454,10 +466,20 @@ const getUnit = (currentAnnotations: any[]) => {
     return Utils.getTextValueByData('string', record)
 }
 
-export const getConfig = async (params: { record: any; entitySet: string; path: string; isReadOnly: any; action: any; dataPoint: any; nullable?: any; stateTree: any; }) => {
-    const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree } = params
+export const getConfig = async (params: {
+    record: any;
+    entitySet: string;
+    path: string;
+    isReadOnly: any;
+    action: any;
+    dataPoint: any;
+    nullable?: any;
+    stateTree: any;
+    DataFieldWithUrl: any;
+}) => {
+    const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree, DataFieldWithUrl } = params
     const { currentAnnotations, currentPropertyType, namespace } = Utils.getEntitySetConfig(entitySet, path, action?.name)
-    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint)
+    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint, DataFieldWithUrl)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const Label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
@@ -466,8 +488,9 @@ export const getConfig = async (params: { record: any; entitySet: string; path: 
     const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
-    if (path === 'logoImageUrl') {
+    if (path === 'file') {
         console.log('SmartField-Log', {
+            entitySet,
             path,
             record,
             currentPropertyType,

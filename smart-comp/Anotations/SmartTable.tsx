@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 08:51:53
+ * @LastEditTime: 2023-12-06 11:22:11
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -75,16 +75,17 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             if (TargetType) {
                                 _addToColumns({
                                     type: TargetType,
-                                    label: Label,
+                                    Label,
                                     value: TargetValue,
                                     show: true
                                 })
                             }
+                            break
                         case 'UI.DataFieldWithNavigationPath':
                             _addToColumns({
                                 type: type,
                                 path: Value,
-                                label: Label,
+                                Label,
                                 navigationPropertyPath: NavigationPropertyPath,
                                 show: true
                             })
@@ -93,7 +94,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             _addToColumns({
                                 type: type,
                                 path: Value,
-                                label: Label,
+                                Label,
                                 semanticObject: SemanticObject,
                                 action: Action,
                                 show: true
@@ -103,8 +104,8 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             _addToColumns({
                                 type: type,
                                 path: Value,
-                                label: Label,
-                                url: Url,
+                                Label,
+                                Url,
                                 show: true
                             })
                             break;
@@ -128,12 +129,16 @@ const _setRequest = (entitySet: string, columns: any) => {
         const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
         const fieldArr = [] as any
-        currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any }) => {
-            const { path, type, value, show, url, Criticality } = item
+        currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any, Url :any}) => {
+            const { path, type, value, show, Url, Criticality } = item
             switch (type) {
                 case 'UI.DataField':
                     fieldArr.push(path)
                     Criticality && fieldArr.push(Criticality)
+                    break;
+                case 'UI.DataFieldWithUrl':
+                    fieldArr.push(path)
+                    Url && fieldArr.push(Url)
                     break;
                 default:
                     break;

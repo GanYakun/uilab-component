@@ -2,16 +2,16 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 12:08:33
+ * @LastEditTime: 2023-12-06 12:04:14
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import { ModalForm } from '@ant-design/pro-components';
 import { Button, Form } from 'antd';
-import React, { useState } from 'react';
 import SmartField from './SmartField';
 
-export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
+export default (props: { entitySet: string; content: any; onSubmit: any; fields: any; formType: string; action?: object; }) => {
+    const { entitySet, content, onSubmit, fields, formType, action } = props
     console.log('smartModalForm-log', {
         entitySet,
         content,
@@ -29,7 +29,7 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
     const renderContent = () => {
         switch (formType) {
             case 'UI.QuickCreateFacets':
-                return fields && fields.map((item, index) => {
+                return fields && fields.map((item: { Value: any; }, index: any) => {
                     const option = {
                         key: `${item.Value}-${index}`,
                         entitySet,
@@ -39,7 +39,7 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
                     return <SmartField {...option} />
                 })
             case 'UI.DataFieldForAction':
-                return fields && fields.map((item, index) => {
+                return fields && fields.map((item: { name: any; nullable: any; }, index: any) => {
                     const option = {
                         key: `${item.name}-${index}`,
                         entitySet,
@@ -63,7 +63,7 @@ export default ({ entitySet, content, onSubmit, fields, formType, action }) => {
             layout='vertical'
             title={title}
             trigger={
-                <Button type={btnType?btnType:'primary'}>
+                <Button type={btnType ? btnType : 'primary'}>
                     {btnText}
                 </Button>
             }
