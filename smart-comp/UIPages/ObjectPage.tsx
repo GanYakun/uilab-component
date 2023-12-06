@@ -166,7 +166,7 @@ export default (props) => {
                         type,
                         label,
                         content: (
-                            <div>{contentValue?.render()}</div>
+                            <div>{contentValue?.render(location.query?.queryEntity)}</div>
                         )
                     }
                 default:
