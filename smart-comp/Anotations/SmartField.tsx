@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 12:01:45
+ * @LastEditTime: 2023-12-06 14:52:36
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -18,7 +18,7 @@ const getValueListProperty = (
 ) => {
 
     let result = {
-        collectionPath: null,
+        collectionPath: null as any,
         isFixedValues: false,
         columns: [] as any[],
         lookUpTitle: null,
@@ -48,38 +48,36 @@ const getValueListProperty = (
 
     //设置返回outObject
     const _setParameters = (type: any, LocalDataProperty: any, ValueListProperty: any) => {
-        if (result.Parameters) {
-            switch (type) {
-                case `Common.ValueListParameterInOut`:
-                    result.Parameters.push({
-                        type: 'ValueListParameterInOut',
-                        LocalDataProperty,
-                        ValueListProperty
-                    })
-                    break;
-                case `Common.ValueListParameterOut`:
-                    result.Parameters.push({
-                        type: 'ValueListParameterOut',
-                        LocalDataProperty,
-                        ValueListProperty
-                    })
-                    break;
-                case `Common.ValueListParameterIn`:
-                    result.Parameters.push({
-                        type: 'ValueListParameterIn',
-                        LocalDataProperty,
-                        ValueListProperty
-                    })
-                    break;
-                case `Common.ValueListParameterDisplayOnly`:
-                    result.Parameters.push({
-                        type: 'ValueListParameterDisplayOnly',
-                        ValueListProperty
-                    })
-                    break;
-                default:
-                    break;
-            }
+        switch (type) {
+            case `Common.ValueListParameterInOut`:
+                result.Parameters.push({
+                    type: 'ValueListParameterInOut',
+                    LocalDataProperty,
+                    ValueListProperty
+                })
+                break;
+            case `Common.ValueListParameterOut`:
+                result.Parameters.push({
+                    type: 'ValueListParameterOut',
+                    LocalDataProperty,
+                    ValueListProperty
+                })
+                break;
+            case `Common.ValueListParameterIn`:
+                result.Parameters.push({
+                    type: 'ValueListParameterIn',
+                    LocalDataProperty,
+                    ValueListProperty
+                })
+                break;
+            case `Common.ValueListParameterDisplayOnly`:
+                result.Parameters.push({
+                    type: 'ValueListParameterDisplayOnly',
+                    ValueListProperty
+                })
+                break;
+            default:
+                break;
         }
     };
 
@@ -137,6 +135,28 @@ const getValueListProperty = (
     return result;
 };
 
+//设置显示字段
+const _getValueListPropertyDisplay = (ValueListProperty: any, collectionPath: any) => {
+    let result
+    const { metadata, annotations } = Utils.getUi5ConfigAsync()
+    const { entityContainer } = metadata.dataServices.schema[0];
+    const { entitySetData: currentEntitySetData } = Utils.getEntitySetData(entityContainer, collectionPath)
+    if (currentEntitySetData) {
+        const { entityType: currentEntityTypeName } = currentEntitySetData
+        if (ValueListProperty) {
+            const anno = Utils.getAnnotationByTarget(
+                annotations,
+                `${currentEntityTypeName}/${ValueListProperty}`,
+            );
+            const { pathText } = Utils.getCommonTextByAnnotatons(anno);
+            if (pathText) {
+                result = pathText
+            }
+        }
+    }
+    return result
+}
+
 /**
  * 设置下拉框请求
  * @param {*} collectionPath //主对象
@@ -190,33 +210,6 @@ const _setRequest = (collectionPath: null, columns: any[], Parameters: any) => {
             }
         }
     };
-
-    /**
-     * 获取显示字段
-     * @param {*} ValueListProperty 
-     * @param {*} collectionPath 
-     * @returns 
-     */
-    const _getValueListPropertyDisplay = (ValueListProperty: string | number, collectionPath: null) => {
-        let result
-        const { metadata } = Utils.getUi5ConfigAsync()
-        const { annotations, entityContainer } = metadata.dataServices.schema[0];
-        const { entitySetData: currentEntitySetData } = Utils.getEntitySetData(entityContainer, collectionPath)
-        if (currentEntitySetData) {
-            const { entityType: currentEntityTypeName } = currentEntitySetData
-            if (ValueListProperty) {
-                const anno = Utils.getAnnotationByTarget(
-                    annotations,
-                    `${currentEntityTypeName}/${ValueListProperty}`,
-                );
-                const { pathText } = Utils.getCommonTextByAnnotatons(anno);
-                if (pathText) {
-                    result = pathText
-                }
-            }
-        }
-        return result
-    }
 
     let option = {
         path: collectionPath,
@@ -275,7 +268,7 @@ const _setFieldValue = (
     }
 
     //DataFieldWithUrl
-    if (DataFieldWithUrl){
+    if (DataFieldWithUrl) {
         result.fieldType = 'DataFieldWithUrl';
         return result
     }
@@ -329,6 +322,7 @@ const _setFieldValue = (
         } = getValueListProperty(
             currentAnnotations,
         );
+
         return {
             fieldType: isFixedValues ? 'Select' : 'LookUp',
             valueListConfig: {
@@ -337,7 +331,8 @@ const _setFieldValue = (
                 columns,//弹出表格类型LookUp 的列配置项
                 lookUpTitle,//弹出表格类型LookUp 的弹窗标题
                 Parameters,//略
-                annoRequest: _setRequest(collectionPath, columns, Parameters)//请求
+                annoRequest: _setRequest(collectionPath, columns, Parameters),//请求
+                getValueListPropertyDisplay: _getValueListPropertyDisplay,
             }
         }
     }
@@ -488,7 +483,7 @@ export const getConfig = async (params: {
     const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
-    if (path === 'file') {
+    if (path === 'productId') {
         console.log('SmartField-Log', {
             entitySet,
             path,

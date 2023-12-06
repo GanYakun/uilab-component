@@ -2,11 +2,10 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 09:28:02
+ * @LastEditTime: 2023-12-06 14:37:58
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React from 'react';
 import odatajs from '../../utils/odata/index';
 import Odata from '../../utils/odata/odata';
 import { message } from 'antd';
@@ -73,7 +72,7 @@ const getUi5Config = async (reload = false) => {
 
     const result = {
         manifest,
-        annotations,
+        annotations: metadata.dataServices.schema[0].annotations,
         i18n,
         i18n_en,
         i18n_zh,
@@ -1963,6 +1962,25 @@ const parseActionByName = (actionName: string) => {
 
                     });
             } else {
+                //需要补字段的
+                result.Fields.map((item:any) => {
+                    const { name, type } = item
+                    //为空的处理
+                    if (!body[name]) {
+                        if (type === 'Edm.String') {
+                            body[name] = ''
+                        } else if (type === 'Edm.Boolean') {
+                            body[name] = false
+                        } else if (type === 'Edm.Decimal') {
+                            body[name] = body[name]
+                        } else if (type === 'Collection(Edm.String)') {
+                            body[name] = body[name] ? body[name] : []
+                        } else {
+                            body[name] = null
+                        }
+                    }
+                })
+
                 let option = {
                     path,
                     method: 'POST',

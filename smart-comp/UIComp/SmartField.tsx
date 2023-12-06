@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 12:11:04
+ * @LastEditTime: 2023-12-06 14:51:51
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -68,8 +68,8 @@ export default (props: any) => {
             stateTree: initialState?.stateTree
         })
         if (result) {
-            const { label, Label } = result || {};
-            currentFieldProps.label = (label || Label);
+            const { Label } = result;
+            currentFieldProps.label = Label;
             //设置必填
             if (result.nullable) {
                 currentFieldProps.rules = [
@@ -94,10 +94,8 @@ export default (props: any) => {
         * @returns 
         */
     const _getDisplayText = (data: any, DisplayProperty: string, ValueListProperty: string | number) => {
-
         const { columns } = currentState?.valueListConfig || {};
-
-        //1.是否配置了显示字段
+        //是否配置了显示字段
         if (DisplayProperty) {
             //2.是否是显示关联对象的字段
             if (DisplayProperty.search('/') === -1) {
@@ -139,14 +137,14 @@ export default (props: any) => {
                 onOk={async () => {
                     if (currentSelected && currentSelected.length > 0) {
                         if (Parameters) {
-                            Parameters.map((item: { type: any; ValueListProperty: any; LocalDataProperty: any; }) => {
+                            Parameters.map((item: any) => {
                                 const { type, ValueListProperty, LocalDataProperty } = item;
                                 if (type === 'ValueListParameterOut' || type === 'ValueListParameterInOut') {
-                                    let cvalue, value, DisplayProperty//cvalue:currentSelected 中的值 value：显示的值
+                                    let cvalue, value//cvalue:currentSelected 中的值 value：显示的值
                                     cvalue = currentSelected[0][ValueListProperty]
 
                                     //判断选中的值 显示字段
-                                    DisplayProperty = getValueListPropertyDisplay ? getValueListPropertyDisplay(ValueListProperty, collectionPath) : false;
+                                    const DisplayProperty = getValueListPropertyDisplay(ValueListProperty, collectionPath)
                                     value = DisplayProperty ? _getDisplayText(currentSelected[0], DisplayProperty, ValueListProperty) : cvalue
 
                                     //是否设置表单值
@@ -156,10 +154,20 @@ export default (props: any) => {
                                         currentFieldProps.value = value;
                                     }
                                     setLookUpVisible(false);
-                                    formRef.current.setFieldsValue({
-                                        [path]: value
-                                    });
 
+                                    console.log({ path, currentSelected: cvalue, value, DisplayProperty })
+                                    //两种form钩子
+                                    if (formRef) {
+                                        if (formRef?.current) {
+                                            formRef?.current?.setFieldsValue({
+                                                [path]: value
+                                            });
+                                        } else {
+                                            formRef?.setFieldsValue({
+                                                [path]: value
+                                            });
+                                        }
+                                    }
                                 }
                             })
                         }

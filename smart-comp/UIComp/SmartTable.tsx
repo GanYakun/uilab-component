@@ -100,7 +100,7 @@ export default (props: any) => {
             }
 
             //inLineBtns
-            if (result?.inLineBtns.length>0) {
+            if (result?.inLineBtns.length > 0) {
                 const { inLineBtns } = result
                 columns.push({
                     title: <FormattedMessage id="smart.action" />,
@@ -299,8 +299,9 @@ export default (props: any) => {
                             btnType: 'link'
                         }}
                         fields={currentState?.quickCreate?.Fields}
-                        onSubmit={(params: any) => {
-                            return currentState?.quickCreate?.annoRequest?.post(params);
+                        onSubmit={async (params: any) => {
+                            await currentState?.quickCreate?.annoRequest?.post(params);
+                            actionRef?.current?.reload();
                         }}
                     />
                 ),
@@ -323,6 +324,7 @@ export default (props: any) => {
                                 path = `${queryEntity}/${targetNavigation}/${item?.Action?.name}`
                             }
                             await item.Action.annoRequest({ body, path })
+                            actionRef?.current?.reload();
                         }}
                         action={item.Action}
                     />
