@@ -225,7 +225,10 @@ export default (props: any) => {
                     }
                 } else {
                     return (
-                        <div style={{ color: record && SmartCriticality[record[Criticality]]?.color || "" }}>{currentFieldProps.value}</div>
+                        <div style={{ color: record && SmartCriticality[record[Criticality]]?.color || "", display: "flex" }}>
+                            <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>
+                            <div>{currentFieldProps.value}</div>
+                        </div>
                     )
                 }
             case 'Text':
