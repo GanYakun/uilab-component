@@ -38,7 +38,8 @@ export default (props: any) => {
         onLoad,
         qualifier,
         SmartProps,
-        actionRef: parentActionRef
+        actionRef: parentActionRef,
+        hideSelect
     } = props;
     const [currentState, setCurrentState] = useState<any>()
     let [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -289,7 +290,7 @@ export default (props: any) => {
             headerTitle=""
             toolBarRender={() => [
                 //快速创建按钮
-                currentState?.quickCreate && (
+                currentState?.quickCreate && !hideSelect && (
                     <SmartModalForm
                         formType={currentState?.quickCreate?.type}
                         entitySet={entitySet}
@@ -306,7 +307,7 @@ export default (props: any) => {
                     />
                 ),
                 //headerBtns
-                currentState?.headerBtns && (
+                currentState?.headerBtns && !hideSelect && (
                     currentState?.headerBtns?.map((item: any, index: number) => {
                         return <SmartModalForm
                             key={index}

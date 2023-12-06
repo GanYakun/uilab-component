@@ -87,14 +87,69 @@ export default (props) => {
         }
     }
     //解析并渲染facet内容
-    const _renderFacetContents = (sectionItem) => {
+    const _renderFacetContents = (sectionItem, bool) => {
         const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
         const _renderContent = (contentValue, label, id) => {
-            console.log({ contentValue, label, id, sectionItem })
             if (!contentValue) return {}
             const { facetType: type, value } = contentValue;
+            let extra = sectionTargetData?.Fields?.find((e) => (e.type === "UI.DataFieldForAction"));
+            let renderExtra: any = null;
+            if (extra) {
+                renderExtra = <SmartModalForm
+                    formType={extra.type}
+                    entitySet={currentState?.entitySet}
+                    content={{
+                        title: extra.Label,
+                        btnText: extra.Label,
+                        btnType: 'link'
+                    }}
+                    action={extra.Action}
+                    fields={extra.Action.Fields}
+                    onSubmit={async (body) => {
+                        await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra?.Action?.name}` })
+                        setCurrentState(null);
+                        init();
+                        //刷新listreport数据
+                        window.uilabKeep = true
+                    }}
+                />
+            }
             switch (type) {
                 case 'UI.FieldGroup':
+                    if (bool) {
+                        return {
+                            type,
+                            label,
+                            content: (
+                                <div style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                                    <Card title={label} bordered={false} extra={renderExtra}>
+                                        <ProForm submitter={false} grid={true}>
+                                            <ProFormGroup>
+                                                {
+                                                    sectionTargetData?.Fields?.map((childItem, childIndex) => {
+                                                        const option = {
+                                                            isReadOnly: true,
+                                                            entitySet: currentState?.entitySet,
+                                                            path: childItem.Value,
+                                                            record: currentRecord,
+                                                            showLabel: true
+                                                        }
+                                                        if (childItem.type === "UI.DataField") {
+                                                            return <SmartField {...option} key={`card-${childIndex}`} />
+                                                        } else if (childItem.type === "UI.DataFieldForAction") {
+                                                            return <React.Fragment key={`card-${childIndex}`}></React.Fragment>
+                                                        } else {
+                                                            return <React.Fragment key={`card-${childIndex}`}></React.Fragment>
+                                                        }
+                                                    })
+                                                }
+                                            </ProFormGroup>
+                                        </ProForm>
+                                    </Card>
+                                </div>
+                            )
+                        }
+                    }
                     return {
                         type,
                         label,
@@ -152,6 +207,19 @@ export default (props) => {
                         path: Value,
                         record: currentRecord,
                         Criticality
+                    }
+                    if (bool) {
+                        return {
+                            type,
+                            label,
+                            content: (
+                                <div style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                                    <Card title={Title} bordered={false} extra={renderExtra}>
+                                        <SmartField {...option} />
+                                    </Card>
+                                </div>
+                            )
+                        }
                     }
                     return {
                         type,
@@ -220,7 +288,7 @@ export default (props) => {
                         return (
                             <React.Fragment key={`Facets-${index}`}>
                                 {childfacets.map((targetItem, targetIndex) => {
-                                    const { content } = _renderFacetContents(targetItem);
+                                    const { content } = _renderFacetContents(targetItem, true);
                                     return (
                                         <React.Fragment key={`Facets-${index}-${targetIndex}`}>
                                             {content}
@@ -231,7 +299,6 @@ export default (props) => {
                         )
                     } else {
                         const { content } = _renderFacetContents(item);
-                        console.log({ item, content })
                         return (
                             <React.Fragment key={`Facets-${index}`}>
                                 {content}

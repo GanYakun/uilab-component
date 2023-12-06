@@ -186,6 +186,7 @@ export default (props: any) => {
                         onSelect={(item: any) => {
                             setCurrentSelected(item)
                         }}
+                        hideSelect={true}
                     />
                 </div>
             </Modal>
