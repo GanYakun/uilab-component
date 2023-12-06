@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 16:43:12
+ * @LastEditTime: 2023-12-06 18:03:04
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -65,14 +65,14 @@ const getUi5Config = async (reload = false) => {
     const metadata = await getMetadata(requestUri)
 
     //合并annotations
-    if (annotations && annotations.dataServices && metadata) {
+    if (annotations && annotations?.dataServices && metadata) {
         metadata.dataServices.schema[0].annotations = metadata.dataServices.schema[0].annotations ? metadata.dataServices.schema[0].annotations : []
         metadata.dataServices.schema[0].annotations = annotations.dataServices.schema[0].annotations ? metadata.dataServices.schema[0].annotations.concat(annotations.dataServices.schema[0].annotations) : metadata.dataServices.schema[0].annotations
     }
 
     const result = {
         manifest,
-        annotations: metadata.dataServices.schema[0].annotations,
+        annotations: metadata?.dataServices?.schema[0]?.annotations,
         i18n,
         i18n_en,
         i18n_zh,

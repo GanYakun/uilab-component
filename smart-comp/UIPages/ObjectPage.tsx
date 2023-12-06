@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 12:11:18
+ * @LastEditTime: 2023-12-06 18:38:42
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -90,6 +90,7 @@ export default (props) => {
     const _renderFacetContents = (sectionItem) => {
         const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
         const _renderContent = (contentValue, label, id) => {
+            console.log({ contentValue, label, id, sectionItem })
             if (!contentValue) return {}
             const { facetType: type, value } = contentValue;
             switch (type) {
@@ -143,7 +144,6 @@ export default (props) => {
                             </div>
                         )
                     }
-
                 case "UI.DataPoint":
                     const { Title, Value, Criticality } = value
                     const option = {
@@ -171,12 +171,28 @@ export default (props) => {
                             <div>{contentValue?.render(location.query?.queryEntity)}</div>
                         )
                     }
+                case "UI.LineItem":
+                    return {
+                        type,
+                        label,
+                        content: (
+                            <div id='vertical' style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
+                                <SmartTable
+                                    entitySet={sectionTargetData?.targetEntitySet}
+                                    queryEntity={location?.query?.queryEntity}
+                                    targetNavigation={sectionTargetData?.targetNavigation}
+                                    qualifier={sectionTargetData?.targetQualifier}
+                                />
+                            </div>
+                        )
+                    }
                 default:
                     return {};
             }
         };
         return _renderContent(sectionTargetData, sectionLabel, sectionId);
     }
+
     //头部内容区域
     const _renderHeaderFacetContents = useMemo(() => {
         const contents: any = []
@@ -191,6 +207,45 @@ export default (props) => {
         }
         return contents
     }, [currentState, currentRecord])
+
+    //渲染section
+    const _renderSection = useMemo(() => {
+        const { Facets } = (currentState || {});
+        if (Facets) {
+            return Facets.map((item, index) => {
+                const { childfacets } = (item || {});
+                if (("tabs-" + index) === activeValue) {
+                    // 循环多层
+                    if (childfacets) {
+                        return (
+                            <React.Fragment key={`Facets-${index}`}>
+                                {childfacets.map((targetItem, targetIndex) => {
+                                    const { content } = _renderFacetContents(targetItem);
+                                    return (
+                                        <React.Fragment key={`Facets-${index}-${targetIndex}`}>
+                                            {content}
+                                        </React.Fragment>
+                                    )
+                                })}
+                            </React.Fragment>
+                        )
+                    } else {
+                        const { content } = _renderFacetContents(item);
+                        console.log({ item, content })
+                        return (
+                            <React.Fragment key={`Facets-${index}`}>
+                                {content}
+                            </React.Fragment>
+                        )
+                    }
+                } else {
+                    return <React.Fragment key={`Facets-${index}`}></React.Fragment>
+                }
+            })
+        } else {
+            return <div></div>
+        }
+    }, [currentState, currentRecord, activeValue])
 
     // 解析tab数据
     const _getObjectPageTabOptions = () => {
@@ -273,7 +328,7 @@ export default (props) => {
                             }
                         </div>
 
-                        {_renderHeaderFacetContents}
+                        {/* {_renderHeaderFacetContents} */}
                     </div>
                 ),
                 tabList: _getObjectPageTabOptions() || [],
@@ -281,99 +336,6 @@ export default (props) => {
             }
         } else {
             return {};
-        }
-    }, [currentState, currentRecord, activeValue])
-    //渲染section
-    const _renderSection = useMemo(() => {
-        const { Facets, entitySet } = (currentState || {});
-        const _renderSectionContent = (targetData, targetName, index) => {
-            switch (targetData?.facetType) {
-                case "UI.FieldGroup":
-                    let extra = targetData?.Fields?.find((e) => (e.type === "UI.DataFieldForAction"));
-                    let renderExtra: any = null;
-                    if (extra) {
-                        renderExtra = <SmartModalForm
-                            key={index}
-                            formType={extra.type}
-                            entitySet={entitySet}
-                            content={{
-                                title: extra.Label,
-                                btnText: extra.Label,
-                                btnType: 'link'
-                            }}
-                            action={extra.Action}
-                            fields={extra.Action.Fields}
-                            onSubmit={async (body) => {
-                                await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra?.Action?.name}` })
-                                setCurrentState(null);
-                                init();
-                                //刷新listreport数据
-                                window.uilabKeep = true
-                            }}
-                        />
-                    }
-                    return <div key={`section-${index}`} style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                        <Card title={targetName} bordered={false} extra={renderExtra}>
-                            <ProForm submitter={false} grid={true}>
-                                <ProFormGroup>
-                                    {
-                                        targetData?.Fields?.map((childItem, childIndex) => {
-                                            const option = {
-                                                isReadOnly: true,
-                                                entitySet: currentState?.entitySet,
-                                                path: childItem.Value,
-                                                record: currentRecord,
-                                                showLabel: true
-                                            }
-                                            if (childItem.type === "UI.DataField") {
-                                                return <SmartField {...option} key={`card-${childIndex}-${index}`} />
-                                            } else if (childItem.type === "UI.DataFieldForAction") {
-                                                return <React.Fragment key={`card-${childIndex}-${index}`}></React.Fragment>
-                                            } else {
-                                                return <React.Fragment key={`card-${childIndex}-${index}`}></React.Fragment>
-                                            }
-                                        })
-                                    }
-                                </ProFormGroup>
-                            </ProForm>
-                        </Card>
-                    </div>
-                case "UI.LineItem":
-                    return <div key={`section${index}`} id='vertical' style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                        <SmartTable
-                            entitySet={targetData?.targetEntitySet}
-                            queryEntity={location?.query?.queryEntity}
-                            targetNavigation={targetData?.targetNavigation}
-                            qualifier={targetData?.targetQualifier}
-                        />
-                    </div>
-                default:
-                    break;
-            }
-        }
-
-        if (Facets) {
-            return Facets.map((item, index) => {
-                const { targetData, childfacets } = (item || {});
-                if (("tabs-" + index) === activeValue) {
-                    // 循环多层
-                    if (childfacets) {
-                        return <React.Fragment key={`Facets-${index}`}>{childfacets.map((targetItem, targetIndex) => {
-                            return <React.Fragment key={`Facets-${index}-${targetIndex}`}>
-                                {_renderSectionContent(targetItem.targetData, targetItem.label, index + "-" + targetIndex)}
-                            </React.Fragment>
-                        })}</React.Fragment>
-                    } else {
-                        return <React.Fragment key={`Facets-${index}`}>
-                            {_renderSectionContent(targetData, item.label, index)}
-                        </React.Fragment>
-                    }
-                } else {
-                    return <React.Fragment key={`Facets-${index}`}></React.Fragment>
-                }
-            })
-        } else {
-            return <div></div>
         }
     }, [currentState, currentRecord, activeValue])
 
