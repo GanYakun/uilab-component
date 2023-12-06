@@ -300,36 +300,37 @@ export default (props: any) => {
                         }}
                         fields={currentState?.quickCreate?.Fields}
                         onSubmit={async (params: any) => {
+                            console.log({ params, actionRef })
                             await currentState?.quickCreate?.annoRequest?.post(params);
                             actionRef?.current?.reload();
                         }}
                     />
                 ),
                 //headerBtns
-                currentState?.headerBtns && (currentState?.headerBtns?.map((item, index) => {
-                    return <SmartModalForm
-                        key={index}
-                        formType={item.type}
-                        entitySet={entitySet}
-                        content={{
-                            title: item.Label,
-                            btnText: item.Label,
-                            btnType: 'link'
-                        }}
-                        fields={item.Action.Fields}
-                        onSubmit={async (body) => {
-                            let path = entitySet
-                            //当前table为object子对象
-                            if (queryEntity && targetNavigation) {
-                                path = `${queryEntity}/${targetNavigation}/${item?.Action?.name}`
-                            }
-                            await item.Action.annoRequest({ body, path })
-                            actionRef?.current?.reload();
-                        }}
-                        action={item.Action}
-                    />
-                })
-
+                currentState?.headerBtns && (
+                    currentState?.headerBtns?.map((item: any, index: number) => {
+                        return <SmartModalForm
+                            key={index}
+                            formType={item.type}
+                            entitySet={entitySet}
+                            content={{
+                                title: item.Label,
+                                btnText: item.Label,
+                                btnType: 'link'
+                            }}
+                            fields={item.Action.Fields}
+                            onSubmit={async (body: any) => {
+                                let path = `${entitySet}/${item?.Action?.name}`
+                                //当前table为object子对象
+                                if (queryEntity && targetNavigation) {
+                                    path = `${queryEntity}/${targetNavigation}/${item?.Action?.name}`
+                                }
+                                await item.Action.annoRequest({ body, path })
+                                actionRef?.current?.reload();
+                            }}
+                            action={item.Action}
+                        />
+                    })
                 )
             ]}
             rowSelection={currentRowSelection ? _rowSelection() : false}
