@@ -37,7 +37,8 @@ export default (props: any) => {
         targetNavigation,
         onLoad,
         qualifier,
-        SmartProps
+        SmartProps,
+        actionRef
     } = props;
     const [currentState, setCurrentState] = useState<any>()
     let [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -46,7 +47,6 @@ export default (props: any) => {
     const [currentRowSelection, setCurrentRowSelection] = useState(rowSelection)
     let [currentSelectedRowsItem, setCurrentSelectedRowsItem] = useState([])
 
-    const actionRef = useRef<any>();
     //初始化方法
     const init = async () => {
         const result = await getConfig({ entitySet, qualifier })

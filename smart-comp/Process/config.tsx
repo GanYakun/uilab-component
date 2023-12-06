@@ -15,7 +15,6 @@ const Criticality = {
     },
     '0': {
         color: 'grey',
-        icon: <WarningOutlined />
     },
     '1': {
         color: '#b00',

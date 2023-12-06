@@ -11,6 +11,7 @@ import SmartTable from '../UIComp/SmartTable'
 import SmartFilterBar from '../UIComp/SmartFilterBar'
 import { getConfig } from '../Anotations/ListReport';
 import { Skeleton, Space, Tabs } from 'antd';
+import { useActivate } from "umi";
 const { TabPane } = Tabs
 export default (props) => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
@@ -19,6 +20,7 @@ export default (props) => {
     const [loading, setLoading] = useState(true);
     const [activeTabKey, setActiveTabKey] = useState(0)
     const formRef = useRef();
+    const actionRef = useRef();
     const SmartProps = useMemo(() => {
         return props.SmartProps || [];
     }, [props.SmartProps])
@@ -40,7 +42,22 @@ export default (props) => {
             initTabs()
         }
     }, [currentState])
+    useActivate(() => {
+        console.log('useActivate', window.uilabKeep)
+        if (window.uilabKeep) {
+            const { tabs } = (currentState || {});
+            window.uilabKeep = false
+            if (tabs?.length > 0) {
+                initTabs()
+            }
+            console.log(actionRef);
 
+            actionRef?.current?.reload();
+        }
+        if (window['SAP-ContextId']) {
+            window['SAP-ContextId'] = null
+        }
+    })
     const initTabs = async () => {
         const { tabs } = (currentState || {});
         const result = await currentState?.annoRequest()
@@ -110,6 +127,7 @@ export default (props) => {
                                                 <div key={`table${i}`}>
                                                     {
                                                         activeTabKey === i && <SmartTable
+                                                            actionRef={actionRef}
                                                             entitySet={entitySet}
                                                             navigationRoute={navigationRoute}
                                                             searchVal={searchVal}
@@ -130,6 +148,7 @@ export default (props) => {
                             })}
                         </Tabs> :
                             <SmartTable
+                                actionRef={actionRef}
                                 searchVal={searchVal}
                                 entitySet={entitySet}
                                 navigationRoute={navigationRoute}

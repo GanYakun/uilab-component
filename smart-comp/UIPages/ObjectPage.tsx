@@ -302,6 +302,8 @@ export default (props) => {
                                 await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra?.Action?.name}` })
                                 setCurrentState(null);
                                 init();
+                                //刷新listreport数据
+                                window.uilabKeep = true
                             }}
                         />
                     }
