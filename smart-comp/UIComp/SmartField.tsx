@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 14:51:51
+ * @LastEditTime: 2023-12-06 15:12:29
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -40,7 +40,7 @@ export default (props: any) => {
 
     const [lookUpVisible, setLookUpVisible] = useState(false);//lookup 显示状态
     const [currentSelected, setCurrentSelected] = useState<any>(null);//lookup选中项
-    const [currentValueEnum, setCurrentValueEnum] = useState(null); //下拉选择框暂存
+    const [currentValueEnum, setCurrentValueEnum] = useState<any>(null); //下拉选择框暂存
     const [selectLoading, setSelectLoading] = useState(false);//下拉框是否加载中
 
     //字段相关显示属性
@@ -140,31 +140,33 @@ export default (props: any) => {
                             Parameters.map((item: any) => {
                                 const { type, ValueListProperty, LocalDataProperty } = item;
                                 if (type === 'ValueListParameterOut' || type === 'ValueListParameterInOut') {
-                                    let cvalue, value//cvalue:currentSelected 中的值 value：显示的值
-                                    cvalue = currentSelected[0][ValueListProperty]
 
-                                    //判断选中的值 显示字段
+                                    //1.inputValue： 表单值 2.inputDisplayValue：表单显示的值
+                                    let inputValue = currentSelected[0][ValueListProperty], inputDisplayValue
+
+                                    //DisplayProperty：是否配置了显示字段 没配置显示inputValue
                                     const DisplayProperty = getValueListPropertyDisplay(ValueListProperty, collectionPath)
-                                    value = DisplayProperty ? _getDisplayText(currentSelected[0], DisplayProperty, ValueListProperty) : cvalue
+                                    inputDisplayValue = DisplayProperty ? _getDisplayText(currentSelected[0], DisplayProperty, ValueListProperty) : inputValue
 
                                     //是否设置表单值
                                     const setField = path === LocalDataProperty || path.search(LocalDataProperty) !== -1 || LocalDataProperty.search(path) !== -1
-                                    //设置表单内的值
                                     if (setField) {
-                                        currentFieldProps.value = value;
+                                        currentFieldProps.value = inputValue;
                                     }
                                     setLookUpVisible(false);
 
-                                    console.log({ path, currentSelected: cvalue, value, DisplayProperty })
+                                    //console.log({ path, inputValue, inputDisplayValue, DisplayProperty })
+                                    setCurrentValueEnum({ [inputValue]: inputDisplayValue })
+
                                     //两种form钩子
                                     if (formRef) {
                                         if (formRef?.current) {
                                             formRef?.current?.setFieldsValue({
-                                                [path]: value
+                                                [path]: inputValue
                                             });
                                         } else {
                                             formRef?.setFieldsValue({
-                                                [path]: value
+                                                [path]: inputValue
                                             });
                                         }
                                     }
@@ -283,10 +285,7 @@ export default (props: any) => {
                     <>
                         <ProFormSelect
                             {...currentFieldProps}
-                            request={async () => {
-                                const result = await valueListConfig.annoRequest()
-                                return result
-                            }}
+                            valueEnum={currentValueEnum ? currentValueEnum : {}}
                         />
                         {_renderLookUp(valueListConfig)}
                     </>
