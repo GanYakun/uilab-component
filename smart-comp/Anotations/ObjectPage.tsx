@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 16:20:01
+ * @LastEditTime: 2023-12-06 09:03:10
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -62,7 +62,7 @@ const _getManifestConfig = () => {
  * @param {*} data 
  * @returns 
  */
-const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }) => {
+const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }: any) => {
     const result = [] as any
 
     if (HeaderInfo) {
@@ -85,7 +85,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
 
     const facetsData = [...Facets, ...HeaderFacets]
     if (facetsData) {
-        const addValueToResult = (targetData) => {
+        const addValueToResult = (targetData: { facetType: any; Fields: any; value: any; }) => {
             if (targetData) {
                 const { facetType, Fields, value } = targetData
                 if (facetType === 'UI.FieldGroup') {
@@ -131,7 +131,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
     }
 
     //数组去重
-    result.filter((item, index, result) => {
+    result.filter((item: any, index: any, result: string | any[]) => {
         return result.indexOf(item) === index
     })
 
@@ -146,7 +146,7 @@ const getFieldArr = ({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identifica
  * @param {*} fieldArr 
  * @returns 
  */
-const _setRequest = (entitySet, queryEntity, fieldArr) => {
+const _setRequest = (entitySet: any, queryEntity: any, fieldArr: any) => {
     const { currentSelect, currentExpand } = Utils.getQueryContitionsByAnnotations(
         fieldArr,
         entitySet
@@ -168,7 +168,7 @@ const _setRequest = (entitySet, queryEntity, fieldArr) => {
         option.headers['SAP-ContextId'] = window['SAP-ContextId']
     }
     //console.log({ option, entitySet, queryEntity, fieldArr })
-    return async (params) => {
+    return async (params: {}) => {
         if (params) {
             option.parameters = { ...option.parameters, ...params }
         }
@@ -182,7 +182,7 @@ const _setRequest = (entitySet, queryEntity, fieldArr) => {
  * @param {object} currentAnnotations
  * @returns
  */
-const getIdentificationByAnnotations = (currentAnnotations, currentRecord) => {
+const getIdentificationByAnnotations = (currentAnnotations: any, currentRecord: any) => {
     const result = [] as any
     const annotation = Utils.getTermAnnotations(currentAnnotations, 'UI.Identification');
     if (annotation) {
@@ -229,7 +229,7 @@ const getIdentificationByAnnotations = (currentAnnotations, currentRecord) => {
  * @param {*} entitySet
  * @returns 
  */
-const getHeaderInfoOptions = (currentAnnotations) => {
+const getHeaderInfoOptions = (currentAnnotations: any) => {
     const headerInfo = Utils.getTermAnnotations(currentAnnotations, 'UI.HeaderInfo');
     if (headerInfo) {
         const { record } = headerInfo;
@@ -240,6 +240,7 @@ const getHeaderInfoOptions = (currentAnnotations) => {
             }
         }
     }
+    return false
 };
 
 export const getConfig = async ({ location, currentRecord }) => {

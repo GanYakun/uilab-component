@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 17:16:35
+ * @LastEditTime: 2023-12-06 08:43:58
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,7 +19,7 @@ import { FormattedMessage } from "react-intl";
 import { useModel } from 'umi';
 import { defaultImageUrl } from '../Process/config'
 
-export default (props) => {
+export default (props:any) => {
     const {
         record,
         entitySet,
@@ -91,7 +91,7 @@ export default (props) => {
         * @param {*} data 
         * @returns 
         */
-    const _getDisplayText = (data, DisplayProperty, ValueListProperty) => {
+    const _getDisplayText = (data: any, DisplayProperty: string, ValueListProperty: string | number) => {
 
         const { columns } = currentState?.valueListConfig || {};
 
@@ -111,7 +111,7 @@ export default (props) => {
         } else {
             //3.如果没有配置显示多个字段
             let str = ''
-            columns.map((item) => {
+            columns.map((item: { path: any; }) => {
                 const { path } = item
                 if (data[path]) {
                     str += ` ${data[path]} `
@@ -137,7 +137,7 @@ export default (props) => {
                 onOk={async () => {
                     if (currentSelected && currentSelected.length > 0) {
                         if (Parameters) {
-                            Parameters.map((item) => {
+                            Parameters.map((item: { type: any; ValueListProperty: any; LocalDataProperty: any; }) => {
                                 const { type, ValueListProperty, LocalDataProperty } = item;
                                 if (type === 'ValueListParameterOut' || type === 'ValueListParameterInOut') {
                                     let cvalue, value, DisplayProperty//cvalue:currentSelected 中的值 value：显示的值
@@ -171,7 +171,7 @@ export default (props) => {
                         entitySet={collectionPath}
                         parentColumns={parentColumns}
                         rowSelection='radio'
-                        onSelect={(item) => {
+                        onSelect={(item: any) => {
                             setCurrentSelected(item)
                         }}
                     />
@@ -187,7 +187,7 @@ export default (props) => {
             let obj: any = {};
             const result = await valueListConfig.annoRequest();
             setSelectLoading(false);
-            result?.map((item) => {
+            result?.map((item: { value: string | number; label: any; Label: any; }) => {
                 obj[item.value] = {
                     text: item.label || item.Label
                 }
@@ -227,7 +227,7 @@ export default (props) => {
                 return <ProFormText {...currentFieldProps} />
             case 'Select':
                 //lookup 弹框图片&按钮
-                currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool) => {
+                currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool: any) => {
                     if (bool) {
                         queryValueEnum();
                     }
@@ -252,7 +252,7 @@ export default (props) => {
                     }
                 }
                 //lookup 弹框图片&按钮
-                currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool) => {
+                currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool: any) => {
                     if (bool) {
                         setLookUpVisible(true);
                     }
@@ -278,7 +278,7 @@ export default (props) => {
             case 'Date':
                 return <ProFormDatePicker
                     {...currentFieldProps}
-                    onBlur={(params) => {
+                    onBlur={(params: { target: { value: moment.MomentInput; }; }) => {
                         const val = params.target.value
                         const value = val ? moment(params.target.value).format('YYYY-MM-DDTHH:mm:ss.SSSZ') : null
                         // onBlur && _onBlur(value);

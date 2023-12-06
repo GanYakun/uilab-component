@@ -2,13 +2,11 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-28 12:25:19
+ * @LastEditTime: 2023-12-06 08:51:15
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import Utils from '../Process/utils'
-import Odata from '../../utils/odata/odata'
-
 
 /**
  * @description: 解析UI.SelectionFields 字段
@@ -17,7 +15,7 @@ import Odata from '../../utils/odata/odata'
  * @param {*} tabs
  * @return {*}
  */
-const _getAnnoSelectionFields = (entitySet, currentAnnotations) => {
+const _getAnnoSelectionFields = (entitySet: any, currentAnnotations: any[]) => {
     let result: any[] = [], SelectionFields: any[] = []
     const anno = Utils.getTermAnnotations(currentAnnotations, 'UI.SelectionFields')
     if (anno) {
@@ -45,7 +43,7 @@ const _getAnnoSelectionFields = (entitySet, currentAnnotations) => {
     return result
 }
 
-export const getConfig = async (params) => {
+export const getConfig = async (params: { entitySet: string }) => {
     const { entitySet } = params
     const { currentAnnotations } = Utils.getEntitySetConfig(entitySet)
     const annoSelectionFields = _getAnnoSelectionFields(entitySet, currentAnnotations)

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 14:55:42
+ * @LastEditTime: 2023-12-06 08:51:53
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,7 @@ import moment from 'moment'
  * @param currentAnnotations
  * @returns
  */
-const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualifier) => {
+const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualifier: null | undefined) => {
     const result = {
         columns: [] as any,
         inLineBtns: [] as any,
@@ -123,12 +123,12 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
  * @param queryEntity 
  * @param targetPath 
  */
-const _setRequest = (entitySet, columns) => {
-    return async (currentParams, parentColumns, queryEntity, targetNavigation) => {
+const _setRequest = (entitySet: string, columns: any) => {
+    return async (currentParams: { searchVal: any; params: any; filterDefaultValue: any }, parentColumns: any, queryEntity: any, targetNavigation: any) => {
         const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
         const fieldArr = [] as any
-        currentColumns.map((item) => {
+        currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any }) => {
             const { path, type, value, show, url, Criticality } = item
             switch (type) {
                 case 'UI.DataField':
@@ -221,7 +221,7 @@ const _setRequest = (entitySet, columns) => {
     }
 }
 
-export const getConfig = async (params) => {
+export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
     const { entitySet, qualifier } = params
     const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet, qualifier)

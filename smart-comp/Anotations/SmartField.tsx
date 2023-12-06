@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 17:02:12
+ * @LastEditTime: 2023-12-06 08:47:58
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -14,10 +14,8 @@ import Utils from '../Process/utils'
  * @param {*} currentAnnotations
  */
 const getValueListProperty = (
-    currentAnnotations,
+    currentAnnotations: any[],
 ) => {
-    const { metadata } = Utils.getUi5ConfigAsync()
-    const { annotations } = metadata.dataServices.schema[0];
 
     let result = {
         collectionPath: null,
@@ -31,7 +29,7 @@ const getValueListProperty = (
     };
 
     //解析返回  LocalDataProperty、ValueListProperty
-    const _getProperty = (propertyValue) => {
+    const _getProperty = (propertyValue: any) => {
         let LocalDataProperty, ValueListProperty;
         for (let a of propertyValue) {
             const { property } = a;
@@ -49,7 +47,7 @@ const getValueListProperty = (
     };
 
     //设置返回outObject
-    const _setParameters = (type, LocalDataProperty, ValueListProperty) => {
+    const _setParameters = (type: any, LocalDataProperty: any, ValueListProperty: any) => {
         if (result.Parameters) {
             switch (type) {
                 case `Common.ValueListParameterInOut`:
@@ -146,7 +144,7 @@ const getValueListProperty = (
  * @param {*} currentSelect 
  * @returns 
  */
-const _setRequest = (collectionPath, columns, Parameters) => {
+const _setRequest = (collectionPath: null, columns: any[], Parameters: any) => {
 
     //获取查询条件
     const arr = [] as any[]
@@ -162,7 +160,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
     * @param {*} data 
     * @returns 
     */
-    const _getDisplayText = (data, DisplayProperty, ValueListProperty) => {
+    const _getDisplayText = (data: { [x: string]: any; }, DisplayProperty: string, ValueListProperty: string | number) => {
         //1.是否配置了显示字段
         if (DisplayProperty) {
             //2.是否是显示关联对象的字段
@@ -199,7 +197,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
      * @param {*} collectionPath 
      * @returns 
      */
-    const _getValueListPropertyDisplay = (ValueListProperty, collectionPath) => {
+    const _getValueListPropertyDisplay = (ValueListProperty: string | number, collectionPath: null) => {
         let result
         const { metadata } = Utils.getUi5ConfigAsync()
         const { annotations, entityContainer } = metadata.dataServices.schema[0];
@@ -223,7 +221,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
     let option = {
         path: collectionPath,
         method: 'GET',
-        parameters: {},
+        parameters: {} as any,
     };
     if (JSON.stringify(currentExpand) !== '{}') {
         option.parameters.$expand = currentExpand;
@@ -234,12 +232,12 @@ const _setRequest = (collectionPath, columns, Parameters) => {
         option.parameters.$select = currentSelect.toString();
     }
 
-    return async (params) => {
+    return async () => {
         const result = await Odata.submit(option)
         if (result) {
             const { value } = result.data;
             const arr = [] as any;
-            let _ValueListProperty, DisplayProperty
+            let _ValueListProperty: any, DisplayProperty: any
             for (let a of Parameters) {
                 const { type, ValueListProperty } = a
                 if (type === 'ValueListParameterOut' || type === 'ValueListParameterInOut') {
@@ -247,7 +245,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
                 }
             }
             DisplayProperty = _getValueListPropertyDisplay(_ValueListProperty, collectionPath)
-            value.map((item) => {
+            value.map((item: any) => {
                 const val = _getDisplayText(item, DisplayProperty, _ValueListProperty)
                 arr.push({
                     Label: val ? val : item[_ValueListProperty], value: item[_ValueListProperty]
@@ -264,7 +262,7 @@ const _setRequest = (collectionPath, columns, Parameters) => {
  * @param {*} currentPropertyType 当前字段，例：Edm.String、Edm.Int64、Edm.DateTimeOffset、Edm.Date
  * @returns 
  */
-const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly, dataPoint = null) => {
+const _setFieldValue = (currentAnnotations: any, currentPropertyType: null, isReadOnly: any, dataPoint = null) => {
     let result = {
         fieldType: 'Text',
         valueListConfig: null as any,
@@ -288,7 +286,7 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly, dat
     //是否 IsImageURL 远端图片地址
     if (Utils.getTermAnnotations(currentAnnotations, 'UI.IsImageURL')) {
         result.fieldType = 'IsImageURL';
-        return result 
+        return result
     }
 
     //是否 IsImage 数据库存储
@@ -371,7 +369,7 @@ const _setFieldValue = (currentAnnotations, currentPropertyType, isReadOnly, dat
  * 判断是否必填
  * @param {*} currentAnnotations 
  */
-const isNullable = (currentAnnotations, entitySet, path) => {
+const isNullable = (currentAnnotations: any[], entitySet: string, path: string) => {
     let result = false
 
     //1.Common.FieldControlType/Mandatory
@@ -393,7 +391,7 @@ const isNullable = (currentAnnotations, entitySet, path) => {
                         if (property === 'RequiredProperties') {
                             for (let d of collection) {
                                 const { propertyPath } = d
-                                if (propertyPath && propertyPath.findIndex((item) => item.text === path) !== -1) {
+                                if (propertyPath && propertyPath.findIndex((item: { text: string; }) => item.text === path) !== -1) {
                                     result = true
                                 }
                             }
@@ -411,7 +409,7 @@ const isNullable = (currentAnnotations, entitySet, path) => {
  * 获取字段默认值
  * @param {*} currentAnnotations 
  */
-const getParameterDefaultValue = (currentAnnotations, record = null, stateTree = null, action = null, namespace = null) => {
+const getParameterDefaultValue = (currentAnnotations: any[], record = null, stateTree: any = null, action = null, namespace = null) => {
     const anno = Utils.getTermAnnotations(currentAnnotations, 'UI.ParameterDefaultValue');
     if (anno) {
         if (Utils.getTextValueByData(`string`, anno)) {
@@ -424,7 +422,7 @@ const getParameterDefaultValue = (currentAnnotations, record = null, stateTree =
                 const { BoundData } = action
                 let arr = path.split('/')
                 if (BoundData) {
-                    let value
+                    let value: any
                     const { name, type } = BoundData
                     const key = type.replace(`${namespace}.`, '')
                     for (let a of arr) {
@@ -451,12 +449,12 @@ const getParameterDefaultValue = (currentAnnotations, record = null, stateTree =
 }
 
 //获取单位
-const getUnit = (currentAnnotations) => {
+const getUnit = (currentAnnotations: any[]) => {
     const record = Utils.getTermAnnotations(currentAnnotations, 'Measures.Unit')
     return Utils.getTextValueByData('string', record)
 }
 
-export const getConfig = async (params) => {
+export const getConfig = async (params: { record: any; entitySet: string; path: string; isReadOnly: any; action: any; dataPoint: any; nullable?: any; stateTree: any; }) => {
     const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree } = params
     const { currentAnnotations, currentPropertyType, namespace } = Utils.getEntitySetConfig(entitySet, path, action?.name)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint)
