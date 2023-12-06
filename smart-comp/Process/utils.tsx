@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 14:37:58
+ * @LastEditTime: 2023-12-06 16:43:12
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -540,8 +540,8 @@ const getQueryContitionsByAnnotations = (
     }
 
     //4.拼装expand select
-    const getMultistage = (arr: string | any[], unitData: { index?: any; value: any; } | undefined, isImageData: { value: any; } | undefined, selectData:any = null, primaryKey:any = null) => {
-        let floatObj:any = currentExpand;
+    const getMultistage = (arr: string | any[], unitData: { index?: any; value: any; } | undefined, isImageData: { value: any; } | undefined, selectData: any = null, primaryKey: any = null) => {
+        let floatObj: any = currentExpand;
         function create(index: number) {
             //处理单位
             if (unitData && unitData.index !== 0) {
@@ -1921,7 +1921,7 @@ const parseActionByName = (actionName: string) => {
     }
 
     //处理请求
-    result.annoRequest = async ({ boundActionData=[], body={} as any, path = '' }) => {
+    result.annoRequest = async ({ boundActionData = [], body = {} as any, path = '' }) => {
         //是否为批量提交场景 
         if (boundActionData && boundActionData.length > 0) {
             const arr = [] as any
@@ -1963,10 +1963,10 @@ const parseActionByName = (actionName: string) => {
                     });
             } else {
                 //需要补字段的
-                result.Fields.map((item:any) => {
+                result.Fields.map((item: any) => {
                     const { name, type } = item
-                    //为空的处理
                     if (!body[name]) {
+                        //处理空值
                         if (type === 'Edm.String') {
                             body[name] = ''
                         } else if (type === 'Edm.Boolean') {
@@ -1977,6 +1977,11 @@ const parseActionByName = (actionName: string) => {
                             body[name] = body[name] ? body[name] : []
                         } else {
                             body[name] = null
+                        }
+                    }else{
+                        //处理日期格式
+                        if (type ==='Edm.DateTimeOffset'){
+                            body[name] = moment(body[name]).format('YYYY-MM-DDTHH:mm:ss.SSSZ')
                         }
                     }
                 })
