@@ -53,7 +53,9 @@ export default (props) => {
                 if (result.Facets?.length) {
                     // 过滤隐藏的数据
                     result.Facets = result.Facets.filter((e) => (!e.isHidden));
-                    setActiveValue("tabs-" + 0);
+                    if (!activeValue) {
+                        setActiveValue("tabs-" + 0);
+                    }
                 }
                 setCurrentState(result)
             });
@@ -236,6 +238,8 @@ export default (props) => {
                         await item.Action.annoRequest({ body, path: `${location.query.queryEntity}/${item?.Action?.name}` })
                         setCurrentState(null);
                         init();
+                        //刷新listreport数据
+                        window.uilabKeep = true
                     }}
                 />
             })
@@ -273,11 +277,12 @@ export default (props) => {
                     </div>
                 ),
                 tabList: _getObjectPageTabOptions() || [],
+                tabActiveKey: activeValue ? activeValue : ""
             }
         } else {
             return {};
         }
-    }, [currentState, currentRecord])
+    }, [currentState, currentRecord, activeValue])
     //渲染section
     const _renderSection = useMemo(() => {
         const { Facets, entitySet } = (currentState || {});
