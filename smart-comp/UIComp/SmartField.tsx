@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 10:15:22
+ * @LastEditTime: 2023-12-06 12:11:04
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,6 +25,7 @@ export default (props: any) => {
         entitySet,
         path,
         isReadOnly,
+        DataFieldWithUrl,
         formRef, // 表单的钩子函数
         showLabel, // 是否显示label字段，与isReadOnly配合使用
         colProps,
@@ -60,6 +61,7 @@ export default (props: any) => {
             entitySet,
             path,
             isReadOnly,
+            DataFieldWithUrl,
             action,
             dataPoint,
             nullable,
@@ -338,6 +340,22 @@ export default (props: any) => {
                         onClick={(e) => e.stopPropagation()}
                     />
                 )
+            case 'DataFieldWithUrl':
+                let pathValue, urlValue;
+                //判断是否为多段式
+                if (DataFieldWithUrl.search('/') === -1) {
+                    pathValue = record[path]
+                    urlValue = record[DataFieldWithUrl]
+                } else {
+                    let pathArr = path.split('/'), urlArr = DataFieldWithUrl.split('/')
+                    for (let a of pathArr) {
+                        pathValue = pathValue ? pathValue[a] : record[a];
+                    }
+                    for (let a of urlArr) {
+                        urlValue = urlValue ? urlValue[a] : record[a];
+                    }
+                }
+                return <a href={urlValue} target="_blank">{pathValue}</a>
             default:
                 return <div></div>
         }

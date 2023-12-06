@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 09:45:44
+ * @LastEditTime: 2023-12-06 12:11:18
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -121,19 +121,19 @@ export default (props) => {
 
                                             </div>
                                         case "UI.DataFieldWithUrl":
-                                            //判断是否为多段式
-                                            if (Url.search('/') === -1) {
-                                                return <a key={`target-${index}-${id}`} href={currentRecord[Url]} target="_blank">{currentRecord[Value]}</a>
-                                            } else {
-                                                let pathArr = Value.split('/'), urlArr = Url.split('/'), pathValue, urlValue;
-                                                for (let a of pathArr) {
-                                                    pathValue = pathValue ? pathValue[a] : currentRecord[a];
-                                                }
-                                                for (let a of urlArr) {
-                                                    urlValue = urlValue ? urlValue[a] : currentRecord[a];
-                                                }
-                                                return (pathValue && <a href={urlValue} target="_blank">{pathValue}</a>)
+                                            const DataFieldWithUrlOption = {
+                                                entitySet: currentState?.entitySet,
+                                                path: Value,
+                                                record: currentRecord,
+                                                DataFieldWithUrl: Url
                                             }
+                                            return (
+                                                <div id={`target-${index}`} key={`target-${index}-${id}`}>
+                                                    <ProFormGroup>
+                                                        <SmartField {...DataFieldWithUrlOption} />
+                                                    </ProFormGroup>
+                                                </div>
+                                            )
                                         default:
                                             return <div key={`target-${index}-${id}`}></div>;
                                     }
