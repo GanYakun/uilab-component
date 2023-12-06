@@ -99,27 +99,8 @@ export default (props: any) => {
                 columns = [...columns, ...(mergeSource(SmartProps, "SmartTable").columns || [])];
             }
 
-            //是否需要跳转 添加跳转Icon
-            if (navigationRoute) {
-                columns.push({
-                    title: '',
-                    width: 'auto',
-                    hideInSearch: true,
-                    dataIndex: 'option',
-                    fixed: 'right',
-                    key: 'navOptoin',
-                    align: 'center',
-                    disable: true,
-                    render: (_) => {
-                        return <RightOutlined
-                            style={{ color: '#6a6d70', fontSize: '12px', background: 'transparent' }}
-                        />
-                    }
-                })
-            }
-
             //inLineBtns
-            if (result?.inLineBtns) {
+            if (result?.inLineBtns.length>0) {
                 const { inLineBtns } = result
                 columns.push({
                     title: <FormattedMessage id="smart.action" />,
@@ -160,6 +141,25 @@ export default (props: any) => {
                             ele
                         )
                     },
+                })
+            }
+
+            //是否需要跳转 添加跳转Icon
+            if (navigationRoute) {
+                columns.push({
+                    title: '',
+                    width: 'auto',
+                    hideInSearch: true,
+                    dataIndex: 'option',
+                    fixed: 'right',
+                    key: 'navOptoin',
+                    align: 'center',
+                    disable: true,
+                    render: (_) => {
+                        return <RightOutlined
+                            style={{ color: '#6a6d70', fontSize: '12px', background: 'transparent' }}
+                        />
+                    }
                 })
             }
 
