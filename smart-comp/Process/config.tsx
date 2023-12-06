@@ -1,3 +1,5 @@
+import { CloseCircleOutlined, WarningOutlined, CheckCircleOutlined, InfoCircleOutlined } from "@ant-design/icons"
+
 /*
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-02 17:10:42
@@ -7,12 +9,30 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 const Criticality = {
-    '-1': 'dark-red',
-    '0': 'grey',
-    '1': '#b00',//红色
-    '2': '＃FFA500',
-    '3': 'rgb(16, 126, 62)',
-    '4': '#0a6ed1',//蓝色
+    '-1': {
+        color: 'dark-red',
+        icon: <CloseCircleOutlined />
+    },
+    '0': {
+        color: 'grey',
+        icon: <WarningOutlined />
+    },
+    '1': {
+        color: '#b00',
+        icon: <CloseCircleOutlined />
+    },//红色
+    '2': {
+        color: '#FFA500',
+        icon: <WarningOutlined />
+    },
+    '3': {
+        color: 'rgb(16, 126, 62)',
+        icon: <CheckCircleOutlined />
+    },
+    '4': {
+        color: '#0a6ed1',
+        icon: <InfoCircleOutlined />
+    },//蓝色
 }
 
 const dataPointCriticality = {
