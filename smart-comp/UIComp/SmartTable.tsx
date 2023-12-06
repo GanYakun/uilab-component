@@ -54,9 +54,7 @@ export default (props) => {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
 
-            if (SmartProps?.length) {
-                columns = [...columns, ...(mergeSource(SmartProps, "SmartTable").columns || [])];
-            }
+            
             Array.isArray(currentColumns) && currentColumns.forEach((item, index) => {
                 const { path, Label, Criticality } = item || {};
                 columns?.push({
@@ -75,6 +73,9 @@ export default (props) => {
                     }
                 })
             })
+            if (SmartProps?.length) {
+                columns = [...columns, ...(mergeSource(SmartProps, "SmartTable").columns || [])];
+            }
             // //是否需要跳转 添加跳转Icon
             if (navigationRoute) {
                 columns.push({
