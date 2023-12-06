@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 18:03:04
+ * @LastEditTime: 2023-12-06 19:27:33
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -334,25 +334,23 @@ const getAnnotationByTarget = (annotations: any[], target: string) => {
  * @returns 
  */
 const getTermAnnotations = (annotations: any[], term: string, qualifier = null) => {
-    let result: any[] = [];
+    let result;
     if (Array.isArray(annotations)) {
         //目前匹配到最后
         annotations.map((item: any) => {
             if (qualifier) {
                 if (item.term === term && item.qualifier === qualifier) {
-                    result.push(item);
+                    result = item
                 }
             } else {
                 //目前匹配到最后一条覆盖，兼容多次配置，后面的配置覆盖
                 if (item.term === term) {
-                    result.push(item);
+                    result = item
                 }
             }
         });
-
     }
-
-    return result.length > 0 ? result[0] : null;
+    return result ? result : null;
 };
 
 /**

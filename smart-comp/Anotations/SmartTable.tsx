@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 11:22:11
+ * @LastEditTime: 2023-12-06 19:29:02
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -72,14 +72,15 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             }
                             break
                         case 'UI.DataFieldForAnnotation':
-                            if (TargetType) {
-                                _addToColumns({
-                                    type: TargetType,
-                                    Label,
-                                    value: TargetValue,
-                                    show: true
-                                })
-                            }
+                            //console.log({ TargetType, TargetValue })
+                            // if (TargetType) {
+                            //     _addToColumns({
+                            //         type: TargetType,
+                            //         Label,
+                            //         value: TargetValue,
+                            //         show: true
+                            //     })
+                            // }
                             break
                         case 'UI.DataFieldWithNavigationPath':
                             _addToColumns({

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 15:12:29
+ * @LastEditTime: 2023-12-06 18:49:56
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@ import { getConfig } from '../Anotations/SmartField'
 import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message, Image } from 'antd';
+import { Rate } from 'ant5'
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
@@ -18,6 +19,8 @@ import { Criticality as SmartCriticality, dataPointCriticality } from "../Proces
 import { FormattedMessage } from "react-intl";
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
+import { FrownOutlined, MehOutlined, SmileOutlined } from '@ant-design/icons';
+
 
 export default (props: any) => {
     const {
@@ -367,6 +370,17 @@ export default (props: any) => {
                     }
                 }
                 return <a href={urlValue} target="_blank">{pathValue}</a>
+            case 'Rating':
+                const customIcons: Record<number, React.ReactNode> = {
+                    1: <FrownOutlined />,
+                    2: <FrownOutlined />,
+                    3: <MehOutlined />,
+                    4: <SmileOutlined />,
+                    5: <SmileOutlined />,
+                };
+                return (
+                    <Rate defaultValue={record[path]} character={({ index }: { index: number }) => customIcons[index + 1]} />
+                );
             default:
                 return <div></div>
         }
