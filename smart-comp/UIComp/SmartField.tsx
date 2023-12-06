@@ -210,7 +210,10 @@ export default (props: any) => {
                     if (record && typeof (record[Criticality]) === "number") {
                         return <div id='label-color'>
                             <div>{currentFieldProps.label}</div>
-                            <div style={{ color: SmartCriticality[record[Criticality]] || "" }}>{currentFieldProps.value}</div>
+                            <div style={{ color: SmartCriticality[record[Criticality]]?.color || "" }}>
+                                <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>
+                                <div>{currentFieldProps.value}</div>
+                            </div>
                         </div>
                     } else {
                         return <ProFormText
@@ -220,7 +223,7 @@ export default (props: any) => {
                     }
                 } else {
                     return (
-                        <div style={{ color: record && SmartCriticality[record[Criticality]] || "" }}>{currentFieldProps.value}</div>
+                        <div style={{ color: record && SmartCriticality[record[Criticality]]?.color || "" }}>{currentFieldProps.value}</div>
                     )
                 }
             case 'Text':

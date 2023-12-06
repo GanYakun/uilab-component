@@ -123,7 +123,7 @@ export default (props) => {
                                         case "UI.DataFieldWithUrl":
                                             //判断是否为多段式
                                             if (Url.search('/') === -1) {
-                                                return <a href={currentRecord[Url]} target="_blank">{currentRecord[Value]}</a>
+                                                return <a key={`target-${index}-${id}`} href={currentRecord[Url]} target="_blank">{currentRecord[Value]}</a>
                                             } else {
                                                 let pathArr = Value.split('/'), urlArr = Url.split('/'), pathValue, urlValue;
                                                 for (let a of pathArr) {
