@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-05 18:39:55
+ * @LastEditTime: 2023-12-06 09:45:44
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -16,7 +16,7 @@ import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
-import { defaultImageUrl } from '../Process/config'
+import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource } from '../../utils/mergeSource';
 
 export default (props) => {
@@ -251,9 +251,20 @@ export default (props) => {
                             {
                                 ImageUrl && <Image
                                     preview={false}
-                                    src={currentRecord[ImageUrl] ? currentRecord[ImageUrl] : defaultImageUrl}
+                                    src={currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback}
                                     alt="content"
+                                    fallback={imageFallback}
                                     height={100}
+                                    width={100}
+                                    style={{
+                                        objectFit: 'cover',
+                                        borderRadius: 10,
+                                        border: '1px solid #e8e8e8',
+                                        padding: 10,
+                                        boxShadow: '0 0 10px #e8e8e8',
+                                        objectPosition: 'center center'
+                                    }}
+                                    onClick={() => { }}
                                 />
                             }
                         </div>

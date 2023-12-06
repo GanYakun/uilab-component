@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 08:43:58
+ * @LastEditTime: 2023-12-06 09:48:52
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,9 +17,9 @@ import "./index.less";
 import { Criticality as SmartCriticality, dataPointCriticality } from "../Process/config";
 import { FormattedMessage } from "react-intl";
 import { useModel } from 'umi';
-import { defaultImageUrl } from '../Process/config'
+import { defaultImageUrl, imageFallback } from '../Process/config'
 
-export default (props:any) => {
+export default (props: any) => {
     const {
         record,
         entitySet,
@@ -316,10 +316,26 @@ export default (props:any) => {
                 );
             case 'IsImageURL':
                 let imageProps = {
-                    src: currentState?.currentValue ? currentState.currentValue : defaultImageUrl,
-                    width: 60
+                    src: currentState?.currentValue ? currentState.currentValue : imageFallback,
+                    width: 40,
+                    height:40,
+                    imageFallback,
+                    fallback: imageFallback,
                 };
-                return <Image {...imageProps} style={{ background: '#eee' }} onClick={(e)=>e.stopPropagation()}/>
+                return (
+                    <Image
+                        {...imageProps}
+                        style={{
+                            objectFit: 'cover',
+                            borderRadius: 5,
+                            border: '1px solid #e8e8e8',
+                            padding: 5,
+                            boxShadow: '0 0 10px #e8e8e8',
+                            objectPosition: 'center center'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                )
             default:
                 return <div></div>
         }
