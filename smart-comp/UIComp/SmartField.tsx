@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 10:43:07
+ * @LastEditTime: 2023-12-07 11:50:53
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,7 +11,7 @@ import { getConfig } from '../Anotations/SmartField'
 import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message, Image } from 'antd';
-import { Rate } from 'ant5'
+import { Rate, Progress } from 'ant5'
 import { BlockOutlined } from '@ant-design/icons';
 import SmartTable from './SmartTable';
 import "./index.less";
@@ -385,6 +385,19 @@ export default (props: any) => {
                         disabled={true}
                         style={{ color: '#FFA500', fontWeight: 'bold' }}
                     />
+                );
+            case 'Progress':
+                const { TargetValue } = dataPoint
+                return (
+                    <>
+                        <Progress
+                            percent={Number((record[path] / TargetValue * 100).toFixed(2))}
+                            steps={TargetValue}
+                            size="small"
+                            showInfo={false}
+                        />
+                        <span style={{marginLeft: 5}}>{record[path]}/{TargetValue}</span>
+                    </>
                 );
             default:
                 return <div></div>
