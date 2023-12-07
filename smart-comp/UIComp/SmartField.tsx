@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 11:50:53
+ * @LastEditTime: 2023-12-07 11:55:16
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -372,11 +372,11 @@ export default (props: any) => {
                 return <a href={urlValue} target="_blank">{pathValue}</a>
             case 'Rating':
                 const customIcons: Record<number, React.ReactNode> = {
-                    1: <FrownOutlined />,
-                    2: <FrownOutlined />,
+                    1: <SmileOutlined />,
+                    2: <SmileOutlined />,
                     3: <MehOutlined />,
-                    4: <SmileOutlined />,
-                    5: <SmileOutlined />,
+                    4: <FrownOutlined />,
+                    5: <FrownOutlined />,
                 };
                 return (
                     <Rate
@@ -393,7 +393,6 @@ export default (props: any) => {
                         <Progress
                             percent={Number((record[path] / TargetValue * 100).toFixed(2))}
                             steps={TargetValue}
-                            size="small"
                             showInfo={false}
                         />
                         <span style={{marginLeft: 5}}>{record[path]}/{TargetValue}</span>
