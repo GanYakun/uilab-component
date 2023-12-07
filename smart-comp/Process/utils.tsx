@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 10:08:54
+ * @LastEditTime: 2023-12-07 13:45:32
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1192,25 +1192,22 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
 }
 
 //获取DataPoint当前字段的类型
-const getDataPointProperty = (currentAnnotations: any, currentQualifier: any) => {
-    if (currentAnnotations) {
-        for (let a of currentAnnotations) {
-            const { term, qualifier, record } = a
-            if (term === 'UI.DataPoint') {
-                if (currentQualifier && currentQualifier === qualifier) {
-                    for (let b of record) {
-                        const { type, propertyValue } = b
-                        if (type === 'UI.DataPointType') {
-                            const { Title, Value, TargetValue, Visualization, ValueFormat, Criticality } = parsePropertyValue(propertyValue)
-                            return {
-                                Title: getTextByI18n(Title),
-                                Value,
-                                TargetValue,
-                                Visualization,
-                                ValueFormat,
-                                Criticality
-                            }
-                        }
+const getDataPointProperty = (currentAnnotations: any[], currentQualifier: any) => {
+    const dataPointData: any = getTermAnnotations(currentAnnotations, 'UI.DataPoint', currentQualifier)
+    if (dataPointData) {
+        const { record } = dataPointData
+        if (record) {
+            for (let b of record) {
+                const { type, propertyValue } = b
+                if (type === 'UI.DataPointType') {
+                    const { Title, Value, TargetValue, Visualization, ValueFormat, Criticality } = parsePropertyValue(propertyValue)
+                    return {
+                        Title: getTextByI18n(Title),
+                        Value,
+                        TargetValue,
+                        Visualization,
+                        ValueFormat,
+                        Criticality
                     }
                 }
             }
@@ -1229,7 +1226,7 @@ const getTargetAnnotationProcessed = (
     currentEntitySetData: any
 ) => {
 
-    let targetNavigation, targetQualifier;
+    let targetNavigation, targetQualifier: any;
 
     //解析target
     if (target.search('@') !== -1) {
@@ -1258,7 +1255,18 @@ const getTargetAnnotationProcessed = (
 
     //FieldGroup类型
     if (target && target.search('@UI.FieldGroup') !== -1) {
-        const data = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', targetQualifier)
+        let annotations = currentAnnotations
+
+        //如果有导航属性，则获取导航属性的配置
+        if (targetNavigation) {
+            const NavigationEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(currentEntitySetData, targetNavigation)
+            let { currentAnnotations: NavigationAnotations, currentEntityTypeData: NavigationEntityTypeData } = getEntitySetConfig(NavigationEntitySet)
+            const NavigationEntitySetPrimaryKeys = getPrimaryKeys(NavigationEntityTypeData)
+            annotations = NavigationAnotations
+            //console.log({ targetNavigation, NavigationEntitySet, NavigationAnotations, NavigationEntityTypeData, NavigationEntitySetPrimaryKeys })
+        }
+
+        const data: any = getTermAnnotations(annotations, 'UI.FieldGroup', targetQualifier)
         if (data) {
             const { record } = data
             for (let a of record) {
@@ -1273,7 +1281,7 @@ const getTargetAnnotationProcessed = (
                             const { Value, Criticality, Action, Label, Url } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
-                                Value,
+                                Value: targetNavigation? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
                                 Criticality,
                                 Label
                             } as any
@@ -1977,9 +1985,9 @@ const parseActionByName = (actionName: string) => {
                         } else {
                             body[name] = null
                         }
-                    }else{
+                    } else {
                         //处理日期格式
-                        if (type ==='Edm.DateTimeOffset'){
+                        if (type === 'Edm.DateTimeOffset') {
                             body[name] = moment(body[name]).format('YYYY-MM-DDTHH:mm:ss.SSSZ')
                         }
                     }

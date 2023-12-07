@@ -2,14 +2,14 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 19:05:27
+ * @LastEditTime: 2023-12-07 14:18:29
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { getConfig } from '../Anotations/ObjectPage';
 import { PageContainer } from '@ant-design/pro-layout';
-import { Card, Image } from 'antd';
+import { Card, Image } from 'ant5';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
@@ -38,27 +38,28 @@ export default (props) => {
         let result = await getConfig({ location, currentRecord: {} })
         if (result) {
             // 获取数据
-            fetch(result).then(async (data) => {
-                result = await getConfig({ location, currentRecord: data.data });
-                console.log("ObjectPage", {
-                    "ObjectPage-getConfig": result,
-                    "ObjectPage-data": data
-                });
+            _fetch(result).then(async (data) => {
+                if (data) {
+                    result = await getConfig({ location, currentRecord: data?.data });
+                    console.log("ObjectPage", {
+                        "ObjectPage-getConfig": result,
+                        "ObjectPage-data": data
+                    });
 
-                // 处理父元素的数据
-                if (SmartProps?.length) {
-                    let source = mergeSource(SmartProps, "")?.HeaderFacets;
-                    result.HeaderFacets = [...result.HeaderFacets, ...(source || [])];
-                }
-                // 默认选中第一个不隐藏的数据
-                if (result.Facets?.length) {
-                    // 过滤隐藏的数据
-                    result.Facets = result.Facets.filter((e) => (!e.isHidden));
-                    if (!activeValue) {
-                        setActiveValue("tabs-" + 0);
+                    // 处理父元素的数据
+                    if (SmartProps?.length) {
+                        result.HeaderFacets = [...result.HeaderFacets, ...(mergeSource(SmartProps, "").HeaderFacets || [])];
                     }
+                    // 默认选中第一个不隐藏的数据
+                    if (result.Facets?.length) {
+                        // 过滤隐藏的数据
+                        result.Facets = result.Facets.filter((e) => (!e.isHidden));
+                        if (!activeValue) {
+                            setActiveValue("tabs-" + 0);
+                        }
+                    }
+                    setCurrentState(result)
                 }
-                setCurrentState(result)
             });
         }
     }
@@ -66,7 +67,7 @@ export default (props) => {
         !currentState && init();
     }, [])
     //获取详情页数据
-    const fetch = async (saveState) => {
+    const _fetch = async (saveState) => {
         const { annoRequest, currentEntityTypeData } = saveState;
         setLoading(true)
         const result = await annoRequest()
@@ -123,7 +124,12 @@ export default (props) => {
                             label,
                             content: (
                                 <div style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                                    <Card title={label} bordered={false} extra={renderExtra}>
+                                    <Card
+                                        size='small'
+                                        title={label}
+                                        bordered={false}
+                                        extra={renderExtra}
+                                    >
                                         <ProForm submitter={false} grid={true}>
                                             <ProFormGroup>
                                                 {
@@ -215,7 +221,12 @@ export default (props) => {
                             label,
                             content: (
                                 <div style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                                    <Card title={Title} bordered={false} extra={renderExtra}>
+                                    <Card
+                                        size='small'
+                                        title={Title}
+                                        bordered={false}
+                                        extra={renderExtra}
+                                    >
                                         <SmartField {...option} />
                                     </Card>
                                 </div>
@@ -243,17 +254,25 @@ export default (props) => {
                         )
                     }
                 case "UI.LineItem":
+                    console.log({ label, type })
                     return {
                         type,
                         label,
                         content: (
                             <div id='vertical' style={{ background: "#fff", borderRadius: 2, marginBottom: 12 }}>
-                                <SmartTable
-                                    entitySet={sectionTargetData?.targetEntitySet}
-                                    queryEntity={location?.query?.queryEntity}
-                                    targetNavigation={sectionTargetData?.targetNavigation}
-                                    qualifier={sectionTargetData?.targetQualifier}
-                                />
+                                <Card
+                                    size='small'
+                                    title={label}
+                                    bordered={false}
+                                    extra={renderExtra}
+                                >
+                                    <SmartTable
+                                        entitySet={sectionTargetData?.targetEntitySet}
+                                        queryEntity={location?.query?.queryEntity}
+                                        targetNavigation={sectionTargetData?.targetNavigation}
+                                        qualifier={sectionTargetData?.targetQualifier}
+                                    />
+                                </Card>
                             </div>
                         )
                     }

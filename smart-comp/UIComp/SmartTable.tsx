@@ -40,7 +40,8 @@ export default (props: any) => {
         qualifier,
         SmartProps,
         actionRef: parentActionRef,
-        hideSelect
+        hideSelect,
+        headerTitle
     } = props;
     const [currentState, setCurrentState] = useState<any>()
     let [columns, setColumns] = useState<ProColumns<GithubIssueItem>[]>([]);
@@ -314,7 +315,7 @@ export default (props: any) => {
                 pageSize: 10,
             }}
             dateFormatter="string"
-            headerTitle=""
+            headerTitle={headerTitle}
             toolBarRender={() => [
                 //快速创建按钮
                 currentState?.quickCreate && !hideSelect && (
