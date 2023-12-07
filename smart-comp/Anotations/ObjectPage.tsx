@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 19:05:21
+ * @LastEditTime: 2023-12-07 19:28:15
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,8 +19,8 @@ import znCN from 'antd/es/locale/zh_CN';
  * @param {*} routeName 
  * @returns 
  */
-const _getManifestConfig = () => {
-    const { manifest, routeName, i18n_en, i18n_zh } = Utils.getUi5ConfigAsync()
+const _getManifestConfig = async () => {
+    const { manifest, routeName, i18n_en, i18n_zh } =await Utils.getUi5Config()
     //国际化 CN 
     if (i18n_zh) {
         addLocale(
@@ -245,7 +245,7 @@ const getHeaderInfoOptions = (currentAnnotations: any) => {
 export const getConfig = async (props: any) => {
     const { location, currentRecord } = props
     const { queryEntity } = location?.query
-    const { entitySet } = _getManifestConfig()
+    const { entitySet } =await _getManifestConfig()
     const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const HeaderInfo = getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
