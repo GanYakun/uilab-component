@@ -11,9 +11,11 @@ import SmartTable from '../UIComp/SmartTable'
 import SmartFilterBar from '../UIComp/SmartFilterBar'
 import { getConfig } from '../Anotations/ListReport';
 import { Skeleton, Space, Tabs } from 'antd';
-import { useActivate } from "umi";
+import { useActivate, Prompt } from "umi";
+import KeepAlive, { useAliveController } from 'react-activation';
+
 const { TabPane } = Tabs
-export default (props) => {
+const ListReport = (props) => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
     const [searchVal, setSearchVal] = useState<any>({});
     const [currentTabs, setCurrentTabs] = useState<any>(null)
@@ -161,3 +163,29 @@ export default (props) => {
     }
     return currentState ? renderContent() : _renderSkeleton();
 }
+
+const ExportListReport = () => {
+    const { drop } = useAliveController();
+    return <KeepAlive
+        name="listreport" //可按照name卸载缓存状态下的 <KeepAlive> 节点
+        saveScrollPosition="screen" //自动保存共享屏幕容器的滚动位置
+        when={true}>
+        <>
+            <Prompt message={(location) => {
+                let index = location.pathname.split("/")
+                // 三路由刷新
+                if (index.length <= 3) {
+                    drop("listreport");
+                } else {
+                    // 包括第二级且包括第三级就不刷新(刷新取反)
+                    if (!(window.location.href.includes(index[1]) && window.location.href.includes(index[2]))) {
+                        drop("listreport");
+                    }
+                }
+            }} />
+            <ListReport />
+        </>
+    </KeepAlive>
+}
+export default ExportListReport;
+
