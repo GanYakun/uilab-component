@@ -1,4 +1,4 @@
-import { getRouteFiles } from "../../../config/appConfig";
+import { getRouteFiles } from "../../../../config/appConfig";
 import React from "react"
 
 /**

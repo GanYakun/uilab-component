@@ -13,7 +13,7 @@ import { getConfig } from '../Anotations/ListReport';
 import { Skeleton, Space, Tabs } from 'antd';
 import { useActivate, Prompt } from "umi";
 import KeepAlive, { useAliveController } from 'react-activation';
-import { getSource } from '../../utils/mergeSource';
+import { getSource } from '../Process/mergeSource';
 
 const { TabPane } = Tabs
 const ListReport = () => {

@@ -6,7 +6,7 @@ import SmartField from './SmartField';
 import SmartModalForm from './SmartModalForm';
 import { history as umiHistory, FormattedMessage } from 'umi';
 import { RightOutlined } from '@ant-design/icons';
-import { mergeSource } from "../../utils/mergeSource";
+import { mergeSource } from "../Process/mergeSource";
 import { Steps } from '../CustComp';
 
 type GithubIssueItem = {

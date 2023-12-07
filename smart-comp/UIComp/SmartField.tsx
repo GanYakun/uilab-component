@@ -89,7 +89,13 @@ export default (props: any) => {
     useEffect(() => {
         !currentState && init()
     }, [])
-
+    useEffect(() => {
+        if (currentState) {
+            if (currentState.fieldType === "Select" && currentState.defaultValue) {
+                queryValueEnum();
+            }
+        }
+    }, [currentState])
     /**
         * 获取显示的文本内容
         * DisplayProperty有值显示对应值，否则显示columns
@@ -203,6 +209,7 @@ export default (props: any) => {
             let obj: any = {};
             const result = await valueListConfig.annoRequest();
             setSelectLoading(false);
+
             result?.map((item: { value: string | number; label: any; Label: any; }) => {
                 obj[item.value] = {
                     text: item.label || item.Label
@@ -248,6 +255,7 @@ export default (props: any) => {
             case 'Text':
                 return <ProFormText {...currentFieldProps} />
             case 'Select':
+                currentFieldProps.initialValue = currentState.defaultValue;
                 //lookup 弹框图片&按钮
                 currentFieldProps.fieldProps.onDropdownVisibleChange = async (bool: any) => {
                     if (bool) {
@@ -261,6 +269,7 @@ export default (props: any) => {
                 return <ProFormSelect
                     {...currentFieldProps}
                     valueEnum={currentValueEnum ? currentValueEnum : {}}
+
                 />
             case 'LookUp':
                 const { Parameters } = valueListConfig

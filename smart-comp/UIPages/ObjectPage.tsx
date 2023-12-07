@@ -17,8 +17,8 @@ import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
-import { mergeSource } from '../../utils/mergeSource';
-import { getSource } from '../../utils/mergeSource';
+import { mergeSource } from '../Process/mergeSource';
+import { getSource } from '../Process/mergeSource';
 import { Steps } from '../CustComp';
 
 export default (props) => {
@@ -289,9 +289,9 @@ export default (props) => {
         const { HeaderFacets } = (currentState || {});
         if (HeaderFacets) {
             HeaderFacets.map((item, index) => {
-                const { content } = _renderFacetContents(item);
+                const { content, type } = _renderFacetContents(item);
                 if (item.targetData) {
-                    contents.push(<div key={`headerSection${index}`} style={{ marginRight: 32, marginBottom: 16 }}>{content}</div>);
+                    contents.push(<div key={`headerSection${index}`} style={{ marginRight: 32, marginBottom: 16, width: type === 'step' ? '100%' : '' }}>{content}</div>);
                 }
             })
         }
