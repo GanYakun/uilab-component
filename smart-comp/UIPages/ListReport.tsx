@@ -13,9 +13,10 @@ import { getConfig } from '../Anotations/ListReport';
 import { Skeleton, Space, Tabs } from 'antd';
 import { useActivate, Prompt } from "umi";
 import KeepAlive, { useAliveController } from 'react-activation';
+import { getSource } from '../../utils/mergeSource';
 
 const { TabPane } = Tabs
-const ListReport = (props) => {
+const ListReport = () => {
     const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
     const [searchVal, setSearchVal] = useState<any>({});
     const [currentTabs, setCurrentTabs] = useState<any>(null)
@@ -24,8 +25,8 @@ const ListReport = (props) => {
     const formRef = useRef();
     const actionRef = useRef();
     const SmartProps = useMemo(() => {
-        return props.SmartProps || [];
-    }, [props.SmartProps])
+        return getSource("ListReport") || [];
+    }, [])
     //初始化方法
     const init = async () => {
         const result = await getConfig()

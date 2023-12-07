@@ -18,6 +18,7 @@ import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource } from '../../utils/mergeSource';
+import { Steps } from '../CustComp';
 
 export default (props) => {
     let { initialState, setInitialState } = useModel('@@initialState');
@@ -47,7 +48,17 @@ export default (props) => {
 
                 // 处理父元素的数据
                 if (SmartProps?.length) {
-                    result.HeaderFacets = [...result.HeaderFacets, ...(mergeSource(SmartProps, "").HeaderFacets || [])];
+                    let source = mergeSource(SmartProps, "SmartTable")?.HeaderFacets;
+                    if (source) {
+                        source.forEach((item: any) => {
+                            if (item.comName === "Steps") {
+                                item.render = (val) => {
+                                    return <Steps queryEntity={val} isInline={false} />
+                                }
+                            }
+                        })
+                    }
+                    result.HeaderFacets = [...result.HeaderFacets, ...(source || [])];
                 }
                 // 默认选中第一个不隐藏的数据
                 if (result.Facets?.length) {
@@ -88,9 +99,9 @@ export default (props) => {
     }
     //解析并渲染facet内容
     const _renderFacetContents = (sectionItem, bool) => {
-        const { id: sectionId, label: sectionLabel, targetData: sectionTargetData } = sectionItem;
+        const { id: sectionId, label: sectionLabel, targetData: sectionTargetData, isHidden } = sectionItem;
         const _renderContent = (contentValue, label, id) => {
-            if (!contentValue) return {}
+            if (!contentValue || isHidden) return {}
             const { facetType: type, value } = contentValue;
             let extra = sectionTargetData?.Fields?.find((e) => (e.type === "UI.DataFieldForAction"));
             let renderExtra: any = null;

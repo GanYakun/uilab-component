@@ -7,6 +7,7 @@ import SmartModalForm from './SmartModalForm';
 import { history as umiHistory, FormattedMessage } from 'umi';
 import { RightOutlined } from '@ant-design/icons';
 import { mergeSource } from "../../utils/mergeSource";
+import { Steps } from '../CustComp';
 
 type GithubIssueItem = {
     url: string;
@@ -114,7 +115,17 @@ export default (props: any) => {
             })
             //自定义列
             if (SmartProps?.length) {
-                columns = [...columns, ...(mergeSource(SmartProps, "SmartTable").columns || [])];
+                let source = mergeSource(SmartProps, "SmartTable")?.columns;
+                if (source) {
+                    source.forEach((item: any) => {
+                        if (item.comName === "Steps") {
+                            item.render = (val) => {
+                                return <Steps queryEntity={val["@odata.id"]} isInline={true} />
+                            }
+                        }
+                    })
+                }
+                columns = [...columns, ...(source || [])];
             }
 
             //inLineBtns

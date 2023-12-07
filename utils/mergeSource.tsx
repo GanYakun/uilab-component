@@ -1,3 +1,4 @@
+import { getRouteFiles } from "../../../config/appConfig";
 import React from "react"
 
 /**
@@ -20,6 +21,36 @@ export const mergeSource = (SmartProps: any, children: string) => {
                     });
                 })
             }
+        })
+    }
+    return result;
+}
+
+export const getSource = (source: string) => {
+    const RouteFiles = getRouteFiles();
+    let result: any = [];
+    if (RouteFiles) {
+        RouteFiles.some((item: any) => {
+            if (window.location.href.includes(item.path)) {
+                item.routes?.some((childItem: any) => {
+                    if (window.location.href.includes(childItem.path)) {
+                        childItem?.routes?.some((e: any) => {
+                            if (window.location.href.includes(e.path)) {
+                                if (e && e[source]) {
+                                    result = e[source];
+                                }
+                                return true
+                            } else {
+                                return false;
+                            }
+                        })
+                        return true;
+                    }
+                    return false;
+                })
+                return true;
+            }
+            return false;
         })
     }
     return result;
