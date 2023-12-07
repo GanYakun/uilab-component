@@ -8,7 +8,7 @@
  */
 import React, { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormUploadButton } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message, Image } from 'antd';
 import { Rate, Progress } from 'ant5'
@@ -254,6 +254,8 @@ export default (props: any) => {
                 }
             case 'Text':
                 return <ProFormText {...currentFieldProps} />
+            case 'TextArea':
+                return <ProFormTextArea {...currentFieldProps} />
             case 'Select':
                 currentFieldProps.initialValue = currentState.defaultValue;
                 //lookup 弹框图片&按钮
