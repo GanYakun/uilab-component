@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-07 15:04:13
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 16:35:21
+ * @LastEditTime: 2023-12-07 17:00:30
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/auto-update.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,7 +25,7 @@ async function extractNewScripts() {
 async function needUpdate() {
     let lastSrcs: any[] = JSON.parse(localStorage.getItem('lastSrcs'));
     const newScripts = await extractNewScripts()
-    console.log({ newScripts, lastSrcs, getLocale: getLocale() })
+    //console.log({ newScripts, lastSrcs, getLocale: getLocale() })
     if (!lastSrcs) {
         lastSrcs = newScripts;
         localStorage.setItem('lastSrcs', JSON.stringify(lastSrcs));
@@ -48,7 +48,7 @@ async function needUpdate() {
 /**
  * 自动刷新
  */
-const DURATION = 5000
+const DURATION = 20000
 function autoRefresh() {
     setTimeout(async () => {
         const willUpdate = await needUpdate()
