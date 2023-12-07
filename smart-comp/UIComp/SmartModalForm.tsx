@@ -9,6 +9,7 @@
 import { ModalForm } from '@ant-design/pro-components';
 import { Button, Form } from 'antd';
 import SmartField from './SmartField';
+import { useRef } from 'react';
 
 export default (props: { entitySet: string; content: any; onSubmit: any; fields: any; formType: string; action?: object; }) => {
     const { entitySet, content, onSubmit, fields, formType, action } = props
@@ -22,7 +23,7 @@ export default (props: { entitySet: string; content: any; onSubmit: any; fields:
     })
     const { title, btnText, btnType } = content;
     const [form] = Form.useForm<{ name: string; company: string }>();
-
+    const formRef = useRef();
     /**
      * 渲染表单内容
      */
@@ -69,10 +70,12 @@ export default (props: { entitySet: string; content: any; onSubmit: any; fields:
                 </Button>
             }
             form={form}
+            formRef={formRef}
             autoFocusFirstInput
             modalProps={{
                 destroyOnClose: true,
                 onCancel: () => {
+                    formRef.current?.resetFields();
                     console.log('onCancel')
                 },
             }}
@@ -83,6 +86,7 @@ export default (props: { entitySet: string; content: any; onSubmit: any; fields:
                 form?.resetFields();
                 return true
             }}
+
         >
             {renderContent()}
         </ModalForm>

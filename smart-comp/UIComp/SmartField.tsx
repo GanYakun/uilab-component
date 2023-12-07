@@ -404,7 +404,7 @@ export default (props: any) => {
                             steps={TargetValue}
                             showInfo={false}
                         />
-                        <span style={{marginLeft: 5}}>{record[path]}/{TargetValue}</span>
+                        <span style={{ marginLeft: 5 }}>{record[path]}/{TargetValue}</span>
                     </>
                 );
             default:
