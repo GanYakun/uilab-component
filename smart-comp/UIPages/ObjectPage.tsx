@@ -18,14 +18,13 @@ import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource } from '../../utils/mergeSource';
+import { getSource } from '../../utils/mergeSource';
 import { Steps } from '../CustComp';
 
 export default (props) => {
     let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
-    const SmartProps = useMemo(() => {
-        return props.SmartProps || [];
-    }, [props.SmartProps])
+    const SmartProps = getSource("ObjectPage") || [];
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState<any>(null);
@@ -48,16 +47,7 @@ export default (props) => {
 
                 // 处理父元素的数据
                 if (SmartProps?.length) {
-                    let source = mergeSource(SmartProps, "SmartTable")?.HeaderFacets;
-                    if (source) {
-                        source.forEach((item: any) => {
-                            if (item.comName === "Steps") {
-                                item.render = (val) => {
-                                    return <Steps queryEntity={val} isInline={false} />
-                                }
-                            }
-                        })
-                    }
+                    let source = mergeSource(SmartProps, "")?.HeaderFacets;
                     result.HeaderFacets = [...result.HeaderFacets, ...(source || [])];
                 }
                 // 默认选中第一个不隐藏的数据
@@ -247,7 +237,9 @@ export default (props) => {
                         type,
                         label,
                         content: (
-                            <div>{contentValue?.render(location.query?.queryEntity)}</div>
+                            <div>
+                                <Steps queryEntity={location.query?.queryEntity} isInline={false} />
+                            </div>
                         )
                     }
                 case "UI.LineItem":
