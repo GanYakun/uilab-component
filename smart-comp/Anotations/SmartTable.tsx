@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 19:29:02
+ * @LastEditTime: 2023-12-07 11:47:01
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,7 +15,7 @@ import moment from 'moment'
  * @param currentAnnotations
  * @returns
  */
-const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualifier: null | undefined) => {
+const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualifier: null | undefined, currentEntitySetData: any) => {
     const result = {
         columns: [] as any,
         inLineBtns: [] as any,
@@ -49,7 +49,8 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                         TargetValue,
                         TargetType,
                         NavigationPropertyPath,
-                        Criticality
+                        Criticality,
+                        Target
                     } = Utils.parsePropertyValue(propertyValue, entitySetName)
 
                     switch (type) {
@@ -72,15 +73,17 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             }
                             break
                         case 'UI.DataFieldForAnnotation':
-                            //console.log({ TargetType, TargetValue })
-                            // if (TargetType) {
-                            //     _addToColumns({
-                            //         type: TargetType,
-                            //         Label,
-                            //         value: TargetValue,
-                            //         show: true
-                            //     })
-                            // }
+                            const targetData = Utils.getTargetAnnotationProcessed(currentAnnotations, Target, currentEntitySetData)
+                            if (targetData) {
+                                const { facetType, value } = targetData
+                                _addToColumns({
+                                    type: facetType,
+                                    path: value.Value,
+                                    Label: value?.Title,
+                                    value: value,
+                                    show: true
+                                })
+                            }
                             break
                         case 'UI.DataFieldWithNavigationPath':
                             _addToColumns({
@@ -130,7 +133,7 @@ const _setRequest = (entitySet: string, columns: any) => {
         const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
         const fieldArr = [] as any
-        currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any, Url :any}) => {
+        currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any, Url: any }) => {
             const { path, type, value, show, Url, Criticality } = item
             switch (type) {
                 case 'UI.DataField':
@@ -140,6 +143,9 @@ const _setRequest = (entitySet: string, columns: any) => {
                 case 'UI.DataFieldWithUrl':
                     fieldArr.push(path)
                     Url && fieldArr.push(Url)
+                    break;
+                case 'UI.DataPoint':
+                    fieldArr.push(path)
                     break;
                 default:
                     break;
@@ -229,8 +235,8 @@ const _setRequest = (entitySet: string, columns: any) => {
 
 export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
     const { entitySet, qualifier } = params
-    const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
-    const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet, qualifier)
+    const { currentAnnotations, currentEntityTypeData, currentEntitySetData } = Utils.getEntitySetConfig(entitySet)
+    const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet, qualifier, currentEntitySetData)
     const annoRequest = _setRequest(entitySet, columns)
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
     console.log('SmartTable-Log', {
