@@ -4,7 +4,7 @@ import { CloseCircleOutlined, WarningOutlined, CheckCircleOutlined, InfoCircleOu
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-02 17:10:42
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 16:02:15
+ * @LastEditTime: 2023-12-08 11:37:55
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/config.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -55,7 +55,7 @@ const typeList = {
 }
 
 //default image
-const defaultImageUrl = 'https://gw.alipayobjects.com/zos/antfincdn/K%24NnlsB%26hz/pageHeader.svg'
+const defaultImageUrl = "https://gw.alipayobjects.com/zos/antfincdn/K%24NnlsB%26hz/pageHeader.svg"
 const imageFallback = defaultImage
 
 export {
