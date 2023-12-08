@@ -48,6 +48,8 @@ export default (props: any) => {
 
     //表格选中项
     const [currentRowSelection, setCurrentRowSelection] = useState(rowSelection)
+    let [currentRecord, setCurrentRecord] = useState<any>()
+
     let [currentSelectedRowsItem, setCurrentSelectedRowsItem] = useState([])
     const actionRef = parentActionRef ? parentActionRef : useRef()
 
@@ -57,7 +59,6 @@ export default (props: any) => {
         if (result) {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
-
             Array.isArray(currentColumns) && currentColumns.forEach((item) => {
                 const { path, Label, Criticality, type, Url, value } = item || {};
                 switch (type) {
@@ -207,7 +208,6 @@ export default (props: any) => {
     useEffect(() => {
         currentState && actionRef?.current?.reloadAndRest();
     }, [searchVal])
-
     //页面跳转 判断是否是链接
     const _historyPush = (record: any) => {
         if (navigationRoute) {
@@ -244,8 +244,39 @@ export default (props: any) => {
                 break;
         }
     };
+    //设置Criticality
+    const _setCriticalityByPath = (data) => {
+        const indexArr: any = []
+        if (currentState?.Criticality && data) {
+            data.map((item, index) => {
+                indexArr.push({
+                    index,
+                    level: item[currentState?.Criticality]
+                })
+            })
+        }
+        const pro = document.getElementById("ProTable");
+        if (indexArr.length > 0 && pro) {
+            const tb = Array.from(pro.getElementsByTagName("table"))[0]
+            const trArr = Array.from(tb.getElementsByTagName('tr')).filter((item) => {
+                return item.className === 'ant-table-row ant-table-row-level-0'
+            })
+            const enumObj = {
+                1: '#b00',
+                2: '#eea76a',
+                3: '#107e3e'
+            }
+            for (let a of indexArr) {
+                const { index, level } = a;
+                if (trArr[index]) {
+                    trArr[index].getElementsByTagName("td")[0].style = `border-left: 5px solid ${enumObj[level]}`;
+                }
+            }
+        }
+    }
     return (
         <ProTable<GithubIssueItem>
+            id='ProTable'
             columns={columns}
             actionRef={actionRef}
             cardBordered
@@ -262,6 +293,8 @@ export default (props: any) => {
                         option.filterDefaultValue = filterDefaultValue;
                     }
                     const result = await currentState.annoRequest(option, parentColumns, queryEntity, targetNavigation);
+                    currentRecord = result
+                    setCurrentRecord(result)
                     const { value, msg } = result.data;
                     //1.设置key
                     value.map((item: any) => {
@@ -274,6 +307,7 @@ export default (props: any) => {
                         pageSize: params.pageSize,
                         current: params.current,
                     }
+
                 } else {
                     return {};
                 }
@@ -364,6 +398,14 @@ export default (props: any) => {
                 )
             ]}
             rowSelection={currentRowSelection ? _rowSelection() : false}
+            onLoad={() => {
+                setTimeout(() => {
+                    if (currentRecord) {
+                        const { value } = currentRecord.data
+                        _setCriticalityByPath(value);
+                    }
+                }, 200)
+            }}
         />
     );
 };
