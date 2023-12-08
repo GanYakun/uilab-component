@@ -60,7 +60,7 @@ export default (props: any) => {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
             Array.isArray(currentColumns) && currentColumns.forEach((item) => {
-                const { path, Label, Criticality, type, Url, value } = item || {};
+                const { path, Label, Criticality, type, Url, value, CriticalityRepresentation } = item || {};
                 switch (type) {
                     case 'UI.DataField':
                         columns?.push({
@@ -73,7 +73,8 @@ export default (props: any) => {
                                     path,
                                     record,
                                     isReadOnly: true,
-                                    Criticality
+                                    Criticality,
+                                    CriticalityRepresentation
                                 }
                                 return <SmartField {...option} />
                             }

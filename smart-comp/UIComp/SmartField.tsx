@@ -33,6 +33,7 @@ export default (props: any) => {
         showLabel, // 是否显示label字段，与isReadOnly配合使用
         colProps,
         Criticality,
+        CriticalityRepresentation, // 隐藏icon
         action,
         dataPoint,
         rules, // 是否为必填字段
@@ -234,7 +235,7 @@ export default (props: any) => {
                         return <div id='label-color'>
                             <div>{currentFieldProps.label}</div>
                             <div style={{ color: SmartCriticality[record[Criticality]]?.color || "" }}>
-                                <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>
+                                {(CriticalityRepresentation || "").includes("WithoutIcon") ? null : <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>}
                                 <div>{currentFieldProps.value}</div>
                             </div>
                         </div>
@@ -247,7 +248,7 @@ export default (props: any) => {
                 } else {
                     return (
                         <div style={{ color: record && SmartCriticality[record[Criticality]]?.color || "", display: "flex" }}>
-                            <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>
+                            {(CriticalityRepresentation || "").includes("WithoutIcon") ? null : <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>}
                             <div>{currentFieldProps.value}</div>
                         </div>
                     )
@@ -389,7 +390,7 @@ export default (props: any) => {
                 return <a href={urlValue} target="_blank">{pathValue}</a>
             case 'Rating':
                 const customIcons: Record<number, React.ReactNode> = {
-          
+
                     1: <FrownOutlined />,
                     2: <FrownOutlined />,
                     3: <MehOutlined />,
@@ -413,7 +414,7 @@ export default (props: any) => {
                             steps={TargetValue}
                             showInfo={false}
                         />
-                        <span style={{ marginLeft: 5 }}>{record[path]?record[path]:0}/{TargetValue}</span>
+                        <span style={{ marginLeft: 5 }}>{record[path] ? record[path] : 0}/{TargetValue}</span>
                     </>
                 );
             default:

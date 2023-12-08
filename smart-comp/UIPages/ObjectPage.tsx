@@ -172,7 +172,7 @@ export default (props) => {
                             <div>
                                 <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
-                                    const { type, Url, Value, Criticality } = item
+                                    const { type, Url, Value, Criticality, CriticalityRepresentation } = item
                                     switch (type) {
                                         case "UI.DataField":
                                             const option = {
@@ -181,7 +181,8 @@ export default (props) => {
                                                 path: Value,
                                                 record: currentRecord,
                                                 showLabel: true,
-                                                Criticality
+                                                Criticality,
+                                                CriticalityRepresentation
                                             }
 
                                             return <div id={`target-${index}`} key={`target-${index}-${id}`}>
@@ -215,13 +216,14 @@ export default (props) => {
                         )
                     }
                 case "UI.DataPoint":
-                    const { Title, Value, Criticality } = value
+                    const { Title, Value, Criticality, CriticalityRepresentation } = value
                     const option = {
                         dataPoint: value,
                         entitySet: currentState?.entitySet,
                         path: Value,
                         record: currentRecord,
-                        Criticality
+                        Criticality,
+                        CriticalityRepresentation
                     }
                     if (bool) {
                         return {
