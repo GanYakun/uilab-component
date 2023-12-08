@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 11:47:01
+ * @LastEditTime: 2023-12-08 12:03:26
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -19,14 +19,15 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
     const result = {
         columns: [] as any,
         inLineBtns: [] as any,
-        headerBtns: [] as any
+        headerBtns: [] as any,
+        Criticality: [] as any,
     }
 
     //LineItem
     const lineItem = Utils.getTermAnnotations(currentAnnotations, 'UI.LineItem', qualifier)
     if (lineItem) {
         //遍历collection数组 返回property配置
-        const { collection } = lineItem
+        const { collection, annotation } = lineItem
         if (collection) {
             //解析LineItem 添加到 columns
             const _addToColumns = (obj: any) => {
@@ -119,6 +120,14 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                 }
             }
         }
+
+        //解析UI.Criticality
+        if (annotation) {
+            const data = Utils.getTermAnnotations(annotation, 'UI.Criticality')
+            if (data) {
+                result.Criticality = Utils.getTextValueByData('path', data)
+            }
+        }
     }
     return result
 }
@@ -128,11 +137,18 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
  * @param queryEntity 
  * @param targetPath 
  */
-const _setRequest = (entitySet: string, columns: any) => {
+const _setRequest = (entitySet: string, columns: any, Criticality:string) => {
     return async (currentParams: { searchVal: any; params: any; filterDefaultValue: any }, parentColumns: any, queryEntity: any, targetNavigation: any) => {
         const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
         const fieldArr = [] as any
+
+        //添加高亮字段
+        if (Criticality) {
+            fieldArr.push(Criticality)
+        }
+
+        //获取查询字段
         currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any, Url: any }) => {
             const { path, type, value, show, Url, Criticality } = item
             switch (type) {
@@ -157,6 +173,7 @@ const _setRequest = (entitySet: string, columns: any) => {
             fieldArr, entitySet
         );
         //console.log({ columns, fieldArr, entitySet, currentExpand, currentSelect })
+        
         //请求参数准备
         interface Option {
             path: string,
@@ -236,8 +253,8 @@ const _setRequest = (entitySet: string, columns: any) => {
 export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
     const { entitySet, qualifier } = params
     const { currentAnnotations, currentEntityTypeData, currentEntitySetData } = Utils.getEntitySetConfig(entitySet)
-    const { columns, inLineBtns, headerBtns } = getTableConfig(currentAnnotations, entitySet, qualifier, currentEntitySetData)
-    const annoRequest = _setRequest(entitySet, columns)
+    const { columns, inLineBtns, headerBtns,Criticality } = getTableConfig(currentAnnotations, entitySet, qualifier, currentEntitySetData)
+    const annoRequest = _setRequest(entitySet, columns, Criticality)
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
     console.log('SmartTable-Log', {
         entitySet,
@@ -247,7 +264,8 @@ export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
         headerBtns,
         quickCreate,
         currentAnnotations,
-        qualifier
+        qualifier,
+        Criticality
     })
     return {
         entitySet,
@@ -256,5 +274,6 @@ export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
         inLineBtns,
         headerBtns,
         quickCreate,//是否配置快速创建
+        Criticality,//是否配置高亮
     }
 }
