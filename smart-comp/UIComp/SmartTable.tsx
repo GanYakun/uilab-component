@@ -114,21 +114,6 @@ export default (props: any) => {
                         break;
                 }
             })
-            //自定义列
-            if (SmartProps?.length) {
-                let source = mergeSource(SmartProps, "SmartTable")?.columns;
-                if (source) {
-                    source.forEach((item: any) => {
-                        if (item.comName === "Steps") {
-                            item.render = (val) => {
-                                return <Steps queryEntity={val["@odata.id"]} isInline={true} />
-                            }
-                        }
-                    })
-                }
-                columns = [...columns, ...(source || [])];
-            }
-
             //inLineBtns
             if (result?.inLineBtns.length > 0) {
                 const { inLineBtns } = result
@@ -173,6 +158,23 @@ export default (props: any) => {
                 })
             }
 
+            //自定义列
+            if (SmartProps?.length) {
+                let source = mergeSource(SmartProps, "SmartTable", [{
+                    name: "columns",
+                    value: columns
+                }])?.columns;
+                if (source) {
+                    source.forEach((item: any) => {
+                        if (item.comName === "Steps") {
+                            item.render = (val) => {
+                                return <Steps queryEntity={val["@odata.id"]} isInline={true} />
+                            }
+                        }
+                    })
+                }
+                columns = [...source];
+            }
             //是否需要跳转 添加跳转Icon
             if (navigationRoute) {
                 columns.push({

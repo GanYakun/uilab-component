@@ -5,12 +5,14 @@ import React from "react"
  * 合并源文件
  * SmartProps 所有的资源
  * children   选择资源地址
+ * dataSource {name: string, value: any}[]
  * @returns   整合后的数据
  */
-export const mergeSource = (SmartProps: any, children: string) => {
+export const mergeSource = (SmartProps: any, children: string, dataSource?: { name: string, value: any }[]) => {
     let result: any = {};
     if (SmartProps?.length) {
         SmartProps?.forEach((item) => {
+            // children判断用于哪个组件
             if (children === item.children) {
                 item.SmartProps?.forEach((childItem) => {
                     if (!result[childItem.type]) {
@@ -19,6 +21,29 @@ export const mergeSource = (SmartProps: any, children: string) => {
                     result[childItem.type].push({
                         ...childItem.data
                     });
+                    // 传入的资源
+                    if (dataSource) {
+                        dataSource?.forEach((e) => {
+                            if (e.name === childItem.type) {
+                                switch (childItem.operate) {
+                                    case "add":
+                                        if (typeof (childItem.index) === "number") {
+                                            e?.value && e?.value?.splice(childItem.index, 0, childItem.data);
+                                        } else {
+                                            e?.value && e?.value.push(childItem.data);
+                                        }
+                                        break;
+                                    case "replace":
+                                        break;
+                                    case "remove":
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            result[childItem.type] = e.value;
+                        })
+                    }
                 })
             }
         })

@@ -17,14 +17,16 @@ import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
-import { mergeSource } from '../Process/mergeSource';
-import { getSource } from '../Process/mergeSource';
+import { mergeSource, getSource } from '../Process/mergeSource';
 import { Steps } from '../CustComp';
 
 export default (props) => {
+
     let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
-    const SmartProps = getSource("ObjectPage") || [];
+    const SmartProps = useMemo(() => {
+        return getSource("ObjectPage") || []
+    }, []);
     const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState<any>(null);
@@ -32,7 +34,7 @@ export default (props) => {
     const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     //初始化方法
     const init = async () => {
         let result = await getConfig({ location, currentRecord: {} })
@@ -48,7 +50,13 @@ export default (props) => {
 
                     // 处理父元素的数据
                     if (SmartProps?.length) {
-                        result.HeaderFacets = [...result.HeaderFacets, ...(mergeSource(SmartProps, "").HeaderFacets || [])];
+                        const source = mergeSource(SmartProps, "", [
+                            {
+                                "name": "HeaderFacets",
+                                "value": result.HeaderFacets
+                            }
+                        ]).HeaderFacets;
+                        result.HeaderFacets = source;
                     }
                     // 默认选中第一个不隐藏的数据
                     if (result.Facets?.length) {
@@ -254,7 +262,6 @@ export default (props) => {
                         )
                     }
                 case "UI.LineItem":
-                    console.log({ label, type })
                     return {
                         type,
                         label,
