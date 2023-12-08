@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 12:03:26
+ * @LastEditTime: 2023-12-08 12:11:30
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,7 +20,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
         columns: [] as any,
         inLineBtns: [] as any,
         headerBtns: [] as any,
-        Criticality: [] as any,
+        Criticality: '' as string,
     }
 
     //LineItem
@@ -173,7 +173,7 @@ const _setRequest = (entitySet: string, columns: any, Criticality:string) => {
             fieldArr, entitySet
         );
         //console.log({ columns, fieldArr, entitySet, currentExpand, currentSelect })
-        
+
         //请求参数准备
         interface Option {
             path: string,
