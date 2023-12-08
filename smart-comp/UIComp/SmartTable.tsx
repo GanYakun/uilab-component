@@ -177,7 +177,7 @@ export default (props: any) => {
             if (navigationRoute) {
                 columns.push({
                     title: '',
-                    width: 'auto',
+                    width: 20,
                     hideInSearch: true,
                     dataIndex: 'option',
                     fixed: 'right',
