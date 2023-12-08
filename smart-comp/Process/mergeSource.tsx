@@ -37,6 +37,13 @@ export const mergeSource = (SmartProps: any, children: string, dataSource?: { na
                                         break;
                                     case "remove":
                                         break;
+                                    case "addType":
+                                        if (typeof (childItem.index) === "number") {
+                                            e?.value && (e.value[childItem.index] = {
+                                                ...e.value[childItem.index],
+                                                ...childItem.data,
+                                            });
+                                        }
                                     default:
                                         break;
                                 }
@@ -48,6 +55,7 @@ export const mergeSource = (SmartProps: any, children: string, dataSource?: { na
             }
         })
     }
+
     return result;
 }
 
