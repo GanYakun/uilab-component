@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 19:27:10
+ * @LastEditTime: 2023-12-08 10:47:09
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1393,14 +1393,17 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations: any[], currentEnti
                         if (hiddenPath) {
                             result.HiddenPaths.findIndex((item: any) => item === hiddenPath) === -1 && result.HiddenPaths.push(hiddenPath)
                         }
-
                         if (type === 'UI.CollectionFacet') {
                             const CollectionFacetData = _getCollectionFacet(propertyValue);
-                            arr.push({ ...CollectionFacetData, isHidden });
+                            if (arr.findIndex((item: any) => item.id === CollectionFacetData.id) === -1){
+                                arr.push({ ...CollectionFacetData, isHidden });
+                            }
                         }
                         if (type === 'UI.ReferenceFacet') {
                             const ReferenceFacetData = _getReferenceFacet(propertyValue);
-                            arr.push({ ...ReferenceFacetData, isHidden });
+                            if (arr.findIndex((item: any) => item.id === ReferenceFacetData.id) === -1) {
+                                arr.push({ ...ReferenceFacetData, isHidden });
+                            }
                         }
                     }
                 }
