@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 10:47:09
+ * @LastEditTime: 2023-12-08 12:36:51
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -96,7 +96,7 @@ const getUi5ConfigAsync = () => {
             return data
         }
     }
-    
+
     return false
 }
 
@@ -1089,6 +1089,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
         TypeName: '' as any,
         TypeNamePlural: '' as any,
         Criticality: null as any,
+        CriticalityRepresentation: null as any,
         SemanticObject: '' as any,
         Action: '' as any,
         Facets: null as any,
@@ -1152,6 +1153,10 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                         break
                     case 'Criticality':
                         result.Criticality = getTextValueByData('path', a)
+                        break;
+
+                    case 'CriticalityRepresentation':
+                        result.CriticalityRepresentation = getTextValueByData('enumMember', a)
                         break;
                     case 'SemanticObject':
                         result.SemanticObject = getTextValueByData('string', a)
@@ -1280,11 +1285,12 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value, Criticality, Action, Label, Url } = parsePropertyValue(propertyValue)
+                            const { Value, Criticality, CriticalityRepresentation, Action, Label, Url } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
-                                Value: targetNavigation? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
+                                Value: targetNavigation ? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
                                 Criticality,
+                                CriticalityRepresentation,
                                 Label
                             } as any
                             if (type === 'UI.DataFieldForAction' && Action) {
@@ -1395,7 +1401,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations: any[], currentEnti
                         }
                         if (type === 'UI.CollectionFacet') {
                             const CollectionFacetData = _getCollectionFacet(propertyValue);
-                            if (arr.findIndex((item: any) => item.id === CollectionFacetData.id) === -1){
+                            if (arr.findIndex((item: any) => item.id === CollectionFacetData.id) === -1) {
                                 arr.push({ ...CollectionFacetData, isHidden });
                             }
                         }
