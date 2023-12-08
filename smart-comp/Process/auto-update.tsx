@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-07 15:04:13
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-07 17:00:30
+ * @LastEditTime: 2023-12-08 11:08:37
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/auto-update.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -48,8 +48,7 @@ async function needUpdate() {
 /**
  * 自动刷新
  */
-const DURATION = 20000
-function autoRefresh() {
+function autoRefresh(DURATION = 0) {
     setTimeout(async () => {
         const willUpdate = await needUpdate()
         if (willUpdate) {
@@ -59,7 +58,7 @@ function autoRefresh() {
                 location.reload()
             }
         }
-        autoRefresh()
+        autoRefresh(20000)
     }, DURATION);
 }
 
