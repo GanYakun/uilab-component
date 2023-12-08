@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 12:32:47
+ * @LastEditTime: 2023-12-08 17:35:17
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -416,7 +416,13 @@ const isNullable = (currentAnnotations: any[], entitySet: string, path: string) 
  * 获取字段默认值
  * @param {*} currentAnnotations 
  */
-const getParameterDefaultValue = (currentAnnotations: any[], record = null, stateTree: any = null, action = null, namespace = null) => {
+const getParameterDefaultValue = async (
+    currentAnnotations: any[],
+    stateTree: any = null,
+    action = null,
+    namespace = null,
+    currentEntitySetData = null as any
+) => {
     const anno = Utils.getTermAnnotations(currentAnnotations, 'UI.ParameterDefaultValue');
     if (anno) {
         if (Utils.getTextValueByData(`string`, anno)) {
@@ -428,13 +434,13 @@ const getParameterDefaultValue = (currentAnnotations: any[], record = null, stat
             if (stateTree && action) {
                 const { BoundData } = action
                 let arr = path.split('/')
-                if (BoundData) {
-                    let value: any
+                //获取当前实体集的属性值
+                if (BoundData && arr.length > 0) {
                     const { name, type } = BoundData
-                    const key = type.replace(`${namespace}.`, '')
+                    let value: any, currentEntityType = type.replace(`${namespace}.`, '')
                     for (let a of arr) {
                         if (name === a) {
-                            value = stateTree[key]?.data
+                            value = stateTree[currentEntityType]?.data
                         } else {
                             if (Array.isArray(value)) {
                                 const val = [] as any
@@ -447,9 +453,33 @@ const getParameterDefaultValue = (currentAnnotations: any[], record = null, stat
                             }
                         }
                     }
+                    //如果是导航属性，则获取导航属性的实体集
+                    if (name === arr[0] && !value && currentEntitySetData) {
+                        let entitySet
+                        if (currentEntitySetData.entityType === type) {
+                            const { name, navigationPropertyBinding } = currentEntitySetData
+                            entitySet = name
+                        } else {
+                            entitySet = Utils.getEntitySetByCurrentEntitySetNavigationPropertyBinding(currentEntitySetData, type)
+                        }
+                        let currentPath = ''
+                        arr.map((item, index) => {
+                            if (index > 0) {
+                                currentPath += '/' + item
+                            }
+                        })
+                        let option = {
+                            path: `${stateTree[currentEntityType]?.data['@odata.id']}${currentPath}`,
+                            method: 'GET',
+                        };
+                        const result = await Odata.submit(option)
+                        if (result) {
+                            value = result?.data?.value
+                        }
+                        //console.log({ value, type, entitySet, record, arr, option, result })
+                    }
                     return value
                 }
-
             }
         }
     }
@@ -473,17 +503,17 @@ export const getConfig = async (params: {
     DataFieldWithUrl: any;
 }) => {
     const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree, DataFieldWithUrl } = params
-    const { currentAnnotations, currentPropertyType, namespace } = Utils.getEntitySetConfig(entitySet, path, action?.name)
+    const { currentAnnotations, currentPropertyType, namespace, currentEntitySetData } = Utils.getEntitySetConfig(entitySet, path, action?.name)
     const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint, DataFieldWithUrl)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const Label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
-    const defaultValue = getParameterDefaultValue(currentAnnotations, record, stateTree, action, namespace)
+    const defaultValue = await getParameterDefaultValue(currentAnnotations, stateTree, action, namespace, currentEntitySetData)
     const unit = getUnit(currentAnnotations)
     const isMultiple = Utils.isMultiSelect(action, path)
 
     //调试用
-    if (path === 'groupTypeId') {
+    if (path === 'ddFormType') {
         console.log('SmartField-Log', {
             entitySet,
             path,
@@ -502,7 +532,8 @@ export const getConfig = async (params: {
             unit,
             dataPoint,
             isMultiple,
-            stateTree
+            stateTree,
+            currentEntitySetData
         })
     }
     return {

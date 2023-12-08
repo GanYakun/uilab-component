@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 11:56:43
+ * @LastEditTime: 2023-12-08 17:33:58
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,10 +10,12 @@ import { ModalForm } from '@ant-design/pro-components';
 import { Button, Form } from 'antd';
 import SmartField from './SmartField';
 import { useRef } from 'react';
+import React from 'react';
 
 export default (props: { entitySet: string; content: any; onSubmit: any; fields: any; formType: string; action?: object; }) => {
     const { entitySet, content, onSubmit, fields, formType, action } = props
     // console.log('smartModalForm-log', {
+    //     actionName: action?.name,
     //     entitySet,
     //     content,
     //     onSubmit,
@@ -45,7 +47,7 @@ export default (props: { entitySet: string; content: any; onSubmit: any; fields:
                         key: `${item.name}-${index}`,
                         entitySet,
                         path: item.name,
-                        action: action,
+                        action,
                         nullable: item.nullable,
                         formRef: form,
                     }
