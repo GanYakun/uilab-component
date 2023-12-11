@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 12:11:30
+ * @LastEditTime: 2023-12-11 13:09:50
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -77,13 +77,23 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                             const targetData = Utils.getTargetAnnotationProcessed(currentAnnotations, Target, currentEntitySetData)
                             if (targetData) {
                                 const { facetType, value } = targetData
-                                _addToColumns({
-                                    type: facetType,
-                                    path: value.Value,
-                                    Label: value?.Title,
-                                    value: value,
-                                    show: true
-                                })
+                                if (facetType === 'UI.DataPoint') {
+                                    _addToColumns({
+                                        type: facetType,
+                                        path: value.Value,
+                                        Label: value?.Title,
+                                        value: value,
+                                        show: true
+                                    })
+                                } else if (facetType === 'Communication.Contact') {
+                                    _addToColumns({
+                                        type: facetType,
+                                        path: value.path,
+                                        Label,
+                                        value: value,
+                                        show: true
+                                    })
+                                }
                             }
                             break
                         case 'UI.DataFieldWithNavigationPath':
@@ -137,7 +147,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
  * @param queryEntity 
  * @param targetPath 
  */
-const _setRequest = (entitySet: string, columns: any, Criticality:string) => {
+const _setRequest = (entitySet: string, columns: any, Criticality: string) => {
     return async (currentParams: { searchVal: any; params: any; filterDefaultValue: any }, parentColumns: any, queryEntity: any, targetNavigation: any) => {
         const currentColumns = parentColumns ? parentColumns : columns
         //列查询字段
@@ -161,6 +171,9 @@ const _setRequest = (entitySet: string, columns: any, Criticality:string) => {
                     Url && fieldArr.push(Url)
                     break;
                 case 'UI.DataPoint':
+                    fieldArr.push(path)
+                    break;
+                case 'Communication.Contact':
                     fieldArr.push(path)
                     break;
                 default:
@@ -253,7 +266,7 @@ const _setRequest = (entitySet: string, columns: any, Criticality:string) => {
 export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
     const { entitySet, qualifier } = params
     const { currentAnnotations, currentEntityTypeData, currentEntitySetData } = Utils.getEntitySetConfig(entitySet)
-    const { columns, inLineBtns, headerBtns,Criticality } = getTableConfig(currentAnnotations, entitySet, qualifier, currentEntitySetData)
+    const { columns, inLineBtns, headerBtns, Criticality } = getTableConfig(currentAnnotations, entitySet, qualifier, currentEntitySetData)
     const annoRequest = _setRequest(entitySet, columns, Criticality)
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
     console.log('SmartTable-Log', {

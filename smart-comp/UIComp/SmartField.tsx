@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 11:01:49
+ * @LastEditTime: 2023-12-11 14:47:11
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,7 +21,6 @@ import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { FrownOutlined, MehOutlined, SmileOutlined } from '@ant-design/icons';
 
-
 export default (props: any) => {
     const {
         record,
@@ -38,6 +37,7 @@ export default (props: any) => {
         dataPoint,
         rules, // 是否为必填字段
         nullable,
+        label: parentLabel
     } = props;
     let { initialState, setInitialState } = useModel('@@initialState');
     const [currentState, setCurrentState] = useState<any>()
@@ -73,7 +73,7 @@ export default (props: any) => {
         })
         if (result) {
             const { Label } = result;
-            currentFieldProps.label = Label;
+            currentFieldProps.label = parentLabel ? parentLabel : Label;
             //设置必填
             if (result.nullable) {
                 currentFieldProps.rules = [

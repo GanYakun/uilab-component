@@ -4,6 +4,7 @@ import { ProTable } from '@ant-design/pro-components';
 import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';
 import SmartModalForm from './SmartModalForm';
+import SmartContactPopover from './SmartContactPopover'
 import { history as umiHistory, FormattedMessage } from 'umi';
 import { RightOutlined } from '@ant-design/icons';
 import { mergeSource } from "../Process/mergeSource";
@@ -109,6 +110,21 @@ export default (props: any) => {
                                     record,
                                 }
                                 return <SmartField {...option} />
+                            }
+                        })
+                        break;
+                    case 'Communication.Contact':
+                        columns?.push({
+                            title: Label,
+                            key: path,
+                            dataIndex: path,
+                            render: (text, record) => {
+                                return (
+                                    <SmartContactPopover
+                                        record={record}
+                                        contact={value}
+                                    />
+                                )
                             }
                         })
                         break;

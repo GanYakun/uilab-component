@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 17:33:34
+ * @LastEditTime: 2023-12-11 15:15:14
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -213,7 +213,7 @@ const getEntitySetConfig = (currentEntitySetName: string, currentPath = null as 
                 const arr = entityType.split('.')
                 currentEntityTypeName = arr[arr.length - 1]
                 currentEntitySetData = item
-                result.currentEntitySetData= item
+                result.currentEntitySetData = item
             }
         })
 
@@ -1043,7 +1043,6 @@ const isHiddenByAnnotation = (annotation: any, currentRecord: { [x: string]: boo
     return result
 }
 
-
 /**
  * 
  * @param {*} path 字段
@@ -1102,7 +1101,14 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
         Inline: null as any,
         Url: null as any,
         TargetType: null as any,
-        NavigationPropertyPath: null as any
+        NavigationPropertyPath: null as any,
+        fn: null as any,
+        tel: null as any,
+        email: null as any,
+        photo: null as any,
+        type: null as any,
+        address: null as any,
+        uri: null as any,
     }
 
     const _getValueByRecord = (record: any, property: string | number) => {
@@ -1155,7 +1161,6 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                     case 'Criticality':
                         result.Criticality = getTextValueByData('path', a)
                         break;
-
                     case 'CriticalityRepresentation':
                         result.CriticalityRepresentation = getTextValueByData('enumMember', a)
                         break;
@@ -1188,6 +1193,27 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                         break;
                     case 'Url':
                         result.Url = getTextValueByData('path', a)
+                        break;
+                    case 'fn':
+                        result.fn = getTextValueByData('path', a)
+                        break;
+                    case 'tel':
+                        result.tel = collection
+                        break;
+                    case 'email':
+                        result.email = collection
+                        break;
+                    case 'photo':
+                        result.photo = getTextValueByData('string', a)
+                        break;
+                    case 'type':
+                        result.type = getTextValueByData('enumMember', a)
+                        break;
+                    case 'address':
+                        result.address = getTextValueByData('path', a)
+                        break;
+                    case 'uri':
+                        result.uri = getTextValueByData('path', a)
                         break;
                     default:
                         break;
@@ -1234,7 +1260,7 @@ const getTargetAnnotationProcessed = (
     currentEntitySetData: any
 ) => {
 
-    let targetNavigation, targetQualifier: any;
+    let targetNavigation, targetQualifier: any, NavigationEntitySet, NavigationEntitySetPrimaryKeys;
 
     //解析target
     if (target.search('@') !== -1) {
@@ -1245,36 +1271,29 @@ const getTargetAnnotationProcessed = (
         const arr = target.split('#')
         targetQualifier = arr[arr.length - 1]
     }
-    //console.log({ currentAnnotations, target, targetNavigation, targetQualifier, targetEntitySet })
+
+    //如果有导航属性，则获取导航属性的配置
+    if (targetNavigation) {
+        NavigationEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(currentEntitySetData, targetNavigation)
+        let { currentAnnotations: NavigationAnotations, currentEntityTypeData: NavigationEntityTypeData } = getEntitySetConfig(NavigationEntitySet)
+        NavigationEntitySetPrimaryKeys = getPrimaryKeys(NavigationEntityTypeData)
+        currentAnnotations = NavigationAnotations//使用当前navigation的annotations
+        //console.log({ targetNavigation, NavigationEntitySet, NavigationAnotations, NavigationEntityTypeData, NavigationEntitySetPrimaryKeys })
+    }
 
     //Table类型
-    if (target && target.search('UI.LineItem') !== -1) {
-        const targetEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(
-            currentEntitySetData,
-            targetNavigation,
-        );
+    if (target && target.search('UI.LineItem') !== -1 && NavigationEntitySet) {
         return {
             facetType: 'UI.LineItem',
             targetNavigation,
-            targetEntitySet: targetEntitySet,
+            targetEntitySet: NavigationEntitySet,
             targetQualifier: targetQualifier
         }
     }
 
     //FieldGroup类型
     if (target && target.search('@UI.FieldGroup') !== -1) {
-        let annotations = currentAnnotations
-
-        //如果有导航属性，则获取导航属性的配置
-        if (targetNavigation) {
-            const NavigationEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(currentEntitySetData, targetNavigation)
-            let { currentAnnotations: NavigationAnotations, currentEntityTypeData: NavigationEntityTypeData } = getEntitySetConfig(NavigationEntitySet)
-            const NavigationEntitySetPrimaryKeys = getPrimaryKeys(NavigationEntityTypeData)
-            annotations = NavigationAnotations
-            //console.log({ targetNavigation, NavigationEntitySet, NavigationAnotations, NavigationEntityTypeData, NavigationEntitySetPrimaryKeys })
-        }
-
-        const data: any = getTermAnnotations(annotations, 'UI.FieldGroup', targetQualifier)
+        const data: any = getTermAnnotations(currentAnnotations, 'UI.FieldGroup', targetQualifier)
         if (data) {
             const { record } = data
             for (let a of record) {
@@ -1315,21 +1334,30 @@ const getTargetAnnotationProcessed = (
 
     //DataPoint类型
     if (target && target.search('UI.DataPoint') !== -1) {
-        let dataPointProperty
-
-        //判断是否显示为关联对象
-        if (targetNavigation) {
-            const navigationEntitySet = getEntitySetByCurrentEntitySetNavigationPropertyBinding(currentEntitySetData, targetNavigation)
-            let { currentAnnotations: navigationAnotations } = getEntitySetConfig(navigationEntitySet)
-            dataPointProperty = getDataPointProperty(navigationAnotations, targetQualifier)
-        } else {
-            dataPointProperty = getDataPointProperty(currentAnnotations, targetQualifier)
-        }
-
+        let dataPointProperty = getDataPointProperty(currentAnnotations, targetQualifier)
         return {
             value: dataPointProperty,
             facetType: 'UI.DataPoint',
         };
+    }
+
+    //Communication.Contact
+    if (target && target.search('Communication.Contact') !== -1) {
+        const data: any = getTermAnnotations(currentAnnotations, 'Communication.Contact', targetQualifier)
+        if (data) {
+            const { record } = data
+            for (let a of record) {
+                const { type, propertyValue } = a
+                if (type === 'Communication.ContactType') {
+                    const Communication = parsePropertyValue(propertyValue)
+                    const CommunicationData = getCommunicationContact(Communication, targetNavigation, NavigationEntitySet, NavigationEntitySetPrimaryKeys)
+                    return {
+                        value: CommunicationData,
+                        facetType: 'Communication.Contact',
+                    };
+                }
+            }
+        }
     }
 
     return false
@@ -2033,6 +2061,71 @@ const isMultiSelect = (action: { Fields: any; }, path: any) => {
         }
     }
     return false
+}
+
+//获取通信联系人配置项
+const getCommunicationContact = (data, targetNavigation, NavigationEntitySet, NavigationEntitySetPrimaryKeys) => {
+    const { fn, tel, email, photo } = data
+    const Fields = [fn, ...NavigationEntitySetPrimaryKeys], Cells: any = []
+    if (tel) {
+        for (let a of tel) {
+            const { record } = a
+            for (let b of record) {
+                const { type, propertyValue } = b
+                if (type === 'Communication.PhoneNumberType') {
+                    const { type, uri } = parsePropertyValue(propertyValue)
+                    if (uri) {
+                        Fields.push(uri)
+                        Cells.push({ type, value: uri, label: <FormattedMessage id="smart.Contact.Mobile" defaultMessage="Mobile" /> })
+                    }
+                }
+            }
+        }
+    }
+    if (email) {
+        for (let a of email) {
+            const { record } = a
+            for (let b of record) {
+                const { type, propertyValue } = b
+                if (type === 'Communication.EmailAddressType') {
+                    const { type, address } = parsePropertyValue(propertyValue)
+                    if (address) {
+                        Fields.push(address)
+                        Cells.push({ type, value: address,label:<FormattedMessage id="smart.Contact.Email" defaultMessage="Email" /> })
+                    }
+                }
+            }
+        }
+    }
+    return {
+        Fields,
+        Cells,
+        photo,
+        fn,
+        path: `${targetNavigation}/${fn}`,
+        entityType: targetNavigation,
+        entitySet: NavigationEntitySet,
+        annoRequest: async (path) => {
+            let option = {
+                path,
+                method: 'GET',
+                headers: {},
+                parameters: {} as any
+            };
+            let { currentExpand, currentSelect } = await getQueryContitionsByAnnotations(
+                Fields, NavigationEntitySet
+            );
+
+            if (currentSelect && currentSelect.length > 0) {
+                option.parameters.$select = currentSelect.toString();
+            }
+            if (JSON.stringify(currentExpand) !== '{}') {
+                option.parameters.$expand = currentExpand;
+            }
+
+            return await Odata.submit(option);
+        }
+    }
 }
 
 export default {
