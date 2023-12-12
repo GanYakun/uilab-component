@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 13:09:50
+ * @LastEditTime: 2023-12-12 13:16:57
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -171,6 +171,8 @@ const _setRequest = (entitySet: string, columns: any, Criticality: string) => {
                     Url && fieldArr.push(Url)
                     break;
                 case 'UI.DataPoint':
+                    const { Criticality: DataPointCriticality }=value
+                    DataPointCriticality&&fieldArr.push(DataPointCriticality)
                     fieldArr.push(path)
                     break;
                 case 'Communication.Contact':

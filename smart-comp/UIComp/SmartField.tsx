@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 14:47:11
+ * @LastEditTime: 2023-12-12 13:17:19
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -393,30 +393,23 @@ export default (props: any) => {
                 }
                 return <a href={urlValue} target="_blank">{pathValue}</a>
             case 'Rating':
-                const customIcons: Record<number, React.ReactNode> = {
-
-                    1: <FrownOutlined />,
-                    2: <FrownOutlined />,
-                    3: <MehOutlined />,
-                    4: <SmileOutlined />,
-                    5: <SmileOutlined />,
-                };
                 return (
                     <Rate
                         defaultValue={record[path]}
-                        character={({ index }: { index: number }) => customIcons[index + 1]}
                         disabled={true}
                         style={{ color: '#FFA500', fontWeight: 'bold' }}
+                        count={dataPoint?.TargetValue}
                     />
                 );
             case 'Progress':
-                const { TargetValue } = dataPoint
+                const { Criticality: DataPointCriticality, TargetValue } = dataPoint
                 return (
                     <>
                         <Progress
                             percent={Number((record[path] / TargetValue * 100).toFixed(2))}
                             steps={TargetValue}
                             showInfo={false}
+                            strokeColor={SmartCriticality[record[DataPointCriticality]]?.color}
                         />
                         <span style={{ marginLeft: 5 }}>{record[path] ? record[path] : 0}/{TargetValue}</span>
                     </>

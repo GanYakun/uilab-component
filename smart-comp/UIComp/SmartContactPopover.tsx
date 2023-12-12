@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-11 13:17:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 17:43:43
+ * @LastEditTime: 2023-12-12 13:21:50
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartContactPopover.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -54,9 +54,9 @@ export default (props) => {
 
     const title = () => {
         return (
-            <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center' }}>
+            <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex'}}>
                 <Avatar src={contact?.photo} size="large" />
-                <div>{currentValue}</div>
+                <div style={{ marginLeft: 10 }}>{currentValue}</div>
             </div>
         )
     }
