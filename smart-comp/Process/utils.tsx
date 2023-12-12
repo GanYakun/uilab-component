@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-12 17:30:46
+ * @LastEditTime: 2023-12-12 18:02:08
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1087,6 +1087,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
         Title: '' as any,
         Description: null as any,
         ImageUrl: '' as any,
+        IconUrl:'' as any,
         Target: '' as any,
         TypeName: '' as any,
         TypeNamePlural: '' as any,
@@ -1150,6 +1151,9 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                         break;
                     case 'ImageUrl':
                         result.ImageUrl = getTextValueByData('path', a);
+                        break
+                    case 'IconUrl':
+                        result.IconUrl = getTextValueByData('string', a);
                         break
                     case 'TypeName':
                         result.TypeName = getTextValueByData('string', a);
