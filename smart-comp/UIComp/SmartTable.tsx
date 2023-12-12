@@ -161,15 +161,16 @@ export default (props: any) => {
                                     }}
                                     fields={Action?.Fields}
                                     onSubmit={async (body: any) => {
-                                        let path = `${record['@odata.id']}/${Action?.name}`
-                                        await Action?.annoRequest({ body, path })
+                                        await Action?.annoRequest({
+                                            body,
+                                            queryEntity: record['@odata.id']
+                                        })
                                         actionRef?.current?.reload();
                                     }}
                                     action={Action}
                                 />
                             )
                         })
-
                         return (
                             ele
                         )
@@ -411,14 +412,13 @@ export default (props: any) => {
                                 }}
                                 fields={Action?.Fields}
                                 onSubmit={async (body: any) => {
-                                    let path = `${entitySet}/${Action?.name}`
-                                    //当前table为object子对象
-                                    if (queryEntity && targetNavigation) {
-                                        path = Action?.isCollection ? `${queryEntity}/${targetNavigation}/${Action}` : actionName
-                                    } else {
-                                        path = Action?.isCollection ? `${entitySet}/${Action}` : actionName
-                                    }
-                                    await Action.annoRequest({ body, path, boundActionData: currentSelectedRowsItem })
+                                    await Action.annoRequest({
+                                        body,
+                                        boundActionData: currentSelectedRowsItem,
+                                        currentEntitySet: entitySet,
+                                        queryEntity,
+                                        targetNavigation
+                                    })
                                     actionRef?.current?.reload();
                                 }}
                                 action={item.Action}

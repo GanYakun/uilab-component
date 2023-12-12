@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-08 18:25:26
+ * @LastEditTime: 2023-12-12 10:12:05
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -37,7 +37,7 @@ export default (props) => {
     const [loading, setLoading] = useState(true)
     //初始化方法
     const init = async () => {
-        setTimeout(async() => {
+        setTimeout(async () => {
             let result = await getConfig({ location, currentRecord: {} })
             if (result) {
                 // 获取数据
@@ -118,7 +118,10 @@ export default (props) => {
                     action={extra.Action}
                     fields={extra.Action.Fields}
                     onSubmit={async (body) => {
-                        await extra.Action.annoRequest({ body, path: `${location.query.queryEntity}/${extra?.Action?.name}` })
+                        await extra.Action.annoRequest({
+                            body,
+                            queryEntity: location.query.queryEntity
+                        })
                         setCurrentState(null);
                         init();
                         //刷新listreport数据
@@ -390,7 +393,10 @@ export default (props) => {
                     action={item.Action}
                     fields={item.Action.Fields}
                     onSubmit={async (body) => {
-                        await item.Action.annoRequest({ body, path: `${location.query.queryEntity}/${item?.Action?.name}` })
+                        await item.Action.annoRequest({
+                            body,
+                            queryEntity: location.query.queryEntity
+                        })
                         setCurrentState(null);
                         init();
                         //刷新listreport数据

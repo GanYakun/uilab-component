@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 18:25:57
+ * @LastEditTime: 2023-12-12 12:00:31
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1907,6 +1907,54 @@ const getSelectionVariantByAnnotations = (obj: { property: any; record: any; }, 
     return result;
 };
 
+//拼接query path
+const getBatchPath = ({ obj, record, PrimaryKeys }) => {
+    let result, str = ''
+
+    //判断是日期类型
+    const _isDateTime = (name) => {
+        return record[`${name}@odata.type`] === '#DateTimeOffset'
+    }
+
+    //判断是否为数字类型minimumOrderQuantity@odata.type:"#Decimal"
+    const _isNumber = (name) => {
+        return record[`${name}@odata.type`] === '#Decimal'
+    }
+
+    if (record && PrimaryKeys) {
+        if (PrimaryKeys.length === 1) {
+            str = `'${record[PrimaryKeys[0]]}'`
+        } else {
+            PrimaryKeys.map((name, index) => {
+
+                let value
+                //判断是否为日期格式
+                if (_isDateTime(name)) {
+                    value = `${record[name]}`
+                    //处理  ： 转义为 %3A
+                    value = value.replace(/(\:)/g, '%3A')
+                } else if (_isNumber(name)) {
+                    value = record[name]
+                } else {
+                    value = `'${record[name]}'`
+                }
+
+                //多组件拼接
+                if (index === 0) {
+                    str += `${name}=${value}`
+                } else {
+                    str += `,${name}=${value}`
+                }
+            })
+        }
+        result = `${obj}(${str})`
+    } else {
+        console.error('错误223===>', { obj, record, PrimaryKeys })
+    }
+
+    return result
+}
+
 /**
  * 根据action名称 遍历后台返回的action数组，返回对应action的配置项
  * @param {*} actionName 
@@ -1971,14 +2019,38 @@ const parseActionByName = (actionName: string) => {
     }
 
     //处理请求
-    result.annoRequest = async ({ boundActionData = [], body = {} as any, path = '' }) => {
+    result.annoRequest = async ({
+        boundActionData = [],
+        body = {} as any,
+        currentEntitySet,
+        queryEntity,
+        targetNavigation
+    }) => {
+
+        //处理路径
+        let path = `${currentEntitySet}/${result.name}`
+        if (queryEntity) {
+            if (targetNavigation) {
+                path = `${queryEntity}/${targetNavigation}/${result.name}`
+            } else {
+                path = `${queryEntity}/${result.name}`
+            }
+        }
+
         //是否为批量提交场景 
-        if (boundActionData && result.isBound && !result.isCollection ) {
-            console.log({ boundActionData, path })
+        if (boundActionData.length > 0 && result.isBound && !result.isCollection) {
+            const { currentEntityTypeData } = getEntitySetConfig(currentEntitySet)
+            const PrimaryKeys = getPrimaryKeys(currentEntityTypeData)
             const arr = [] as any
             boundActionData.map((item: { [x: string]: any; }) => {
+                const obj = targetNavigation ? targetNavigation : currentEntitySet
+                let batchPath = getBatchPath({ obj, record: item, PrimaryKeys })
+                let path = `${batchPath}/${result.name}`
+                if (queryEntity) {
+                    path = `${queryEntity}/${path}`
+                }
                 let option = {
-                    path: `${item['@odata.id']}/${result.name}`,
+                    path,
                     method: 'POST',
                     headers: {},
                     body: body,
@@ -2041,7 +2113,7 @@ const parseActionByName = (actionName: string) => {
                     path,
                     method: 'POST',
                     headers: {},
-                    body: body,
+                    body,
                 };
                 return await Odata.submit(option);
             }
