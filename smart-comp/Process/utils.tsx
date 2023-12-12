@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 15:15:14
+ * @LastEditTime: 2023-12-11 18:25:57
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1916,6 +1916,7 @@ const parseActionByName = (actionName: string) => {
     let result = {
         name: actionName,
         isBound: false,
+        isCollection: false as boolean,
         Fields: [] as any,
         BoundData: null as any,
         SideEffects: [] as any,
@@ -1935,9 +1936,11 @@ const parseActionByName = (actionName: string) => {
                 //可用参数
                 if (isBound === 'true' && parameter) {
                     result.BoundData = parameter.shift()
+
                 }
                 result.isBound = isBound === 'true'
                 result.Fields = parameter
+                result.isCollection = result?.BoundData?.type.includes('Collection')
                 break
             }
         }
@@ -1970,11 +1973,12 @@ const parseActionByName = (actionName: string) => {
     //处理请求
     result.annoRequest = async ({ boundActionData = [], body = {} as any, path = '' }) => {
         //是否为批量提交场景 
-        if (boundActionData && boundActionData.length > 0) {
+        if (boundActionData && result.isBound && !result.isCollection ) {
+            console.log({ boundActionData, path })
             const arr = [] as any
             boundActionData.map((item: { [x: string]: any; }) => {
                 let option = {
-                    path: `${item['@Odata.id']}/${actionName}`,
+                    path: `${item['@odata.id']}/${result.name}`,
                     method: 'POST',
                     headers: {},
                     body: body,
@@ -2091,7 +2095,7 @@ const getCommunicationContact = (data, targetNavigation, NavigationEntitySet, Na
                     const { type, address } = parsePropertyValue(propertyValue)
                     if (address) {
                         Fields.push(address)
-                        Cells.push({ type, value: address,label:<FormattedMessage id="smart.Contact.Email" defaultMessage="Email" /> })
+                        Cells.push({ type, value: address, label: <FormattedMessage id="smart.Contact.Email" defaultMessage="Email" /> })
                     }
                 }
             }
@@ -2102,6 +2106,7 @@ const getCommunicationContact = (data, targetNavigation, NavigationEntitySet, Na
         Cells,
         photo,
         fn,
+        primaryKeys: NavigationEntitySetPrimaryKeys[0],
         path: `${targetNavigation}/${fn}`,
         entityType: targetNavigation,
         entitySet: NavigationEntitySet,

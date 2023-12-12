@@ -9,6 +9,7 @@ import { history as umiHistory, FormattedMessage } from 'umi';
 import { RightOutlined } from '@ant-design/icons';
 import { mergeSource } from "../Process/mergeSource";
 import { Steps } from '../CustComp';
+import { findLastKey } from '@umijs/deps/compiled/lodash';
 
 type GithubIssueItem = {
     url: string;
@@ -218,13 +219,20 @@ export default (props: any) => {
             onLoad && onLoad();
         }
     }
-
     useEffect(() => {
         !currentState && init()
     }, [])
     useEffect(() => {
         currentState && actionRef?.current?.reloadAndRest();
     }, [searchVal])
+    //判断是否需要多选
+    useEffect(() => {
+        if (currentState && !currentRowSelection) {
+            const { headerBtns } = currentState;
+            const hasBoundCollectionAction = headerBtns?.findIndex((item: any) => item.Action.isBound && !item.Action.isCollection) !== -1;
+            setCurrentRowSelection(hasBoundCollectionAction ? 'checkbox' : false)
+        }
+    }, [currentState])
     //页面跳转 判断是否是链接
     const _historyPush = (record: any) => {
         if (navigationRoute) {
@@ -390,31 +398,37 @@ export default (props: any) => {
                 //headerBtns
                 currentState?.headerBtns && !hideSelect && (
                     currentState?.headerBtns?.map((item: any, index: number) => {
-                        return <SmartModalForm
-                            key={index}
-                            formType={item.type}
-                            entitySet={entitySet}
-                            content={{
-                                title: item.Label,
-                                btnText: item.Label,
-                                btnType: 'link'
-                            }}
-                            fields={item.Action.Fields}
-                            onSubmit={async (body: any) => {
-                                let path = `${entitySet}/${item?.Action?.name}`
-                                //当前table为object子对象
-                                if (queryEntity && targetNavigation) {
-                                    path = `${queryEntity}/${targetNavigation}/${item?.Action?.name}`
-                                }
-                                await item.Action.annoRequest({ body, path })
-                                actionRef?.current?.reload();
-                            }}
-                            action={item.Action}
-                        />
+                        const { type, Label, Action, name: actionName } = item
+                        return (
+                            <SmartModalForm
+                                key={index}
+                                formType={type}
+                                entitySet={entitySet}
+                                content={{
+                                    title: Label,
+                                    btnText: Label,
+                                    btnType: 'link'
+                                }}
+                                fields={Action?.Fields}
+                                onSubmit={async (body: any) => {
+                                    let path = `${entitySet}/${Action?.name}`
+                                    //当前table为object子对象
+                                    if (queryEntity && targetNavigation) {
+                                        path = Action?.isCollection ? `${queryEntity}/${targetNavigation}/${Action}` : actionName
+                                    } else {
+                                        path = Action?.isCollection ? `${entitySet}/${Action}` : actionName
+                                    }
+                                    await Action.annoRequest({ body, path, boundActionData: currentSelectedRowsItem })
+                                    actionRef?.current?.reload();
+                                }}
+                                action={item.Action}
+                                disabled={Action?.isBound && currentSelectedRowsItem.length === 0 && !Action?.isCollection}
+                            />
+                        )
                     })
                 )
             ]}
-            rowSelection={currentRowSelection ? _rowSelection() : false}
+            rowSelection={currentRowSelection ? _rowSelection() : findLastKey}
             onLoad={() => {
                 setTimeout(() => {
                     if (currentRecord) {

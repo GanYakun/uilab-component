@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 10:23:42
+ * @LastEditTime: 2023-12-11 18:15:15
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,8 +12,19 @@ import SmartField from './SmartField';
 import { useRef } from 'react';
 import React from 'react';
 
-export default (props: { entitySet: string; content: any; onSubmit: any; fields: any; formType: string; action?: object; }) => {
-    const { entitySet, content, onSubmit, fields, formType, action } = props
+export default (
+    props:
+        { entitySet: string; content: any; onSubmit: any; fields: any; formType: string; action?: object; disabled?: boolean }
+) => {
+    const {
+        entitySet,
+        content,
+        onSubmit,
+        fields,
+        formType,
+        action,
+        disabled
+    } = props
     // console.log('smartModalForm-log', {
     //     actionName: action?.name,
     //     entitySet,
@@ -67,7 +78,7 @@ export default (props: { entitySet: string; content: any; onSubmit: any; fields:
             layout='vertical'
             title={title}
             trigger={
-                <Button type={btnType ? btnType : 'primary'} ghost>
+                <Button disabled={disabled} type={btnType ? btnType : 'primary'} ghost>
                     {btnText}
                 </Button>
             }
