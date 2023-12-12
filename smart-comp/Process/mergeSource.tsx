@@ -47,8 +47,8 @@ export const mergeSource = (SmartProps: any, children: string, dataSource?: { na
                                     default:
                                         break;
                                 }
+                                result[childItem.type] = e.value;
                             }
-                            result[childItem.type] = e.value;
                         })
                     }
                 })

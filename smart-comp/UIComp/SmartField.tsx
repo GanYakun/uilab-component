@@ -254,7 +254,7 @@ export default (props: any) => {
                     )
                 }
             case 'Text':
-                return <ProFormText {...currentFieldProps} />
+                return <ProFormText {...currentFieldProps}  />
             case 'TextArea':
                 return <ProFormTextArea {...currentFieldProps} />
             case 'Select':
@@ -335,8 +335,12 @@ export default (props: any) => {
             case "DataPoint":
                 return <Typography.Title
                     level={2}
-                    style={{ color: record && typeof (record[Criticality]) === "number" ? dataPointCriticality[record[Criticality]] : '#6a6d70', fontSize: 26 }
-                    }>
+                    style={{
+                        color: record && typeof (record[Criticality]) === "number" ? dataPointCriticality[record[Criticality]] : '#6a6d70',
+                        fontSize: 24,
+                        fontFamily: `"72-Light","72-Lightfull","72","72full",Arial,Helvetica,sans-serif`,
+                        fontWeight: "normal"
+                    }}>
                     {displayValue}
                 </Typography.Title>
             case 'Number':

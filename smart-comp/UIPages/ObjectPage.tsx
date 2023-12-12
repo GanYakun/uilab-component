@@ -175,7 +175,7 @@ export default (props) => {
                         label,
                         content: (
                             <div>
-                                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10 }}>{label}</div>
+                                <div style={{ fontSize: 16, fontWeight: "normal", marginBottom: 10, color: "var(--ant-primary-8)" }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
                                     const { type, Url, Value, Criticality, CriticalityRepresentation } = item
                                     switch (type) {
@@ -189,7 +189,6 @@ export default (props) => {
                                                 Criticality,
                                                 CriticalityRepresentation
                                             }
-
                                             return <div id={`target-${index}`} key={`target-${index}-${id}`}>
                                                 <ProFormGroup>
                                                     <SmartField {...option} />
@@ -253,7 +252,7 @@ export default (props) => {
                         label,
                         content: (
                             <div>
-                                <div style={{ fontSize: '14px', color: '#000000d9', fontWeight: 600, marginBottom: 10 }}>{Title}</div>
+                                <div style={{ fontSize: 16, fontWeight: "normal", marginBottom: 10, color: "var(--ant-primary-8)" }}>{Title}</div>
                                 <SmartField {...option} />
                             </div>
                         )
@@ -448,6 +447,7 @@ export default (props) => {
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header'>
             {loading ? <SmartSKeleton /> : <PageContainer
+                fixedHeader={true}
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
