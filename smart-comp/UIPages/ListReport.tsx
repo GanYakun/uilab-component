@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 16:10:49
+ * @LastEditTime: 2023-12-12 13:48:26
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,7 +17,7 @@ import { getSource } from '../Process/mergeSource';
 
 const { TabPane } = Tabs
 const ListReport = () => {
-    const [currentState, setCurrentState] = useState<{ entitySet: string, navigationRoute: string, tabs: any, annoRequest: Function }>()
+    const [currentState, setCurrentState] = useState<any>()
     const [searchVal, setSearchVal] = useState<any>({});
     const [currentTabs, setCurrentTabs] = useState<any>(null)
     const [loading, setLoading] = useState(true);
@@ -98,7 +98,7 @@ const ListReport = () => {
     const renderContent = () => {
         const { tabs } = (currentState || {});
         if (currentState) {
-            const { entitySet, navigationRoute } = currentState
+            const { entitySet, navigationRoute, title:headerTitle } = currentState
             return (
                 <>
                     <div style={{ display: loading ? "" : "none" }}>{_renderSkeleton()}</div>
@@ -137,6 +137,7 @@ const ListReport = () => {
                                                                 setLoading(false);
                                                             }}
                                                             SmartProps={SmartProps}
+                                                            headerTitle={headerTitle}
                                                         />
                                                     }
                                                 </div>
@@ -156,6 +157,7 @@ const ListReport = () => {
                                     setLoading(false);
                                 }}
                                 SmartProps={SmartProps}
+                                headerTitle={headerTitle}
                             />}
                     </div>
                 </>

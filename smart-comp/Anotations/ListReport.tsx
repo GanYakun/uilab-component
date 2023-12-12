@@ -2,13 +2,13 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-06 09:14:57
+ * @LastEditTime: 2023-12-12 13:46:38
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 
 import Utils from '../Process/utils'
-import { addLocale, getLocale } from 'umi';
+import { addLocale, getLocale, FormattedMessage } from 'umi';
 import Odata from '../../utils/odata/odata'
 import enUS from 'antd/es/locale/en_US';
 import znCN from 'antd/es/locale/zh_CN';
@@ -20,7 +20,7 @@ import znCN from 'antd/es/locale/zh_CN';
  * @returns 
  */
 const _getManifestConfig = async () => {
-    const { manifest, routeName, i18n_en, i18n_zh } = await Utils.getUi5Config(true)
+    const { manifest, routeName, i18n_en, i18n_zh, goupName, appName } = await Utils.getUi5Config(true)
     //国际化 CN 
     if (i18n_zh) {
         addLocale(
@@ -58,6 +58,19 @@ const _getManifestConfig = async () => {
             const targetRoute = targets[routeName]?.options?.settings?.navigation[entitySet]?.detail?.route
             navigationRoute = targetRoute
         }
+        // console.log({
+        //     entitySet,
+        //     views,
+        //     navigation,
+        //     autoRefresh,
+        //     pageName: name,
+        //     controlAggregation,
+        //     id,
+        //     navigationRoute,
+        //     routeName,
+        //     goupName,
+        //     appName
+        // })
         return {
             entitySet,
             views,
@@ -66,7 +79,9 @@ const _getManifestConfig = async () => {
             pageName: name,
             controlAggregation,
             id,
-            navigationRoute
+            navigationRoute,
+            goupName,
+            appName
         }
     }
     return {}
@@ -144,7 +159,7 @@ const _setRequest = (entitySet: any, tabs: any[]) => {
 }
 
 export const getConfig = async () => {
-    const { entitySet, navigationRoute, views } = await _getManifestConfig()
+    const { entitySet, navigationRoute, views, goupName, appName } = await _getManifestConfig()
     const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const { tabs, showCounts } = _setTabs(views, currentAnnotations, currentEntityTypeData)
     const annoRequest = _setRequest(entitySet, tabs)
@@ -164,6 +179,7 @@ export const getConfig = async () => {
         tabs,//tabs配置 1.Text tab名字 2.Selection.filter 当前tab对应的table的默认过滤条件
         showCounts,//是否显示tab内table的行数
         navigationRoute,
-        annoRequest
+        annoRequest,
+        title: <FormattedMessage id={`menu.${goupName}.${appName}`} />
     }
 }
