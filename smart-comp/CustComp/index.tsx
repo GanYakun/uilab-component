@@ -1,3 +1,4 @@
-import Steps from "./Steps"
+import Steps from "./Steps";
+import Icon from "./Icon";
 
-export { Steps }
+export { Steps, Icon }
