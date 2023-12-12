@@ -341,7 +341,7 @@ export default (props: any) => {
                         color: record && typeof (record[Criticality]) === "number" ? dataPointCriticality[record[Criticality]] : '#6a6d70',
                         fontSize: 24,
                         fontFamily: `"72-Light","72-Lightfull","72","72full",Arial,Helvetica,sans-serif`,
-                        fontWeight: "normal"
+                        fontWeight: "normal",
                     }}>
                     {displayValue}
                 </Typography.Title>
@@ -393,7 +393,7 @@ export default (props: any) => {
                         urlValue = urlValue ? urlValue[a] : record[a];
                     }
                 }
-                return <a href={urlValue} target="_blank">{pathValue}</a>
+                return <a style={{ fontFamily: `"72","72full",Arial,Helvetica,sans-serif` }} href={urlValue} target="_blank">{pathValue}</a>
             case 'Rating':
                 return (
                     <Rate

@@ -175,7 +175,7 @@ export default (props) => {
                         label,
                         content: (
                             <div>
-                                <div style={{ fontSize: 16, fontWeight: "normal", marginBottom: 10, color: "var(--ant-primary-8)" }}>{label}</div>
+                                <div style={{ fontSize: 16, fontFamily: `"72","72full",Arial,Helvetica,sans-serif`, marginBottom: 10, color: "var(--ant-primary-8)" }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
                                     const { type, Url, Value, Criticality, CriticalityRepresentation } = item
                                     switch (type) {
@@ -203,7 +203,8 @@ export default (props) => {
                                                 entitySet: currentState?.entitySet,
                                                 path: Value,
                                                 record: currentRecord,
-                                                DataFieldWithUrl: Url
+                                                DataFieldWithUrl: Url,
+                                                demo: "123"
                                             }
                                             return (
                                                 <div id={`target-${index}`} key={`target-${index}-${id}`}>
@@ -252,7 +253,7 @@ export default (props) => {
                         label,
                         content: (
                             <div>
-                                <div style={{ fontSize: 16, fontWeight: "normal", marginBottom: 10, color: "var(--ant-primary-8)" }}>{Title}</div>
+                                <div style={{ fontSize: 16, fontFamily: "normal", marginBottom: 10, color: "var(--ant-primary-8)" }}>{Title}</div>
                                 <SmartField {...option} />
                             </div>
                         )
