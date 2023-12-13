@@ -62,7 +62,7 @@ export default (props: any) => {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
             Array.isArray(currentColumns) && currentColumns.forEach((item) => {
-                const { path, Label, Criticality, CriticalityIsInt, type, Url, value, CriticalityRepresentation } = item || {};
+                const { path, Label, Criticality, CriticalityIsInt, type, Url,IconUrl, value, CriticalityRepresentation } = item || {};
                 switch (type) {
                     case 'UI.DataField':
                         columns?.push({
@@ -93,7 +93,10 @@ export default (props: any) => {
                                     entitySet,
                                     path,
                                     record,
-                                    DataFieldWithUrl: Url
+                                    DataFieldWithUrl: {
+                                        Url,
+                                        IconUrl
+                                    }
                                 }
                                 return <SmartField {...option} />
                             }

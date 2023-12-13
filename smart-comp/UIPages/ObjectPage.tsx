@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-13 16:47:43
+ * @LastEditTime: 2023-12-13 18:28:13
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -180,7 +180,7 @@ export default (props) => {
                             <div>
                                 <div style={{ fontSize: 16, fontFamily: `"72","72full",Arial,Helvetica,sans-serif`, marginBottom: 10, color: "var(--ant-primary-8)" }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
-                                    const { type, Url, Value, Criticality, CriticalityIsInt, CriticalityRepresentation } = item
+                                    const { type, Url, IconUrl, Value, Criticality, CriticalityIsInt, CriticalityRepresentation } = item
                                     switch (type) {
                                         case "UI.DataField":
                                             const option = {
@@ -207,8 +207,10 @@ export default (props) => {
                                                 entitySet: currentState?.entitySet,
                                                 path: Value,
                                                 record: currentRecord,
-                                                DataFieldWithUrl: Url,
-                                                demo: "123"
+                                                DataFieldWithUrl: {
+                                                    Url,
+                                                    IconUrl
+                                                },
                                             }
                                             return (
                                                 <div id={`target-${index}`} key={`target-${index}-${id}`}>
@@ -488,7 +490,7 @@ export default (props) => {
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
                 tabProps={{
-                    type: "editable-card",
+                    type: "line",
                     hideAdd: true,
                     onEdit: (e, action) => console.log(e, action),
                 }}

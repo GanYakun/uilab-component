@@ -2,13 +2,13 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-12 13:37:09
+ * @LastEditTime: 2023-12-13 18:45:56
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateRangePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea, ProFormUploadButton } from '@ant-design/pro-components';
+import { ProFormDatePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea, ProFormUploadButton } from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message, Image } from 'antd';
 import { Rate, Progress } from 'ant5'
@@ -18,8 +18,8 @@ import "./index.less";
 import { Criticality as SmartCriticality, dataPointCriticality } from "../Process/config";
 import { FormattedMessage } from "react-intl";
 import { useModel } from 'umi';
-import { defaultImageUrl, imageFallback } from '../Process/config'
-import { FrownOutlined, MehOutlined, SmileOutlined } from '@ant-design/icons';
+import { imageFallback } from '../Process/config'
+import { Icon } from '../CustComp/index'
 
 export default (props: any) => {
     const {
@@ -387,13 +387,14 @@ export default (props: any) => {
                     />
                 )
             case 'DataFieldWithUrl':
+                const { Url, IconUrl } = DataFieldWithUrl
                 let pathValue, urlValue;
                 //判断是否为多段式
-                if (DataFieldWithUrl.search('/') === -1) {
+                if (Url.search('/') === -1) {
                     pathValue = record[path]
-                    urlValue = record[DataFieldWithUrl]
+                    urlValue = record[Url]
                 } else {
-                    let pathArr = path.split('/'), urlArr = DataFieldWithUrl.split('/')
+                    let pathArr = path.split('/'), urlArr = Url.split('/')
                     for (let a of pathArr) {
                         pathValue = pathValue ? pathValue[a] : record[a];
                     }
@@ -401,7 +402,29 @@ export default (props: any) => {
                         urlValue = urlValue ? urlValue[a] : record[a];
                     }
                 }
-                return <a style={{ fontFamily: `"72","72full",Arial,Helvetica,sans-serif` }} href={urlValue} target="_blank">{pathValue}</a>
+
+                //判断是否有图标
+                if (IconUrl) {
+                    return (
+                        <a
+                            onClick={(e) => e.stopPropagation()}
+                            href={urlValue}
+                            target="_blank"
+                            style={{ display: 'flex', alignItems: 'center' }}
+                        >
+                            <Icon name={IconUrl} size={30} />
+                        </a>
+                    )
+                }
+                return (
+                    <a
+                        onClick={(e) => e.stopPropagation()}
+                        href={urlValue}
+                        target="_blank"
+                    >
+                        {pathValue}
+                    </a>
+                )
             case 'Rating':
                 return (
                     <Rate

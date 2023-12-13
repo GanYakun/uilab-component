@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-13 12:28:22
+ * @LastEditTime: 2023-12-13 18:25:23
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1321,7 +1321,7 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url } = parsePropertyValue(propertyValue)
+                            const { Value, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url,IconUrl } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
                                 Value: targetNavigation ? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
@@ -1335,6 +1335,7 @@ const getTargetAnnotationProcessed = (
                             }
                             if (type === 'UI.DataFieldWithUrl') {
                                 obj.Url = Url
+                                obj.IconUrl = IconUrl
                             }
                             Fields.push(obj)
                         }
