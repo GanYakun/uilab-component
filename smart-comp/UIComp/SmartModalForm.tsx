@@ -82,7 +82,7 @@ export default (
             title={title}
             trigger={
                 <Button disabled={disabled} type={btnType ? btnType : 'primary'} ghost>
-                    <div style={{ display: 'flex' }}>
+                    <div style={{ display: 'flex' }} className="btn-icon">
                         {icon ? <span style={{ marginRight: 5, display: 'flex', alignItems: 'center' }}><Icon name={icon} /></span> : null}
                         {btnText}
                     </div>

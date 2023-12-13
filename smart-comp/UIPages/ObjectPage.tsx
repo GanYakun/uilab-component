@@ -18,7 +18,8 @@ import SmartModalForm from '../UIComp/SmartModalForm';
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
-import { Steps } from '../CustComp';
+import { Icon, Steps } from '../CustComp';
+import { Button } from 'antd';
 
 export default (props) => {
 
@@ -34,6 +35,7 @@ export default (props) => {
     const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
+    const [headerStatus, setHeaderStatus] = useState(false);
     const [loading, setLoading] = useState(true)
     //初始化方法
     const init = async () => {
@@ -253,7 +255,7 @@ export default (props) => {
                         label,
                         content: (
                             <div>
-                                <div style={{ fontSize: 16, fontFamily: "normal", marginBottom: 10, color: "var(--ant-primary-8)" }}>{Title}</div>
+                                <div style={{ fontSize: 16, fontFamily: `"72", "72full", Arial, Helvetica, sans-serif`, marginBottom: 10, color: "var(--ant-primary-8)" }}>{Title}</div>
                                 <SmartField {...option} />
                             </div>
                         )
@@ -412,31 +414,41 @@ export default (props) => {
                     extra: extra, // 右侧按钮
                 },
                 content: (
-                    <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '0 24px' }}>
-                        <div style={{ marginRight: 32, marginBottom: 16 }}>
-                            {
-                                ImageUrl && <Image
-                                    preview={false}
-                                    src={currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback}
-                                    alt="content"
-                                    fallback={imageFallback}
-                                    height={100}
-                                    width={100}
-                                    style={{
-                                        objectFit: 'cover',
-                                        borderRadius: 10,
-                                        border: '1px solid #e8e8e8',
-                                        padding: 10,
-                                        boxShadow: '0 0 10px #e8e8e8',
-                                        objectPosition: 'center center'
-                                    }}
-                                    onClick={() => { }}
-                                />
-                            }
-                        </div>
+                    <div>
+                        {headerStatus ? null : <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '0 24px' }}>
+                            <div style={{ marginRight: 32, marginBottom: 16 }}>
+                                {
+                                    ImageUrl && <Image
+                                        preview={false}
+                                        src={currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback}
+                                        alt="content"
+                                        fallback={imageFallback}
+                                        height={100}
+                                        width={100}
+                                        style={{
+                                            objectFit: 'cover',
+                                            borderRadius: 10,
+                                            border: '1px solid #e8e8e8',
+                                            padding: 10,
+                                            boxShadow: '0 0 10px #e8e8e8',
+                                            objectPosition: 'center center'
+                                        }}
+                                        onClick={() => { }}
+                                    />
+                                }
+                            </div>
+                            {_renderHeaderFacetContents}
+                        </div>}
+                        <div style={{ textAlign: "center" }}>
+                            <Button id="" ghost type="primary" style={{ width: 23, height: 23 }} onClick={() => {
+                                setHeaderStatus(!headerStatus)
+                            }} icon={<div className='btn-icon' id="uilab-ObjectPage-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: "center", height: "100%" }}>
+                                <Icon name={headerStatus ? "navigation-down-arrow" : "navigation-up-arrow"} />
+                            </div>}>
 
-                        {_renderHeaderFacetContents}
-                    </div>
+                            </Button>
+                        </div >
+                    </div >
                 ),
                 tabList: _getObjectPageTabOptions() || [],
                 tabActiveKey: activeValue ? activeValue : ""
@@ -444,12 +456,12 @@ export default (props) => {
         } else {
             return {};
         }
-    }, [currentState, currentRecord, activeValue])
+    }, [currentState, currentRecord, activeValue, headerStatus])
 
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header'>
             {loading ? <SmartSKeleton /> : <PageContainer
-                fixedHeader={true}
+                fixedHeader={headerStatus}
                 onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
