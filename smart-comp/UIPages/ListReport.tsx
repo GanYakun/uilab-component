@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-12 13:48:26
+ * @LastEditTime: 2023-12-13 10:27:06
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -98,67 +98,78 @@ const ListReport = () => {
     const renderContent = () => {
         const { tabs } = (currentState || {});
         if (currentState) {
-            const { entitySet, navigationRoute, title:headerTitle } = currentState
+            const { entitySet, navigationRoute, title: headerTitle } = currentState
             return (
                 <>
                     <div style={{ display: loading ? "" : "none" }}>{_renderSkeleton()}</div>
-                    <div style={{ display: loading ? "none" : "" }}>
+                    <div id='ListReport' style={{ display: loading ? "none" : "" }}>
                         <SmartFilterBar formRef={formRef} setSearchVal={setSearchVal} entitySet={entitySet} />
-                        {tabs?.length ? <Tabs
-                            type="card"
-                            size='middle'
-                            onChange={(params) => {
-                                setActiveTabKey(Number(params))
-                            }}>
-                            {currentTabs && currentTabs.map((item, i) => {
-                                const { text, Selection, Presentation } = item
-                                if (Presentation) {
-                                    const { Visualizations } = Presentation
-                                    const { term, qualifier } = Visualizations
-                                    switch (term) {
-                                        case '@UI.LineItem':
-                                            let filterDefaultValue
-                                            if (Selection && Selection.filter) {
-                                                filterDefaultValue = filterDefaultValue ? `${filterDefaultValue} and ${Selection.filter}` : Selection.filter
+                        <div style={{ background: '#fff',padding:'0 24px' }}>
+
+                            {tabs?.length
+                                ?
+                                (
+                                    <Tabs
+                                        type="line"
+                                        size='middle'
+                                        onChange={(params) => {
+                                            setActiveTabKey(Number(params))
+                                        }}>
+                                        {currentTabs && currentTabs.map((item, i) => {
+                                            const { text, Selection, Presentation } = item
+                                            if (Presentation) {
+                                                const { Visualizations } = Presentation
+                                                const { term, qualifier } = Visualizations
+                                                switch (term) {
+                                                    case '@UI.LineItem':
+                                                        let filterDefaultValue
+                                                        if (Selection && Selection.filter) {
+                                                            filterDefaultValue = filterDefaultValue ? `${filterDefaultValue} and ${Selection.filter}` : Selection.filter
+                                                        }
+                                                        return <TabPane tab={<>
+                                                            {tabs[i].Text} {text}
+                                                        </>} key={i}>
+                                                            <div key={`table${i}`}>
+                                                                {
+                                                                    activeTabKey === i && <SmartTable
+                                                                        actionRef={actionRef}
+                                                                        entitySet={entitySet}
+                                                                        navigationRoute={navigationRoute}
+                                                                        searchVal={searchVal}
+                                                                        filterDefaultValue={filterDefaultValue}
+                                                                        qualifier={qualifier}
+                                                                        onLoad={() => {
+                                                                            setLoading(false);
+                                                                        }}
+                                                                        SmartProps={SmartProps}
+                                                                        headerTitle={headerTitle}
+                                                                    />
+                                                                }
+                                                            </div>
+                                                        </TabPane>
+                                                    default:
+                                                        break;
+                                                }
                                             }
-                                            return <TabPane tab={<>
-                                                {tabs[i].Text} {text}
-                                            </>} key={i}>
-                                                <div key={`table${i}`}>
-                                                    {
-                                                        activeTabKey === i && <SmartTable
-                                                            actionRef={actionRef}
-                                                            entitySet={entitySet}
-                                                            navigationRoute={navigationRoute}
-                                                            searchVal={searchVal}
-                                                            filterDefaultValue={filterDefaultValue}
-                                                            qualifier={qualifier}
-                                                            onLoad={() => {
-                                                                setLoading(false);
-                                                            }}
-                                                            SmartProps={SmartProps}
-                                                            headerTitle={headerTitle}
-                                                        />
-                                                    }
-                                                </div>
-                                            </TabPane>
-                                        default:
-                                            break;
-                                    }
-                                }
-                            })}
-                        </Tabs> :
-                            <SmartTable
-                                actionRef={actionRef}
-                                searchVal={searchVal}
-                                entitySet={entitySet}
-                                navigationRoute={navigationRoute}
-                                onLoad={() => {
-                                    setLoading(false);
-                                }}
-                                SmartProps={SmartProps}
-                                headerTitle={headerTitle}
-                            />}
+                                        })}
+                                    </Tabs>
+                                )
+                                :
+                                (
+                                    <SmartTable
+                                        actionRef={actionRef}
+                                        searchVal={searchVal}
+                                        entitySet={entitySet}
+                                        navigationRoute={navigationRoute}
+                                        onLoad={() => {
+                                            setLoading(false);
+                                        }}
+                                        SmartProps={SmartProps}
+                                        headerTitle={headerTitle}
+                                    />
+                                )
+                            }
+                        </div>
                     </div>
                 </>
             )
