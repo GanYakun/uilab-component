@@ -257,7 +257,7 @@ export default (props: any) => {
                     }
                 } else {
                     return (
-                        <div style={{ color: color, display: "flex" }}>
+                        <div style={{ color: color, display: "flex", whiteSpace: "pre-line" }}>
                             {(CriticalityRepresentation || "").includes("WithoutIcon") ? null : <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>}
                             <div>{currentFieldProps.value}</div>
                         </div>
@@ -348,7 +348,6 @@ export default (props: any) => {
                     style={{
                         color: record && typeof (record[Criticality]) === "number" ? dataPointCriticality[record[Criticality]] : '#6a6d70',
                         fontSize: 24,
-                        fontFamily: `"72-Light","72-Lightfull","72","72full",Arial,Helvetica,sans-serif`,
                         fontWeight: "normal",
                     }}>
                     {displayValue}

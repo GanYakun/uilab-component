@@ -165,10 +165,12 @@ export default (props: any) => {
                                     }}
                                     fields={Action?.Fields}
                                     onSubmit={async (body: any) => {
-                                        await Action?.annoRequest({
-                                            body,
-                                            queryEntity: record['@odata.id']
-                                        })
+                                        if (Object.keys(body).length) {
+                                            await Action?.annoRequest({
+                                                body,
+                                                queryEntity: record['@odata.id']
+                                            })
+                                        }
                                         actionRef?.current?.reload();
                                     }}
                                     action={Action}
@@ -395,7 +397,9 @@ export default (props: any) => {
                         }}
                         fields={currentState?.quickCreate?.Fields}
                         onSubmit={async (params: any) => {
-                            await currentState?.quickCreate?.annoRequest?.post(params);
+                            if (Object.keys(params).length) {
+                                await currentState?.quickCreate?.annoRequest?.post(params);
+                            }
                             actionRef?.current?.reload();
                         }}
                     />
@@ -416,13 +420,15 @@ export default (props: any) => {
                                 }}
                                 fields={Action?.Fields}
                                 onSubmit={async (body: any) => {
-                                    await Action.annoRequest({
-                                        body,
-                                        boundActionData: currentSelectedRowsItem,
-                                        currentEntitySet: entitySet,
-                                        queryEntity,
-                                        targetNavigation
-                                    })
+                                    if (Object.keys(body).length) {
+                                        await Action.annoRequest({
+                                            body,
+                                            boundActionData: currentSelectedRowsItem,
+                                            currentEntitySet: entitySet,
+                                            queryEntity,
+                                            targetNavigation
+                                        })
+                                    }
                                     actionRef?.current?.reload();
                                 }}
                                 action={item.Action}

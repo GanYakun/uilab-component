@@ -23,7 +23,6 @@ import { Icon, Steps } from '../CustComp';
 import { Button } from 'antd';
 
 export default (props) => {
-
     let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
     const SmartProps = useMemo(() => {
@@ -40,6 +39,7 @@ export default (props) => {
     const [loading, setLoading] = useState(true)
     //初始化方法
     const init = async () => {
+        setLoading(true)
         setTimeout(async () => {
             let result = await getConfig({ location, currentRecord: {} })
             if (result) {
@@ -82,7 +82,6 @@ export default (props) => {
     //获取详情页数据
     const _fetch = async (saveState) => {
         const { annoRequest, currentEntityTypeData } = saveState;
-        setLoading(true)
         const result = await annoRequest()
         if (result) {
             setLoading(false)
@@ -121,10 +120,12 @@ export default (props) => {
                     action={extra.Action}
                     fields={extra.Action.Fields}
                     onSubmit={async (body) => {
-                        await extra.Action.annoRequest({
-                            body,
-                            queryEntity: location.query.queryEntity
-                        })
+                        if (Object.keys(body).length) {
+                            await extra.Action.annoRequest({
+                                body,
+                                queryEntity: location.query.queryEntity
+                            })
+                        }
                         setCurrentState(null);
                         init();
                         //刷新listreport数据
@@ -374,7 +375,7 @@ export default (props) => {
         } else {
             return <div></div>
         }
-    }, [currentState, currentRecord, activeValue])
+    }, [activeValue, currentState, currentRecord])
 
     // 解析tab数据
     const _getObjectPageTabOptions = () => {
@@ -420,14 +421,16 @@ export default (props) => {
                     fields={item.Action.Fields}
                     icon={item.IconUrl}
                     onSubmit={async (body) => {
-                        await item.Action.annoRequest({
-                            body,
-                            queryEntity: location.query.queryEntity
-                        })
-                        setCurrentState(null);
-                        init();
+                        if (Object.keys(body).length) {
+                            await item.Action.annoRequest({
+                                body,
+                                queryEntity: location.query.queryEntity
+                            })
+                        }
                         //刷新listreport数据
                         window.uilabKeep = true
+                        setCurrentState(null);
+                        init();
                     }}
                 />
             })
@@ -475,18 +478,17 @@ export default (props) => {
                     </div >
                 ),
                 tabList: _getObjectPageTabOptions() || [],
-                tabActiveKey: activeValue ? activeValue : ""
+                tabActiveKey: activeValue ? activeValue : "",
             }
         } else {
             return {};
         }
-    }, [currentState, currentRecord, activeValue, headerStatus])
+    }, [activeValue, currentState, currentRecord, headerStatus])
 
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header'>
             {loading ? <SmartSKeleton /> : <PageContainer
                 fixedHeader={headerStatus}
-                onBack={() => window.history.back()}
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
                 tabProps={{
@@ -494,7 +496,7 @@ export default (props) => {
                     hideAdd: true,
                     onEdit: (e, action) => console.log(e, action),
                 }}
-                onTabScroll={() => console.log("onTabScroll")}
+                onBack={() => window.history.back()}
                 footer={[
                     // <Button key="3">重置</Button>
                 ]}
