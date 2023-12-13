@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-12 18:02:08
+ * @LastEditTime: 2023-12-13 11:38:24
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -929,6 +929,8 @@ const isHiddenByAnnotation = (annotation: any, currentRecord: { [x: string]: boo
         let result = {} as any
         let path = getTextValueByData('path', data)
         let string = getTextValueByData('string', data)
+        let bool = getTextValueByData('bool', data)
+
         result.path = path
         result.string = string
         if (currentRecord && JSON.stringify(currentRecord) !== '{}') {
@@ -947,14 +949,18 @@ const isHiddenByAnnotation = (annotation: any, currentRecord: { [x: string]: boo
             } else {
                 val = currentRecord[path]
             }
-            if (string) {
-                if (condition === 'eq') {
+            result.boolText = val
+            if (bool) {
+                result.boolText = `${val}` === bool
+            }
+            if (condition === 'eq') {
+                if (string === 'Nullable' || string == null) {
+                    result.boolText = !val
+                } else {
                     result.boolText = val === string
-                } else if (condition === 'ne') {
-                    result.boolText = val !== string
                 }
-            } else {
-                result.boolText = val
+            } else if (condition === 'ne') {
+                result.boolText = val !== string
             }
         }
 
@@ -1087,11 +1093,12 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
         Title: '' as any,
         Description: null as any,
         ImageUrl: '' as any,
-        IconUrl:'' as any,
+        IconUrl: '' as any,
         Target: '' as any,
         TypeName: '' as any,
         TypeNamePlural: '' as any,
         Criticality: null as any,
+        CriticalityIsInt: null as any,//直接写数字的情况
         CriticalityRepresentation: null as any,
         SemanticObject: '' as any,
         Action: '' as any,
@@ -1164,8 +1171,9 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                     case 'Target':
                         result.Target = getTextValueByData('annotationPath', a);
                         break
-                    case 'Criticality':
+                    case 'Criticality': 
                         result.Criticality = getTextValueByData('path', a)
+                        result.CriticalityIsInt = getTextValueByData('int', a)
                         break;
                     case 'CriticalityRepresentation':
                         result.CriticalityRepresentation = getTextValueByData('enumMember', a)
@@ -1182,7 +1190,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                     case 'Data':
                         result.Data = collection
                         break;
-                    case 'TargetValue': 
+                    case 'TargetValue':
                         result.TargetValue = getTextValueByData('decimal', a) || getTextValueByData('int', a)
                         break;
                     case 'Visualization':
@@ -1311,11 +1319,12 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value, Criticality, CriticalityRepresentation, Action, Label, Url } = parsePropertyValue(propertyValue)
+                            const { Value, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
                                 Value: targetNavigation ? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
                                 Criticality,
+                                CriticalityIsInt,
                                 CriticalityRepresentation,
                                 Label
                             } as any
