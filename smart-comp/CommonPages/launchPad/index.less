@@ -1,0 +1,81 @@
+.container {
+  padding: 12px 24px 0 24px
+}
+
+.groupName {
+  margin-bottom: 12px;
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 600;
+  font-size: 16px;
+  font-family: PingFangSC-Medium, PingFang SC;
+  line-height: 24px;
+}
+
+.pannel {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.pannel .pannel-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 240px;
+  min-height: 240px;
+  margin-right: 16px;
+  margin-bottom: 16px;
+  padding: 16px;
+  background: #ffffff;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0px 5px 13px 0px rgba(0, 0, 0, 0.13);
+  cursor: pointer;
+}
+
+.pannel .pannel-item .bottom {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+}
+
+.pannel .pannel-item .tags {
+  margin-top: 5px;
+}
+
+.pannel .pannel-item .navigate {
+  left: 60px;
+  width: 30px;
+  height: 30px;
+  text-align: right;
+}
+
+.pannel .pannel-item .description {
+  margin-top: 10px;
+  color: rgba(0, 0, 0, 0.45);
+  font-weight: 400;
+  font-size: 12px;
+  font-family: PingFangSC-Regular, PingFang SC;
+  line-height: 18px;
+}
+
+.pannel .pannel-item .title {
+  margin-top: 15px;
+  color: rgba(0, 0, 0, 0.85);
+  font-weight: 500;
+  font-size: 16px;
+  font-family: PingFangSC-Medium, PingFang SC;
+  line-height: 20px;
+  height: 40px;
+  text-overflow: -o-ellipsis-lastline;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.uilab-disabled {
+  opacity: 0.5 !important;
+}
