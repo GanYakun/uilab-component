@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-13 10:06:53
+ * @LastEditTime: 2023-12-13 13:50:38
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -15,6 +15,7 @@ import SmartTable from '../UIComp/SmartTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
+import SmartContactPopover from '../UIComp/SmartContactPopover'
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
@@ -291,6 +292,27 @@ export default (props) => {
                                         qualifier={sectionTargetData?.targetQualifier}
                                     />
                                 </Card>
+                            </div>
+                        )
+                    }
+                case 'Communication.Contact':
+                    console.log({ value, contentValue, currentRecord })
+
+                    return {
+                        type,
+                        label,
+                        content: (
+                            <div>
+                                <div style={{
+                                    fontSize: 16,
+                                    fontFamily: `"72", "72full", Arial, Helvetica, sans-serif`,
+                                    marginBottom: 10,
+                                    color: "var(--ant-primary-8)"
+                                }}>{label}</div>
+                                <SmartContactPopover
+                                    record={currentRecord}
+                                    contact={value}
+                                />
                             </div>
                         )
                     }
