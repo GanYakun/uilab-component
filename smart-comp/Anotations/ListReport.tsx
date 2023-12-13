@@ -55,7 +55,7 @@ const _getManifestConfig = async () => {
         let routing = manifest['sap.ui5']['routing'], navigationRoute
         if (routing && name === 'sap.fe.templates.ListReport') {
             const { targets } = routing
-            const targetRoute = targets[routeName]?.options?.settings?.navigation[entitySet]?.detail?.route
+            const targetRoute = targets[routeName]?.options?.settings?.navigation?.[entitySet]?.detail?.route
             navigationRoute = targetRoute
         }
         // console.log({
