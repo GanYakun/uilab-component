@@ -179,7 +179,7 @@ export default (props) => {
                             <div>
                                 <div style={{ fontSize: 16, fontFamily: `"72","72full",Arial,Helvetica,sans-serif`, marginBottom: 10, color: "var(--ant-primary-8)" }}>{label}</div>
                                 {sectionTargetData?.Fields?.map((item, index) => {
-                                    const { type, Url, Value, Criticality, CriticalityRepresentation } = item
+                                    const { type, Url, Value, Criticality, CriticalityIsInt, CriticalityRepresentation } = item
                                     switch (type) {
                                         case "UI.DataField":
                                             const option = {
@@ -189,6 +189,7 @@ export default (props) => {
                                                 record: currentRecord,
                                                 showLabel: true,
                                                 Criticality,
+                                                CriticalityIsInt,
                                                 CriticalityRepresentation
                                             }
                                             return <div id={`target-${index}`} key={`target-${index}-${id}`}>
@@ -223,13 +224,14 @@ export default (props) => {
                         )
                     }
                 case "UI.DataPoint":
-                    const { Title, Value, Criticality, CriticalityRepresentation } = value
+                    const { Title, Value, Criticality, CriticalityIsInt, CriticalityRepresentation } = value
                     const option = {
                         dataPoint: value,
                         entitySet: currentState?.entitySet,
                         path: Value,
                         record: currentRecord,
                         Criticality,
+                        CriticalityIsInt,
                         CriticalityRepresentation
                     }
                     if (bool) {

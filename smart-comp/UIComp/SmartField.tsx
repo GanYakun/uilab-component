@@ -32,6 +32,7 @@ export default (props: any) => {
         showLabel, // 是否显示label字段，与isReadOnly配合使用
         colProps,
         Criticality,
+        CriticalityIsInt,
         CriticalityRepresentation, // 隐藏icon
         action,
         dataPoint,
@@ -228,15 +229,22 @@ export default (props: any) => {
         if (defaultValue) {
             currentFieldProps.initialValue = defaultValue;
         }
-
+        let color = "";
+        if (record) {
+            if (CriticalityIsInt) {
+                color = SmartCriticality[CriticalityIsInt]?.color;
+            } else {
+                color = SmartCriticality[record[Criticality]]?.color;
+            }
+        }
         switch (fieldType) {
             case 'ReadOnly':
                 currentFieldProps.value = displayValue;
                 if (showLabel) {
-                    if (record && typeof (record[Criticality]) === "number") {
+                    if (record && (CriticalityIsInt || typeof (record[Criticality]) === "number")) {
                         return <div id='label-color'>
                             <div>{currentFieldProps.label}</div>
-                            <div style={{ color: SmartCriticality[record[Criticality]]?.color || "" }}>
+                            <div style={{ color: color }}>
                                 {(CriticalityRepresentation || "").includes("WithoutIcon") ? null : <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>}
                                 <div>{currentFieldProps.value}</div>
                             </div>
@@ -249,7 +257,7 @@ export default (props: any) => {
                     }
                 } else {
                     return (
-                        <div style={{ color: record && SmartCriticality[record[Criticality]]?.color || "", display: "flex" }}>
+                        <div style={{ color: color, display: "flex" }}>
                             {(CriticalityRepresentation || "").includes("WithoutIcon") ? null : <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>}
                             <div>{currentFieldProps.value}</div>
                         </div>
