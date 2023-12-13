@@ -20,7 +20,7 @@ import znCN from 'antd/es/locale/zh_CN';
  * @returns 
  */
 const _getManifestConfig = async () => {
-    const { manifest, routeName, i18n_en, i18n_zh } =await Utils.getUi5Config()
+    const { manifest, goupName, routeName, i18n_en, i18n_zh } = await Utils.getUi5Config()
     //国际化 CN 
     if (i18n_zh) {
         addLocale(
@@ -53,6 +53,8 @@ const _getManifestConfig = async () => {
         const { entitySet } = settings;
         return {
             entitySet,
+            goupName,
+            routeName
         }
     }
     return {}
@@ -246,7 +248,7 @@ const getHeaderInfoOptions = (currentAnnotations: any) => {
 export const getConfig = async (props: any) => {
     const { location, currentRecord } = props
     const { queryEntity } = location?.query
-    const { entitySet } =await _getManifestConfig()
+    const { entitySet,goupName,routeName } = await _getManifestConfig()
     const { currentAnnotations, currentEntitySetData, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
     const HeaderInfo = getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
@@ -268,7 +270,9 @@ export const getConfig = async (props: any) => {
             HeaderFacets,
             annoRequest,
             Identification,
-            quickCreate
+            quickCreate,
+            goupName, 
+            routeName
         })
     }
 
@@ -280,6 +284,8 @@ export const getConfig = async (props: any) => {
         annoRequest,//请求
         Identification,//头部按钮 [{Label:btnText/title,Fields:表单字段，annoRequest:提交请求（body）,isHidden:是否隐藏,type：表单提交类型}]
         quickCreate,//是否支持quickCreate
-        currentEntityTypeData
+        currentEntityTypeData,
+        goupName,
+        routeName
     }
 }
