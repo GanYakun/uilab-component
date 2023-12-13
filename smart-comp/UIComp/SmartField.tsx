@@ -242,9 +242,9 @@ export default (props: any) => {
                 currentFieldProps.value = displayValue;
                 if (showLabel) {
                     if (record && (CriticalityIsInt || typeof (record[Criticality]) === "number")) {
-                        return <div id='label-color'>
+                        return <div id={currentFieldProps.label ? 'label-color' : ""}>
                             <div>{currentFieldProps.label}</div>
-                            <div style={{ color: color }}>
+                            <div style={{ color: color, whiteSpace: "pre-line" }}>
                                 {(CriticalityRepresentation || "").includes("WithoutIcon") ? null : <div style={{ marginRight: 4 }}>{SmartCriticality[record[Criticality]]?.icon}</div>}
                                 <div>{currentFieldProps.value}</div>
                             </div>

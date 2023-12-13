@@ -490,10 +490,11 @@ export default (props) => {
                 style={{ background: "#f0f2f5" }}
                 {..._getObjectPageHeaderOptions}
                 tabProps={{
-                    type: 'line',
+                    type: "editable-card",
                     hideAdd: true,
                     onEdit: (e, action) => console.log(e, action),
                 }}
+                onTabScroll={() => console.log("onTabScroll")}
                 footer={[
                     // <Button key="3">重置</Button>
                 ]}
