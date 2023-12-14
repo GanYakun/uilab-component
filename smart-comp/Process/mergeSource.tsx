@@ -67,17 +67,21 @@ export const getSource = (source: string) => {
             if (window.location.href.includes(item.path)) {
                 item.routes?.some((childItem: any) => {
                     if (window.location.href.includes(childItem.path)) {
-                        childItem?.routes?.some((e: any) => {
-                            if (window.location.href.includes(e.path)) {
-                                if (e && e[source]) {
-                                    result = e[source];
+                        if (childItem && childItem[source]) {
+                            result = childItem[source];
+                            return true
+                        } else {
+                            childItem?.routes?.some((e: any) => {
+                                if (window.location.href.includes(e.path)) {
+                                    if (e && e[source]) {
+                                        result = e[source];
+                                        return true
+                                    }
+                                } else {
+                                    return false;
                                 }
-                                return true
-                            } else {
-                                return false;
-                            }
-                        })
-                        return true;
+                            })
+                        }
                     }
                     return false;
                 })

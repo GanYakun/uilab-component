@@ -21,6 +21,7 @@ import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
 import { Icon, Steps } from '../CustComp';
 import { Button } from 'antd';
+import CustComp from '../../../../src/components/CustComp';
 
 export default (props) => {
     let { initialState, setInitialState } = useModel('@@initialState');
@@ -54,13 +55,18 @@ export default (props) => {
 
                         // 处理父元素的数据
                         if (SmartProps?.length) {
-                            const source = mergeSource(SmartProps, "", [
+                            mergeSource(SmartProps, "", [
                                 {
                                     "name": "HeaderFacets",
                                     "value": result.HeaderFacets
+                                },
+                                {
+                                    "name": "Identification",
+                                    "value": result.Identification
                                 }
-                            ]).HeaderFacets;
-                            result.HeaderFacets = source;
+                            ]);
+                            // result.HeaderFacets = source.HeaderFacets;
+                            // result.Identification = source.Identification;
                         }
                         // 默认选中第一个不隐藏的数据
                         if (result.Facets?.length) {
@@ -407,30 +413,39 @@ export default (props) => {
                 record: currentRecord,
             }
             let extra = Identification?.map((item, index) => {
-                console.log({ Fee: item.Action.Fields });
+                switch (item.facetType) {
+                    // 自定义按钮
+                    case "CustomButton":
+                        const Component = CustComp()[item.facetType];
+                        if(!Component) {
+                            return <></>
+                        }
+                        return <Component record={currentRecord} />
+                    default:
+                        return item.isHidden ? null : <SmartModalForm
+                            key={index}
+                            formType={item.type}
+                            entitySet={entitySet}
+                            content={{
+                                title: item.Label,
+                                btnText: item.Label
+                            }}
+                            action={item.Action}
+                            fields={item.Action?.Fields ? item.Action?.Fields : []}
+                            icon={item.IconUrl}
+                            onSubmit={async (body) => {
+                                await item.Action.annoRequest({
+                                    body,
+                                    queryEntity: location.query.queryEntity
+                                })
+                                //刷新listreport数据
+                                window.uilabKeep = true
+                                setCurrentState(null);
+                                init();
+                            }}
+                        />
+                }
 
-                return item.isHidden ? null : <SmartModalForm
-                    key={index}
-                    formType={item.type}
-                    entitySet={entitySet}
-                    content={{
-                        title: item.Label,
-                        btnText: item.Label
-                    }}
-                    action={item.Action}
-                    fields={item.Action.Fields}
-                    icon={item.IconUrl}
-                    onSubmit={async (body) => {
-                        await item.Action.annoRequest({
-                            body,
-                            queryEntity: location.query.queryEntity
-                        })
-                        //刷新listreport数据
-                        window.uilabKeep = true
-                        setCurrentState(null);
-                        init();
-                    }}
-                />
             })
             return {
                 header: {
