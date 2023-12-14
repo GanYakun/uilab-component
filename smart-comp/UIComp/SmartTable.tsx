@@ -404,8 +404,12 @@ export default (props: any) => {
                             btnType: 'link'
                         }}
                         fields={currentState?.quickCreate?.Fields}
-                        onSubmit={async (params: any) => {
-                            await currentState?.quickCreate?.annoRequest?.post(params);
+                        onSubmit={async (body: any) => {
+                            await currentState?.quickCreate?.annoRequest?.post({
+                                body,
+                                queryEntity,
+                                targetNavigation
+                            });
                             actionRef?.current?.reload();
                         }}
                     />
