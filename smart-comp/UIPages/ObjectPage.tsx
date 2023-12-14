@@ -19,7 +19,7 @@ import SmartContactPopover from '../UIComp/SmartContactPopover'
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
-import { Icon, Steps } from '../CustComp';
+import { Icon, Steps } from '../CommonComp';
 import { Button } from 'antd';
 import CustComp from '../../../../src/components/CustComp';
 

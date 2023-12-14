@@ -11,7 +11,7 @@ import { Button, Form } from 'antd';
 import SmartField from './SmartField';
 import { useRef } from 'react';
 import React from 'react';
-import { Icon } from '../CustComp/index'
+import { Icon } from '../CommonComp/index'
 
 export default (
     props:

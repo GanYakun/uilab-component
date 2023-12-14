@@ -8,7 +8,7 @@ import SmartContactPopover from './SmartContactPopover'
 import { history as umiHistory, FormattedMessage } from 'umi';
 import { RightOutlined } from '@ant-design/icons';
 import { mergeSource } from "../Process/mergeSource";
-import { Steps } from '../CustComp';
+import { Steps } from '../CommonComp';
 import { findLastKey } from '@umijs/deps/compiled/lodash';
 
 type GithubIssueItem = {

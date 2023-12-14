@@ -19,7 +19,7 @@ import { Criticality as SmartCriticality, dataPointCriticality } from "../Proces
 import { FormattedMessage } from "react-intl";
 import { useModel } from 'umi';
 import { imageFallback } from '../Process/config'
-import { Icon } from '../CustComp/index'
+import { Icon } from '../CommonComp/index'
 
 export default (props: any) => {
     const {
