@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-14 12:08:08
+ * @LastEditTime: 2023-12-14 12:22:04
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -2096,7 +2096,7 @@ const parseActionByName = (actionName: string) => {
                 formData.append('file', fileList[0].originFileObj);
                 const { protocol, host } = window.location
                 let actionUrl = `${protocol}//${host}/${window.serviceUrl}${path}`
-                fetch(actionUrl, {
+                return fetch(actionUrl, {
                     method: 'POST',
                     body: formData,
                 })
