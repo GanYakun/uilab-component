@@ -62,27 +62,31 @@ const LaunchPad: React.FC = () => {
         <div className='pannel'>
           {
             item?.routes?.map((childItem: any, childIndex: number) => {
-              return <div className='pannel-item' key={`child-${childIndex}`} onClick={() => {
-                if (childItem?.isLink) {
-                  window.open(childItem?.entry)
-                } else {
-                  _historyPush(`${item.path}/${childItem.name}`)
-                }
-              }}>
-                <div style={{ width: "100%" }}>
-                  <div>
-                    <img width={48} height={48} src={`AppImages/${childItem.name}.png`} onError={(e) => { e.target.onerror = null; e.target.src = 'navigate@2x.png' }} />
+              return (
+                !childItem?.hideInMenu && <div className='pannel-item' key={`child-${childIndex}`} onClick={() => {
+                  if (childItem?.isLink) {
+                    console.log(childItem?.entry)
+                    window.open(childItem?.entry)
+                  } else {
+                    _historyPush(`${item.path}/${childItem.name}`)
+                  }
+                }}>
+                  <div style={{ width: "100%" }}>
+                    <div>
+                      <img width={48} height={48} src={`AppImages/${childItem.name}.png`} onError={(e) => { e.target.onerror = null; e.target.src = 'navigate@2x.png' }} />
+                    </div>
+                    <div className='title'><FormattedMessage id={`menu.${item.name}.${childItem.name}`} /></div>
+                    <div className='description'></div>
                   </div>
-                  <div className='title'><FormattedMessage id={`menu.${item.name}.${childItem.name}`} /></div>
-                  <div className='description'></div>
+                  <div className='tags'>
+                    {tagEnum[childItem.name]}
+                  </div>
+                  <div className='bottom'>
+                    <img className='navigate' src='navigate@2x.png' />
+                  </div>
                 </div>
-                <div className='tags'>
-                  {tagEnum[childItem.name]}
-                </div>
-                <div className='bottom'>
-                  <img className='navigate' src='navigate@2x.png' />
-                </div>
-              </div>
+              )
+
             })
           }
         </div>
