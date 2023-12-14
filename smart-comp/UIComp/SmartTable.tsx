@@ -162,7 +162,7 @@ export default (props: any) => {
                         //添加行内按钮
                         let ele = [] as any
                         inLineBtns.map((item: any, index: number) => {
-                            const { Action, Label, type } = item
+                            let { Action, Label, type, Url, IconUrl } = item
                             ele.push(
                                 <SmartModalForm
                                     key={index}
@@ -182,6 +182,7 @@ export default (props: any) => {
                                         actionRef?.current?.reload();
                                     }}
                                     action={Action}
+                                    icon={IconUrl}
                                 />
                             )
                         })
@@ -417,7 +418,7 @@ export default (props: any) => {
                 //headerBtns
                 currentState?.headerBtns && !hideSelect && (
                     currentState?.headerBtns?.map((item: any, index: number) => {
-                        const { type, Label, Action, name: actionName } = item
+                        const { type, Label, Action, IconUrl } = item
                         return (
                             <SmartModalForm
                                 key={index}
@@ -440,6 +441,7 @@ export default (props: any) => {
                                     actionRef?.current?.reload();
                                 }}
                                 action={item.Action}
+                                icon={IconUrl}
                                 disabled={Action?.isBound && currentSelectedRowsItem.length === 0 && !Action?.isCollection}
                             />
                         )
