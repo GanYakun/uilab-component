@@ -3,8 +3,8 @@ import { login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { Alert, message } from 'antd';
-import React, { useState } from 'react';
-import { FormattedMessage, history, useIntl, useModel, setLocale } from 'umi';
+import React, { useState, useEffect } from 'react';
+import { FormattedMessage, history, useIntl, useModel, setLocale ,getLocale} from 'umi';
 import { appConfig } from '../../../../../../config/appConfig';
 import styles from './index.less';
 
@@ -62,6 +62,12 @@ const Login: React.FC = () => {
     }
   };
   const { status, type: loginType } = userLoginState;
+
+  useEffect(() => {
+    if (getLocale() !== appConfig?.locale?.default) {
+      setLocale(appConfig?.locale?.default, false)
+    }
+  }, [])
 
   return (
     <div className={styles.container}>
