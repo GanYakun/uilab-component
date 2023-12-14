@@ -120,12 +120,10 @@ export default (props) => {
                     action={extra.Action}
                     fields={extra.Action.Fields}
                     onSubmit={async (body) => {
-                        if (Object.keys(body).length) {
-                            await extra.Action.annoRequest({
-                                body,
-                                queryEntity: location.query.queryEntity
-                            })
-                        }
+                        await extra.Action.annoRequest({
+                            body,
+                            queryEntity: location.query.queryEntity
+                        })
                         setCurrentState(null);
                         init();
                         //刷新listreport数据
@@ -409,6 +407,8 @@ export default (props) => {
                 record: currentRecord,
             }
             let extra = Identification?.map((item, index) => {
+                console.log({ Fee: item.Action.Fields });
+
                 return item.isHidden ? null : <SmartModalForm
                     key={index}
                     formType={item.type}
@@ -421,12 +421,10 @@ export default (props) => {
                     fields={item.Action.Fields}
                     icon={item.IconUrl}
                     onSubmit={async (body) => {
-                        if (Object.keys(body).length) {
-                            await item.Action.annoRequest({
-                                body,
-                                queryEntity: location.query.queryEntity
-                            })
-                        }
+                        await item.Action.annoRequest({
+                            body,
+                            queryEntity: location.query.queryEntity
+                        })
                         //刷新listreport数据
                         window.uilabKeep = true
                         setCurrentState(null);

@@ -62,7 +62,7 @@ export default (props: any) => {
             setCurrentState(result)
             const currentColumns = parentColumns ? parentColumns : result?.columns
             Array.isArray(currentColumns) && currentColumns.forEach((item) => {
-                const { path, Label, Criticality, CriticalityIsInt, type, Url,IconUrl, value, CriticalityRepresentation } = item || {};
+                const { path, Label, Criticality, CriticalityIsInt, type, Url, IconUrl, value, CriticalityRepresentation } = item || {};
                 switch (type) {
                     case 'UI.DataField':
                         columns?.push({
@@ -175,12 +175,10 @@ export default (props: any) => {
                                     }}
                                     fields={Action?.Fields}
                                     onSubmit={async (body: any) => {
-                                        if (Object.keys(body).length) {
-                                            await Action?.annoRequest({
-                                                body,
-                                                queryEntity: record['@odata.id']
-                                            })
-                                        }
+                                        await Action?.annoRequest({
+                                            body,
+                                            queryEntity: record['@odata.id']
+                                        })
                                         actionRef?.current?.reload();
                                     }}
                                     action={Action}
@@ -407,9 +405,7 @@ export default (props: any) => {
                         }}
                         fields={currentState?.quickCreate?.Fields}
                         onSubmit={async (params: any) => {
-                            if (Object.keys(params).length) {
-                                await currentState?.quickCreate?.annoRequest?.post(params);
-                            }
+                            await currentState?.quickCreate?.annoRequest?.post(params);
                             actionRef?.current?.reload();
                         }}
                     />
@@ -430,15 +426,13 @@ export default (props: any) => {
                                 }}
                                 fields={Action?.Fields}
                                 onSubmit={async (body: any) => {
-                                    if (Object.keys(body).length) {
-                                        await Action.annoRequest({
-                                            body,
-                                            boundActionData: currentSelectedRowsItem,
-                                            currentEntitySet: entitySet,
-                                            queryEntity,
-                                            targetNavigation
-                                        })
-                                    }
+                                    await Action.annoRequest({
+                                        body,
+                                        boundActionData: currentSelectedRowsItem,
+                                        currentEntitySet: entitySet,
+                                        queryEntity,
+                                        targetNavigation
+                                    })
                                     actionRef?.current?.reload();
                                 }}
                                 action={item.Action}
