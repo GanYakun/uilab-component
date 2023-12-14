@@ -80,7 +80,17 @@ export default (props: any) => {
                                     CriticalityRepresentation
                                 }
                                 return <SmartField {...option} />
-                            }
+                            },
+                            onCell: () => {
+                                return {
+                                    style: {
+                                        maxWidth: 150,
+                                        overflow: 'hidden',
+                                        whiteSpace: 'wrap',
+                                        textOverflow: 'ellipsis',
+                                    }
+                                }
+                            },
                         })
                         break;
                     case 'UI.DataFieldWithUrl':
