@@ -62,7 +62,13 @@ const LaunchPad: React.FC = () => {
         <div className='pannel'>
           {
             item?.routes?.map((childItem: any, childIndex: number) => {
-              return <div className='pannel-item' key={`child-${childIndex}`} onClick={() => _historyPush(`${item.path}/${childItem.name}`)}>
+              return <div className='pannel-item' key={`child-${childIndex}`} onClick={() => {
+                if (childItem?.isLink) {
+                  window.open(childItem?.entry)
+                } else {
+                  _historyPush(`${item.path}/${childItem.name}`)
+                }
+              }}>
                 <div style={{ width: "100%" }}>
                   <div>
                     <img width={48} height={48} src={`AppImages/${childItem.name}.png`} onError={(e) => { e.target.onerror = null; e.target.src = 'navigate@2x.png' }} />
