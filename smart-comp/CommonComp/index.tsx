@@ -11,3 +11,5 @@ import Icon from "./Icon";
 import Tour from './Tour'
 
 export { Steps, Icon, Tour }
+
+export default { Steps, Icon, Tour }

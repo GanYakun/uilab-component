@@ -5,58 +5,48 @@ import React from "react"
  * 合并源文件
  * SmartProps 所有的资源
  * children   选择资源地址
- * dataSource {name: string, value: any}[]
+ * dataSource 
  * @returns   整合后的数据
  */
-export const mergeSource = (SmartProps: any, children: string, dataSource?: { name: string, value: any }[]) => {
-    let result: any = {};
+export const mergeSource = (SmartProps: any, children: string, dataSource: any) => {
     if (SmartProps?.length) {
         SmartProps?.forEach((item) => {
             // children判断用于哪个组件
             if (children === item.children) {
                 item.SmartProps?.forEach((childItem) => {
-                    if (!result[childItem.type]) {
-                        result[childItem.type] = [];
-                    }
-                    result[childItem.type].push({
-                        ...childItem.data
-                    });
                     // 传入的资源
                     if (dataSource) {
-                        dataSource?.forEach((e) => {
-                            if (e.name === childItem.type) {
-                                switch (childItem.operate) {
-                                    case "add":
-                                        if (typeof (childItem.index) === "number") {
-                                            e?.value && e?.value?.splice(childItem.index, 0, childItem.data);
-                                        } else {
-                                            e?.value && e?.value.push(childItem.data);
-                                        }
-                                        break;
-                                    case "replace":
-                                        break;
-                                    case "remove":
-                                        break;
-                                    case "addType":
-                                        if (typeof (childItem.index) === "number") {
-                                            e?.value && (e.value[childItem.index] = {
-                                                ...e.value[childItem.index],
-                                                ...childItem.data,
-                                            });
-                                        }
-                                    default:
-                                        break;
-                                }
-                                result[childItem.type] = e.value;
+                        if (dataSource[childItem.property]) {
+                            switch (childItem.operateType) {
+                                case "add":
+                                    if (typeof (childItem.index) === "number") {
+                                        dataSource[childItem.property].splice(childItem.index, 0, childItem.config);
+                                    } else {
+                                        dataSource[childItem.property].push(childItem.config);
+                                    }
+                                    break;
+                                case "replace":
+                                    break;
+                                case "remove":
+                                    break;
+                                case "addType":
+                                    if (typeof (childItem.index) === "number") {
+                                        dataSource[childItem.property][childItem.index] = {
+                                            ...dataSource[childItem.property][childItem.index],
+                                            ...childItem.config,
+                                        };
+                                    }
+                                default:
+                                    break;
                             }
-                        })
+                        }
                     }
                 })
             }
         })
     }
 
-    return result;
+    return dataSource;
 }
 
 export const getSource = (source: string) => {

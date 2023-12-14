@@ -19,7 +19,7 @@ import SmartContactPopover from '../UIComp/SmartContactPopover'
 import { useModel } from 'umi';
 import { defaultImageUrl, imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
-import { Icon, Steps } from '../CommonComp';
+import CommonComp, { Icon, Steps } from '../CommonComp';
 import { Button } from 'antd';
 import CustComp from '../../../../src/components/CustComp';
 
@@ -36,7 +36,10 @@ export default (props) => {
     const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
+    // 控制顶部是否固定
     const [headerStatus, setHeaderStatus] = useState(false);
+    // 控制顶部的header模块是否隐藏
+    const [headerHidden, setHeaderHidden] = useState(false);
     const [loading, setLoading] = useState(true)
     //初始化方法
     const init = async () => {
@@ -55,18 +58,7 @@ export default (props) => {
 
                         // 处理父元素的数据
                         if (SmartProps?.length) {
-                            mergeSource(SmartProps, "", [
-                                {
-                                    "name": "HeaderFacets",
-                                    "value": result.HeaderFacets
-                                },
-                                {
-                                    "name": "Identification",
-                                    "value": result.Identification
-                                }
-                            ]);
-                            // result.HeaderFacets = source.HeaderFacets;
-                            // result.Identification = source.Identification;
+                            result = mergeSource(SmartProps, "", result);
                         }
                         // 默认选中第一个不隐藏的数据
                         if (result.Facets?.length) {
@@ -270,16 +262,6 @@ export default (props) => {
                             </div>
                         )
                     }
-                case "step":
-                    return {
-                        type,
-                        label,
-                        content: (
-                            <div>
-                                <Steps queryEntity={location.query?.queryEntity} isInline={false} />
-                            </div>
-                        )
-                    }
                 case "UI.LineItem":
                     return {
                         type,
@@ -327,16 +309,35 @@ export default (props) => {
         };
         return _renderContent(sectionTargetData, sectionLabel, sectionId);
     }
-
     //头部内容区域
     const _renderHeaderFacetContents = useMemo(() => {
         const contents: any = []
         const { HeaderFacets } = (currentState || {});
         if (HeaderFacets) {
             HeaderFacets.map((item, index) => {
-                const { content, type } = _renderFacetContents(item);
-                if (item.targetData) {
-                    contents.push(<div key={`headerSection${index}`} style={{ marginRight: 32, marginBottom: 16, width: type === 'step' ? '100%' : '' }}>{content}</div>);
+                const { content } = _renderFacetContents(item);
+                let Component = null;
+                if (item.type) {
+                    switch (item.type) {
+                        case "CommonComp":
+                            Component = CommonComp[item.name] || <></>;
+                            contents.push(<div key={`headerSection${index}`} style={{ marginRight: 32, marginBottom: 16, width: item.name === 'Step' ? '100%' : '' }}>
+                                <Component queryEntity={location.query?.queryEntity} isInline={false} />
+                            </div>);
+                            break;
+                        case "CustComp":
+                            Component = CustComp[item.name] || <></>;
+                            contents.push(<div key={`headerSection${index}`} style={{ marginRight: 32, marginBottom: 16, width: item.name === 'Step' ? '100%' : '' }}>
+                                <Component queryEntity={location.query?.queryEntity} isInline={false} />
+                            </div>);
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    if (item.targetData) {
+                        contents.push(<div key={`headerSection${index}`} style={{ marginRight: 32, marginBottom: 16 }}>{content}</div>);
+                    }
                 }
             })
         }
@@ -413,13 +414,14 @@ export default (props) => {
                 record: currentRecord,
             }
             let extra = Identification?.map((item, index) => {
-                switch (item.facetType) {
+                let Component = null;
+                switch (item.type) {
+                    case "CommonComp":
+                        Component = CommonComp[item.name] || <></>;
+                        return <Component record={currentRecord} />
                     // 自定义按钮
-                    case "CustomButton":
-                        const Component = CustComp()[item.facetType];
-                        if (!Component) {
-                            return <></>
-                        }
+                    case "CustComp":
+                        Component = CustComp[item.name] || <></>;
                         return <Component record={currentRecord} />
                     default:
                         return item.isHidden ? null : <SmartModalForm
@@ -451,11 +453,15 @@ export default (props) => {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
                     subTitle: Description && <SmartField {...subTitleOption} />,
+                    avatar: headerHidden && ({
+                        src: currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback,
+                        size: 48
+                    }),
                     extra: extra, // 右侧按钮
                 },
                 content: (
                     <div>
-                        {headerStatus ? null : <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '0 24px' }}>
+                        {headerHidden ? null : <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '0 24px' }}>
                             {
                                 ImageUrl && (
                                     <div style={{ marginRight: 32, marginBottom: 16 }}><Image
@@ -480,13 +486,38 @@ export default (props) => {
                             {_renderHeaderFacetContents}
                         </div>}
                         <div style={{ textAlign: "center" }}>
-                            <Button id="" ghost type="primary" style={{ width: 23, height: 23 }} onClick={() => {
-                                setHeaderStatus(!headerStatus)
-                            }} icon={<div className='btn-icon' id="uilab-ObjectPage-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: "center", height: "100%" }}>
+                            <Button id="" ghost type="primary" style={{ width: 23, height: 23, marginRight: 20 }} onClick={() => {
+                                let bool = !headerHidden;
+                                setHeaderHidden(bool);
+                                setHeaderStatus(bool);
+                                // 滚动到顶部
+                                setTimeout(() => {
+                                    document.documentElement.scrollTo({
+                                        top: 0,
+                                        behavior: 'smooth'  // smooth滚动效果
+                                    });
+                                }, 0)
+                            }} icon={<div className='btn-icon' id={headerHidden ? "uilab-ObjectPage-icon" : "uilab-ObjectPage-icon-left"} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: "center",
+                                height: "100%",
+                            }}>
                                 <Icon name={headerStatus ? "navigation-down-arrow" : "navigation-up-arrow"} />
                             </div>}>
 
                             </Button>
+                            {!headerHidden && <Button id="" ghost type="primary" style={{
+                                width: 23,
+                                height: 23,
+                                background: headerStatus ? "#0854a0" : "",
+                                borderColor: headerStatus ? "#0854a0" : "",
+                            }} onClick={() => {
+                                setHeaderStatus(!headerStatus)
+                            }} icon={<div className={!headerStatus && 'btn-icon'} id="uilab-ObjectPage-icon-right" style={{ display: 'flex', alignItems: 'center', justifyContent: "center", height: "100%" }}>
+                                <Icon name={"pushpin-off"} color={headerStatus ? "#fff" : ""} />
+                            </div>}>
+                            </Button>}
                         </div >
                     </div >
                 ),
@@ -496,10 +527,10 @@ export default (props) => {
         } else {
             return {};
         }
-    }, [activeValue, currentState, currentRecord, headerStatus])
+    }, [activeValue, currentState, currentRecord, headerStatus, headerHidden])
 
     return (
-        <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header'>
+        <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header' className={`${headerStatus ? "uilab-ObjectPage-hide-header" : ""}`}>
             {loading ? <SmartSKeleton /> : <PageContainer
                 fixedHeader={headerStatus}
                 style={{ background: "#f0f2f5" }}
