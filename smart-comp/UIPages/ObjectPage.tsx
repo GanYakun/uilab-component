@@ -417,7 +417,7 @@ export default (props) => {
                     // 自定义按钮
                     case "CustomButton":
                         const Component = CustComp()[item.facetType];
-                        if(!Component) {
+                        if (!Component) {
                             return <></>
                         }
                         return <Component record={currentRecord} />
@@ -456,9 +456,9 @@ export default (props) => {
                 content: (
                     <div>
                         {headerStatus ? null : <div ref={headerContentRef} style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', padding: '0 24px' }}>
-                            <div style={{ marginRight: 32, marginBottom: 16 }}>
-                                {
-                                    ImageUrl && <Image
+                            {
+                                ImageUrl && (
+                                    <div style={{ marginRight: 32, marginBottom: 16 }}><Image
                                         preview={false}
                                         src={currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback}
                                         alt="content"
@@ -474,9 +474,9 @@ export default (props) => {
                                             objectPosition: 'center center'
                                         }}
                                         onClick={() => { }}
-                                    />
-                                }
-                            </div>
+                                    /></div>
+                                )
+                            }
                             {_renderHeaderFacetContents}
                         </div>}
                         <div style={{ textAlign: "center" }}>
