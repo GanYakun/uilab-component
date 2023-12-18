@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-13 18:28:13
+ * @LastEditTime: 2023-12-15 15:37:55
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -41,6 +41,13 @@ export default (props) => {
     // 控制顶部的header模块是否隐藏
     const [headerHidden, setHeaderHidden] = useState(false);
     const [loading, setLoading] = useState(true)
+
+    //ref
+    const liRefList = useRef<any>([])
+    function getRef(dom: any) {
+        liRefList.current.push(dom)
+    }
+
     //初始化方法
     const init = async () => {
         setLoading(true)
@@ -418,34 +425,37 @@ export default (props) => {
                 switch (item.type) {
                     case "CommonComp":
                         Component = CommonComp[item.name] || <></>;
-                        return <Component record={currentRecord} />
+                        return <Component key={`CommonComp${index}`} record={currentRecord} liRefList={liRefList} {...item}/>
                     // 自定义按钮
                     case "CustComp":
                         Component = CustComp[item.name] || <></>;
-                        return <Component record={currentRecord} />
+                        return <Component key={`CommonComp${index}`} record={currentRecord} {...item} />
                     default:
-                        return item.isHidden ? null : <SmartModalForm
-                            key={index}
-                            formType={item.type}
-                            entitySet={entitySet}
-                            content={{
-                                title: item.Label,
-                                btnText: item.Label
-                            }}
-                            action={item.Action}
-                            fields={item.Action?.Fields ? item.Action?.Fields : []}
-                            icon={item.IconUrl}
-                            onSubmit={async (body) => {
-                                await item.Action.annoRequest({
-                                    body,
-                                    queryEntity: location.query.queryEntity
-                                })
-                                //刷新listreport数据
-                                window.uilabKeep = true
-                                setCurrentState(null);
-                                init();
-                            }}
-                        />
+                        return item.isHidden ? null : (
+                            <SmartModalForm
+                                refData={getRef}
+                                key={index}
+                                formType={item.type}
+                                entitySet={entitySet}
+                                content={{
+                                    title: item.Label,
+                                    btnText: item.Label
+                                }}
+                                action={item.Action}
+                                fields={item.Action?.Fields ? item.Action?.Fields : []}
+                                icon={item.IconUrl}
+                                onSubmit={async (body) => {
+                                    await item.Action.annoRequest({
+                                        body,
+                                        queryEntity: location.query.queryEntity
+                                    })
+                                    //刷新listreport数据
+                                    window.uilabKeep = true
+                                    setCurrentState(null);
+                                    init();
+                                }}
+                            />
+                        )
                 }
 
             })
@@ -531,27 +541,29 @@ export default (props) => {
 
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header' className={`${headerStatus ? "uilab-ObjectPage-hide-header" : ""}`}>
-            {loading ? <SmartSKeleton /> : <PageContainer
-                fixedHeader={headerStatus}
-                style={{ background: "#f0f2f5" }}
-                {..._getObjectPageHeaderOptions}
-                tabProps={{
-                    type: "line",
-                    hideAdd: true,
-                    onEdit: (e, action) => console.log(e, action),
-                }}
-                onBack={() => window.history.back()}
-                footer={[
-                    // <Button key="3">重置</Button>
-                ]}
-                onTabChange={(e) => {
-                    setActiveValue(e);
-                }}
-            >
-                <div ref={pageContent}>
-                    {_renderSection}
-                </div>
-            </PageContainer>}
+            {loading ? <SmartSKeleton /> : (
+                <PageContainer
+                    fixedHeader={headerStatus}
+                    style={{ background: "#f0f2f5" }}
+                    {..._getObjectPageHeaderOptions}
+                    tabProps={{
+                        type: "line",
+                        hideAdd: true,
+                        onEdit: (e, action) => console.log(e, action),
+                    }}
+                    onBack={() => window.history.back()}
+                    footer={[
+                        // <Button key="3">重置</Button>
+                    ]}
+                    onTabChange={(e) => {
+                        setActiveValue(e);
+                    }}
+                >
+                    <div ref={pageContent}>
+                        {_renderSection}
+                    </div>
+                </PageContainer>
+            )}
         </div>
     )
 }

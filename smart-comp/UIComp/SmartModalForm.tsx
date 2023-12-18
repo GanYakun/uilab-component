@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-28 14:12:49
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-12 18:18:19
+ * @LastEditTime: 2023-12-15 14:52:02
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartModalForm.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -25,7 +25,8 @@ export default (
         formType,
         action,
         disabled,
-        icon
+        icon,
+        refData
     } = props
     // console.log('smartModalForm-log', {
     //     actionName: action?.name,
@@ -81,7 +82,7 @@ export default (
             layout='vertical'
             title={title}
             trigger={
-                <Button disabled={disabled} type={btnType ? btnType : 'primary'} ghost>
+                <Button ref={refData} id={action?.name} disabled={disabled} type={btnType ? btnType : 'primary'} ghost>
                     <div style={{ display: 'flex' }} className="btn-icon">
                         {icon ? <span style={{ marginRight: 5, display: 'flex', alignItems: 'center' }}><Icon name={icon} /></span> : null}
                         {btnText}
