@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-14 13:56:27
+ * @LastEditTime: 2023-12-19 13:11:48
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1115,6 +1115,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
         TargetType: null as any,
         NavigationPropertyPath: null as any,
         fn: null as any,
+        org: null as any,
         tel: null as any,
         email: null as any,
         photo: null as any,
@@ -1213,6 +1214,9 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                     case 'fn':
                         result.fn = getTextValueByData('path', a)
                         break;
+                    case 'org':
+                        result.org = getTextValueByData('path', a)
+                        break;
                     case 'tel':
                         result.tel = collection
                         break;
@@ -1220,7 +1224,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                         result.email = collection
                         break;
                     case 'photo':
-                        result.photo = getTextValueByData('string', a)
+                        result.photo = getTextValueByData('string', a) || getTextValueByData('path', a)
                         break;
                     case 'type':
                         result.type = getTextValueByData('enumMember', a)
@@ -1938,12 +1942,12 @@ const getBatchPath = ({ obj, record, PrimaryKeys }) => {
     let result, str = ''
 
     //判断是日期类型
-    const _isDateTime = (name) => {
+    const _isDateTime = (name: any) => {
         return record[`${name}@odata.type`] === '#DateTimeOffset'
     }
 
     //判断是否为数字类型minimumOrderQuantity@odata.type:"#Decimal"
-    const _isNumber = (name) => {
+    const _isNumber = (name: any) => {
         return record[`${name}@odata.type`] === '#Decimal'
     }
 
@@ -1951,7 +1955,7 @@ const getBatchPath = ({ obj, record, PrimaryKeys }) => {
         if (PrimaryKeys.length === 1) {
             str = `'${record[PrimaryKeys[0]]}'`
         } else {
-            PrimaryKeys.map((name, index) => {
+            PrimaryKeys.map((name: string | number, index: number) => {
 
                 let value
                 //判断是否为日期格式
@@ -2166,19 +2170,29 @@ const isMultiSelect = (action: { Fields: any; }, path: any) => {
 }
 
 //获取通信联系人配置项
-const getCommunicationContact = (data, targetNavigation, NavigationEntitySet, NavigationEntitySetPrimaryKeys) => {
-    const { fn, tel, email, photo } = data
-    const Fields = [fn, ...NavigationEntitySetPrimaryKeys], Cells: any = []
+const getCommunicationContact = (
+    data: any,
+    targetNavigation: string | undefined,
+    NavigationEntitySet: any,
+    NavigationEntitySetPrimaryKeys: any[] | undefined
+) => {
+    const { fn, org, tel, email, photo } = data
+    const Fields: any = [fn, org, photo, ...NavigationEntitySetPrimaryKeys], Cells: any = []
+    if (org){
+        Cells.push({ type: 'Org', value: org, label: <FormattedMessage id="smart.Contact.Org" defaultMessage="Org" /> })
+    }
     if (tel) {
         for (let a of tel) {
             const { record } = a
             for (let b of record) {
-                const { type, propertyValue } = b
+                const { type, propertyValue,  } = b
                 if (type === 'Communication.PhoneNumberType') {
-                    const { type, uri } = parsePropertyValue(propertyValue)
+                    const { type, uri, } = parsePropertyValue(propertyValue)
+                    const { currentAnnotations} = getEntitySetConfig(NavigationEntitySet, uri)
+                    const Label=getLabelByAnnotation(currentAnnotations)
                     if (uri) {
                         Fields.push(uri)
-                        Cells.push({ type, value: uri, label: <FormattedMessage id="smart.Contact.Mobile" defaultMessage="Mobile" /> })
+                        Cells.push({ type, value: uri, label: Label ? Label: <FormattedMessage id="smart.Contact.Mobile" defaultMessage="Mobile" /> })
                     }
                 }
             }
@@ -2208,7 +2222,7 @@ const getCommunicationContact = (data, targetNavigation, NavigationEntitySet, Na
         path: `${targetNavigation}/${fn}`,
         entityType: targetNavigation,
         entitySet: NavigationEntitySet,
-        annoRequest: async (path) => {
+        annoRequest: async (path: any) => {
             let option = {
                 path,
                 method: 'GET',
