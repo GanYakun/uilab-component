@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-19 13:11:48
+ * @LastEditTime: 2023-12-20 11:27:06
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -754,58 +754,61 @@ const getFieldDisplayValueAndCurrentValue = (
     }
 
     //判断是否为object,普通字符串直接返回
-    if (record instanceof Object && fieldValue) {
-        if (fieldValue.search('/') === -1) {
-            if (pathText) {
-                if (pathText.search('/') === -1) {
-                    currentPathText = pathText
-                    const value1 = record[pathText];
-                    const value2 = record[fieldValue];
-                    displayValue = _getReadonlyText(value1, value2);
-                    currentValue = value2;
-                } else {
-                    const arr = pathText.split('/');
-                    const value1 = _getRecordDataByTargetArr(record, arr)
-                    currentPathText = value1
-                    const value2 = record[fieldValue];
+    if (fieldValue){
+        if (record instanceof Object) {
+            if (fieldValue.search('/') === -1) {
+                if (pathText) {
+                    if (pathText.search('/') === -1) {
+                        currentPathText = pathText
+                        const value1 = record[pathText];
+                        const value2 = record[fieldValue];
+                        displayValue = _getReadonlyText(value1, value2);
+                        currentValue = value2;
+                    } else {
+                        const arr = pathText.split('/');
+                        const value1 = _getRecordDataByTargetArr(record, arr)
+                        currentPathText = value1
+                        const value2 = record[fieldValue];
 
-                    displayValue = _getReadonlyText(value1, value2);
-                    currentValue = value2;
+                        displayValue = _getReadonlyText(value1, value2);
+                        currentValue = value2;
+                    }
+                } else {
+                    currentPathText = fieldValue
+                    displayValue = record[fieldValue];
+                    currentValue = record[fieldValue];
                 }
             } else {
-                currentPathText = fieldValue
-                displayValue = record[fieldValue];
-                currentValue = record[fieldValue];
+                let arr = fieldValue.split('/');
+                let arr1 = fieldValue.split('/')
+                if (pathText) {
+                    arr = lodash.dropRight(arr, 1).concat(pathText.split('/'))
+                }
+                const value1 = _getRecordDataByTargetArr(record, arr)
+                const value2 = _getRecordDataByTargetArr(record, arr1)
+                //处理字段是列表
+                if (value1 instanceof Array) {
+                    const arr: any[] = []
+                    value1.map((item, index) => {
+                        arr.push(_getReadonlyText(item, value2[index]))
+                    })
+                    displayValue = arr
+                } else {
+                    displayValue = _getReadonlyText(value1, value2);
+                }
+
+                currentValue = value2;
             }
         } else {
-            let arr = fieldValue.split('/');
-            let arr1 = fieldValue.split('/')
-            if (pathText) {
-                arr = lodash.dropRight(arr, 1).concat(pathText.split('/'))
-            }
-            const value1 = _getRecordDataByTargetArr(record, arr)
-            const value2 = _getRecordDataByTargetArr(record, arr1)
-            //处理字段是列表
-            if (value1 instanceof Array) {
-                const arr: any[] = []
-                value1.map((item, index) => {
-                    arr.push(_getReadonlyText(item, value2[index]))
-                })
-                displayValue = arr
-            } else {
-                displayValue = _getReadonlyText(value1, value2);
-            }
-
-            currentValue = value2;
+            console.log({ record, fieldValue })
+            // currentPathText = record
+            // displayValue = record;
+            // currentValue = record;
         }
-    } else {
-        currentPathText = record
-        displayValue = record;
-        currentValue = record;
     }
 
     //日期类型需要格式化
-    if (currentValue) {
+    if (currentValue && currentPropertyType) {
         if (currentPropertyType === 'Edm.DateTimeOffset') {
             currentValue = moment(currentValue, 'YYYY-MM-DD HH:mm:ss').utcOffset(-480 + 1440);
             displayValue = moment(currentValue).format('YYYY-MM-DD HH:mm:ss')
