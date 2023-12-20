@@ -36,7 +36,7 @@ const _getAnnoSelectionFields = (entitySet: any, currentAnnotations: any[]) => {
         result.push({
             show: true,
             path: text,
-            label: label
+            label: label ? label : text
         })
     })
 
@@ -47,6 +47,10 @@ export const getConfig = async (params: { entitySet: string }) => {
     const { entitySet } = params
     const { currentAnnotations } = Utils.getEntitySetConfig(entitySet)
     const annoSelectionFields = _getAnnoSelectionFields(entitySet, currentAnnotations)
+    console.log('SmartFiterBar',{
+        annoSelectionFields
+    })
+
     return {
         annoSelectionFields
     }

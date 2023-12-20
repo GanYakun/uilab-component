@@ -2,14 +2,13 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-11-27 13:58:56
+ * @LastEditTime: 2023-12-20 11:11:51
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartFilterBar'
-// import { DownOutlined, UpOutlined } from '@ant-design/icons';
-import { ProFormText, ProFormTreeSelect, QueryFilter } from '@ant-design/pro-components';
+import { QueryFilter } from '@ant-design/pro-components';
 import SmartField from './SmartField';
 
 type AdvancedSearchProps = {
@@ -37,7 +36,6 @@ export default (props: AdvancedSearchProps) => {
             <QueryFilter
                 formRef={formRef}
                 layout='vertical'
-                // defaultCollapsed
                 split
                 onFinish={async (values) => {
                     if (setSearchVal) {
@@ -48,11 +46,14 @@ export default (props: AdvancedSearchProps) => {
                         setSearchVal("")
                     }
                 }}>
-                {currentState ? currentState.annoSelectionFields?.map((item, index) => {
+                {currentState ? currentState.annoSelectionFields?.map((item: { path: any; label: any; }, index: any) => {
+                    const { path, label } = item
                     const option = {
                         entitySet,
-                        path: item.path,
-                        formRef
+                        path,
+                        formRef,
+                        label,
+                        inFilterBar:true
                     }
                     return <div key={`filter-${index}`}>
                         <SmartField {...option} />

@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-11 14:36:28
+ * @LastEditTime: 2023-12-20 11:13:41
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -261,6 +261,7 @@ const _setFieldValue = (
     isReadOnly: any,
     dataPoint = null,
     DataFieldWithUrl: any,
+    inFilterBar: boolean
 ) => {
     let result = {
         fieldType: 'Text',
@@ -308,7 +309,7 @@ const _setFieldValue = (
 
     //判断是否是长文本
     if (Utils.getTermAnnotations(currentAnnotations, 'UI.MultiLineText')) {
-        result.fieldType = 'TextArea';
+        result.fieldType = inFilterBar ? 'Text' : 'TextArea';//是否在fitterBar内
     }
 
     //下拉选择 通过annotation 设置对应的查询对象、显示字段信息
@@ -501,10 +502,11 @@ export const getConfig = async (params: {
     nullable?: any;
     stateTree: any;
     DataFieldWithUrl: any;
+    inFilterBar: boolean
 }) => {
-    const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree, DataFieldWithUrl } = params
+    const { record, entitySet, path, isReadOnly, action, dataPoint, stateTree, DataFieldWithUrl, inFilterBar } = params
     const { currentAnnotations, currentPropertyType, namespace, currentEntitySetData } = Utils.getEntitySetConfig(entitySet, path, action?.name)
-    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint, DataFieldWithUrl)
+    const { fieldType, valueListConfig } = _setFieldValue(currentAnnotations, currentPropertyType, isReadOnly, dataPoint, DataFieldWithUrl, inFilterBar)
     const { displayValue, currentValue } = Utils.getFieldDisplayValueAndCurrentValue(record, path, currentAnnotations, currentPropertyType)
     const Label = Utils.getLabelByAnnotation(currentAnnotations)
     const nullable = isNullable(currentAnnotations, entitySet, path)
