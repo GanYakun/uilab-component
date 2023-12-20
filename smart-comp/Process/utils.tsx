@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 12:22:19
+ * @LastEditTime: 2023-12-20 14:04:10
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -197,7 +197,7 @@ const getEntitySetConfig = (currentEntitySetName: string, currentPath = null as 
         currentEntityTypeData: null as any,
         currentPropertyType: null as any,
         currentAnnotations: null as any,
-        currentStickySessionData: null,
+        currentStickySessionData: null as any,
         currentSortRestrictions: null,
         namespace: null as any,
     };
@@ -306,6 +306,45 @@ const getEntitySetConfig = (currentEntitySetName: string, currentPath = null as 
                 }
             }
         }
+
+        //解析com.sap.vocabularies.Session.v1.StickySessionSupported,得到currentStickySessionData
+        let entityContainerAntotations = null, StickySessionData
+        if (result.currentEntitySetName) {
+
+            //contatiner 中的annotations
+            entityContainerAntotations = getAnnotationByTarget(
+                annotations,
+                `${namespace}.${entityContainer.name}/${result.currentEntitySetName}`,
+            )
+            //console.log({ entityContainerAntotations, currentAnnotations: result.currentAnnotations })
+            //合并currentAnotations
+            if (entityContainerAntotations && entityContainerAntotations.length > 0) {
+                result.currentAnnotations = result.currentAnnotations ? result.currentAnnotations.concat(entityContainerAntotations) : entityContainerAntotations
+            }
+
+            //stickSessionData Session.StickySessionSupported
+            StickySessionData = getTermAnnotations(
+                entityContainerAntotations,
+                `com.sap.vocabularies.Session.v1.StickySessionSupported`,
+            ) || getTermAnnotations(
+                entityContainerAntotations,
+                `Session.StickySessionSupported`,
+            )
+            if (StickySessionData && StickySessionData.record) {
+                //console.log({ StickySessionData, entityContainerAntotations })
+                const { record } = StickySessionData
+                const obj = {}
+                for (let a of record) {
+                    const { propertyValue } = a
+                    for (let b of propertyValue) {
+                        const { property, string } = b
+                        obj[property] = getTextValueByData('string', b)
+                    }
+                }
+                result.currentStickySessionData = obj
+            }
+        }
+
     }
 
     return result;

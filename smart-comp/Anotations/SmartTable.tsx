@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-14 14:00:40
+ * @LastEditTime: 2023-12-20 14:07:10
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -269,7 +269,7 @@ const _setRequest = (entitySet: string, columns: any, Criticality: string) => {
 
 export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
     const { entitySet, qualifier } = params
-    const { currentAnnotations, currentEntityTypeData, currentEntitySetData } = Utils.getEntitySetConfig(entitySet)
+    const { currentAnnotations, currentStickySessionData, currentEntitySetData } = Utils.getEntitySetConfig(entitySet)
     const { columns, inLineBtns, headerBtns, Criticality } = getTableConfig(currentAnnotations, entitySet, qualifier, currentEntitySetData)
     const annoRequest = _setRequest(entitySet, columns, Criticality)
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
@@ -282,7 +282,8 @@ export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
         quickCreate,
         currentAnnotations,
         qualifier,
-        Criticality
+        Criticality,
+        currentStickySessionData
     })
     return {
         entitySet,
@@ -292,5 +293,6 @@ export const getConfig = async (params: { entitySet: any; qualifier: any }) => {
         headerBtns,
         quickCreate,//是否配置快速创建
         Criticality,//是否配置高亮
+        currentStickySessionData
     }
 }

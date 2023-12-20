@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 12:09:10
+ * @LastEditTime: 2023-12-20 14:05:46
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -160,7 +160,7 @@ const _setRequest = (entitySet: any, tabs: any[]) => {
 
 export const getConfig = async () => {
     const { entitySet, navigationRoute, views, goupName, appName } = await _getManifestConfig()
-    const { currentAnnotations, currentEntityTypeData } = Utils.getEntitySetConfig(entitySet)
+    const { currentAnnotations, currentEntityTypeData, currentStickySessionData } = Utils.getEntitySetConfig(entitySet)
     const { tabs, showCounts } = _setTabs(views, currentAnnotations, currentEntityTypeData)
     const annoRequest = _setRequest(entitySet, tabs)
     console.log('ListReport-Log', {
@@ -172,7 +172,8 @@ export const getConfig = async () => {
         navigationRoute,
         annoRequest,
         views,
-        getLocale: getLocale()
+        getLocale: getLocale(),
+        currentStickySessionData
     })
     return {
         entitySet,
@@ -180,6 +181,7 @@ export const getConfig = async () => {
         showCounts,//是否显示tab内table的行数
         navigationRoute,
         annoRequest,
-        title: <FormattedMessage id={`menu.${goupName}.${appName}`} />
+        title: <FormattedMessage id={`menu.${goupName}.${appName}`} />,
+        currentStickySessionData
     }
 }
