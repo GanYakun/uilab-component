@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 11:27:06
+ * @LastEditTime: 2023-12-20 11:40:26
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -754,7 +754,7 @@ const getFieldDisplayValueAndCurrentValue = (
     }
 
     //判断是否为object,普通字符串直接返回
-    if (fieldValue){
+    if (fieldValue) {
         if (record instanceof Object) {
             if (fieldValue.search('/') === -1) {
                 if (pathText) {
@@ -1095,6 +1095,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
         ID: '' as any,
         Label: '' as any,
         Value: '' as any,
+        String: '' as any,//直接写值的情况
         Title: '' as any,
         Description: null as any,
         ImageUrl: '' as any,
@@ -1156,6 +1157,7 @@ const parsePropertyValue = (data: any, entitySetName = '') => {
                         break;
                     case 'Value':
                         result.Value = getTextValueByData('path', a)
+                        result.String = getTextValueByData('string', a)
                         //当前LineItem上的Label优先级最高，如果未设置去查询当前字段时候配置Label 关联对象label
                         if (!result.Label) {
                             const { currentAnnotations } = getEntitySetConfig(entitySetName, result.Value)
@@ -1328,10 +1330,11 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url, IconUrl } = parsePropertyValue(propertyValue)
+                            const { Value,String, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url, IconUrl } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
                                 Value: targetNavigation ? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
+                                String,
                                 Criticality,
                                 CriticalityIsInt,
                                 CriticalityRepresentation,
@@ -2181,21 +2184,21 @@ const getCommunicationContact = (
 ) => {
     const { fn, org, tel, email, photo } = data
     const Fields: any = [fn, org, photo, ...NavigationEntitySetPrimaryKeys], Cells: any = []
-    if (org){
+    if (org) {
         Cells.push({ type: 'Org', value: org, label: <FormattedMessage id="smart.Contact.Org" defaultMessage="Org" /> })
     }
     if (tel) {
         for (let a of tel) {
             const { record } = a
             for (let b of record) {
-                const { type, propertyValue,  } = b
+                const { type, propertyValue, } = b
                 if (type === 'Communication.PhoneNumberType') {
                     const { type, uri, } = parsePropertyValue(propertyValue)
-                    const { currentAnnotations} = getEntitySetConfig(NavigationEntitySet, uri)
-                    const Label=getLabelByAnnotation(currentAnnotations)
+                    const { currentAnnotations } = getEntitySetConfig(NavigationEntitySet, uri)
+                    const Label = getLabelByAnnotation(currentAnnotations)
                     if (uri) {
                         Fields.push(uri)
-                        Cells.push({ type, value: uri, label: Label ? Label: <FormattedMessage id="smart.Contact.Mobile" defaultMessage="Mobile" /> })
+                        Cells.push({ type, value: uri, label: Label ? Label : <FormattedMessage id="smart.Contact.Mobile" defaultMessage="Mobile" /> })
                     }
                 }
             }

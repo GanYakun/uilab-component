@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-12 13:46:38
+ * @LastEditTime: 2023-12-20 12:09:10
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -111,7 +111,7 @@ const _setTabs = (views: { showCounts?: any; paths?: any; }, currentAnnotations:
                     tabs.push({ Presentation: { ...PresentationVariantResult, } })
                     break;
                 case 'com.sap.vocabularies.UI.v1.SelectionPresentationVariant':
-                    const SelectionPresentationVariantIdx = currentAnnotations.findIndex((item) => {
+                    const SelectionPresentationVariantIdx = currentAnnotations?.findIndex((item) => {
                         const { qualifier: currentQualifier, term } = item
                         return currentQualifier === qualifier && term === 'UI.SelectionPresentationVariant'
                     })

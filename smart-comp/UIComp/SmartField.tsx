@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 11:12:11
+ * @LastEditTime: 2023-12-20 12:05:32
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -39,8 +39,10 @@ export default (props: any) => {
         rules, // 是否为必填字段
         nullable,
         label: parentLabel,
-        inFilterBar
+        inFilterBar,
+        displayValue: parentDisplayValue,
     } = props;
+
     let { initialState, setInitialState } = useModel('@@initialState');
     const [currentState, setCurrentState] = useState<any>()
 
@@ -224,13 +226,18 @@ export default (props: any) => {
     };
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        const { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
+        let { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
         const { Criticality: DataPointCriticality, TargetValue } = dataPoint || {}//dataPoint相关参数
 
         //设置默认值
         if (defaultValue) {
             currentFieldProps.initialValue = defaultValue;
         }
+
+        if (parentDisplayValue){
+            displayValue=parentDisplayValue
+        }
+        
         let color = "";
         if (record) {
             if (CriticalityIsInt) {

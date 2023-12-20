@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-15 15:37:55
+ * @LastEditTime: 2023-12-20 12:07:34
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,19 +17,19 @@ import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import SmartContactPopover from '../UIComp/SmartContactPopover'
 import { useModel } from 'umi';
-import { defaultImageUrl, imageFallback } from '../Process/config'
+import { imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
-import CommonComp, { Icon, Steps } from '../CommonComp';
+import CommonComp, { Icon } from '../CommonComp';
 import { Button } from 'antd';
 import CustComp from '../../../../src/components/CustComp';
 
-export default (props) => {
+export default (props: any) => {
     let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
     const SmartProps = useMemo(() => {
         return getSource("ObjectPage") || []
     }, []);
-    const [currentState, setCurrentState] = useState<{ entitySet: string, HeaderInfo: any, HeaderFacets: any, Facets: any, Identification: any }>()
+    const [currentState, setCurrentState] = useState<any>()
     //数据暂存
     const [currentRecord, setCurrentRecord] = useState<any>(null);
     // 展示的数据 默认设置为第一条数据的id, 根据id进行展示
@@ -70,7 +70,7 @@ export default (props) => {
                         // 默认选中第一个不隐藏的数据
                         if (result.Facets?.length) {
                             // 过滤隐藏的数据
-                            result.Facets = result.Facets.filter((e) => (!e.isHidden));
+                            result.Facets = result.Facets.filter((e: { isHidden: any; }) => (!e.isHidden));
                             if (!activeValue) {
                                 setActiveValue("tabs-" + 0);
                             }
@@ -85,7 +85,7 @@ export default (props) => {
         !currentState && init();
     }, [])
     //获取详情页数据
-    const _fetch = async (saveState) => {
+    const _fetch = async (saveState: { entitySet?: any; HeaderInfo?: boolean | { ID: any; Label: any; Value: any; String: any; Title: any; Description: any; ImageUrl: any; IconUrl: any; Target: any; TypeName: any; TypeNamePlural: any; Criticality: any; CriticalityIsInt: any; CriticalityRepresentation: any; SemanticObject: any; Action: any; Facets: any; Data: any; TargetValue: any; Visualization: any; ValueFormat: any; MaximuValue: any; Inline: any; Url: any; TargetType: any; NavigationPropertyPath: any; fn: any; org: any; tel: any; email: any; photo: any; type: any; address: any; uri: any; }; HeaderFacets?: any; Facets?: any; annoRequest: any; Identification?: any; quickCreate?: boolean | { ID: null; Label: null; Target: any; Fields: any; ImmutableFields: any; annoRequest: any; type: string; }; currentEntityTypeData: any; goupName?: any; routeName?: any; }) => {
         const { annoRequest, currentEntityTypeData } = saveState;
         const result = await annoRequest()
         if (result) {
@@ -105,13 +105,19 @@ export default (props) => {
             // umiHistory.goBack()
         }
     }
-    //解析并渲染facet内容
-    const _renderFacetContents = (sectionItem, bool) => {
-        const { id: sectionId, label: sectionLabel, targetData: sectionTargetData, isHidden } = sectionItem;
-        const _renderContent = (contentValue, label, id) => {
+    //解析并渲染facet内容 bool：false 为 headerFacets
+    const _renderFacetContents = (sectionItem: any, bool?: boolean) => {
+        const {
+            id: sectionId,
+            label: sectionLabel,
+            targetData: sectionTargetData,
+            isHidden
+        } = sectionItem;
+
+        const _renderContent = (contentValue: any, label: any, id: string) => {
             if (!contentValue || isHidden) return {}
             const { facetType: type, value } = contentValue;
-            let extra = sectionTargetData?.Fields?.find((e) => (e.type === "UI.DataFieldForAction"));
+            let extra = sectionTargetData?.Fields?.find((e: any) => (e.type === "UI.DataFieldForAction"));
             let renderExtra: any = null;
             if (extra) {
                 renderExtra = <SmartModalForm
@@ -124,7 +130,7 @@ export default (props) => {
                     }}
                     action={extra.Action}
                     fields={extra.Action.Fields}
-                    onSubmit={async (body) => {
+                    onSubmit={async (body: any) => {
                         await extra.Action.annoRequest({
                             body,
                             queryEntity: location.query.queryEntity
@@ -153,15 +159,17 @@ export default (props) => {
                                         <ProForm submitter={false} grid={true}>
                                             <ProFormGroup>
                                                 {
-                                                    sectionTargetData?.Fields?.map((childItem, childIndex) => {
+                                                    sectionTargetData?.Fields?.map((childItem: any, childIndex: number) => {
+                                                        const { type, Value, String } = childItem
                                                         const option = {
                                                             isReadOnly: true,
                                                             entitySet: currentState?.entitySet,
-                                                            path: childItem.Value,
+                                                            path: Value,
                                                             record: currentRecord,
-                                                            showLabel: true
+                                                            showLabel: true,
+                                                            displayValue: String
                                                         }
-                                                        if (childItem.type === "UI.DataField") {
+                                                        if (type === "UI.DataField") {
                                                             return <SmartField {...option} key={`card-${childIndex}`} />
                                                         } else if (childItem.type === "UI.DataFieldForAction") {
                                                             return <React.Fragment key={`card-${childIndex}`}></React.Fragment>
@@ -183,8 +191,17 @@ export default (props) => {
                         content: (
                             <div>
                                 <div style={{ fontSize: 16, fontFamily: `"72","72full",Arial,Helvetica,sans-serif`, marginBottom: 10, color: "var(--ant-primary-8)" }}>{label}</div>
-                                {sectionTargetData?.Fields?.map((item, index) => {
-                                    const { type, Url, IconUrl, Value, Criticality, CriticalityIsInt, CriticalityRepresentation } = item
+                                {sectionTargetData?.Fields?.map((item: any, index: any) => {
+                                    const {
+                                        type,
+                                        Url,
+                                        IconUrl,
+                                        Value,
+                                        String,
+                                        Criticality,
+                                        CriticalityIsInt,
+                                        CriticalityRepresentation
+                                    } = item
                                     switch (type) {
                                         case "UI.DataField":
                                             const option = {
@@ -195,7 +212,8 @@ export default (props) => {
                                                 showLabel: true,
                                                 Criticality,
                                                 CriticalityIsInt,
-                                                CriticalityRepresentation
+                                                CriticalityRepresentation,
+                                                displayValue: String
                                             }
                                             return <div id={`target-${index}`} key={`target-${index}-${id}`}>
                                                 <ProFormGroup>
@@ -314,6 +332,7 @@ export default (props) => {
                     return {};
             }
         };
+
         return _renderContent(sectionTargetData, sectionLabel, sectionId);
     }
     //头部内容区域
@@ -321,7 +340,7 @@ export default (props) => {
         const contents: any = []
         const { HeaderFacets } = (currentState || {});
         if (HeaderFacets) {
-            HeaderFacets.map((item, index) => {
+            HeaderFacets.map((item: any, index: any) => {
                 const { content } = _renderFacetContents(item);
                 let Component = null;
                 if (item.type) {
@@ -355,14 +374,14 @@ export default (props) => {
     const _renderSection = useMemo(() => {
         const { Facets } = (currentState || {});
         if (Facets) {
-            return Facets.map((item, index) => {
+            return Facets.map((item: any, index: string) => {
                 const { childfacets } = (item || {});
                 if (("tabs-" + index) === activeValue) {
                     // 循环多层
                     if (childfacets) {
                         return (
                             <React.Fragment key={`Facets-${index}`}>
-                                {childfacets.map((targetItem, targetIndex) => {
+                                {childfacets.map((targetItem: any, targetIndex: any) => {
                                     const { content } = _renderFacetContents(targetItem, true);
                                     return (
                                         <React.Fragment key={`Facets-${index}-${targetIndex}`}>
@@ -394,7 +413,7 @@ export default (props) => {
         let { Facets } = (currentState || {});
         let arr: any[] = [];
         // 切换的列表大于1时才显示
-        Facets?.length > 1 && Facets.forEach((item, i) => {
+        Facets?.length > 1 && Facets.forEach((item: { isHidden: any; label: any; }, i: string) => {
             !item.isHidden && arr.push({
                 tab: item.label,
                 key: "tabs-" + i,
@@ -420,12 +439,12 @@ export default (props) => {
                 path: Description.Value,
                 record: currentRecord,
             }
-            let extra = Identification?.map((item, index) => {
+            let extra = Identification?.map((item: JSX.IntrinsicAttributes, index: React.Key | null | undefined) => {
                 let Component = null;
                 switch (item.type) {
                     case "CommonComp":
                         Component = CommonComp[item.name] || <></>;
-                        return <Component key={`CommonComp${index}`} record={currentRecord} liRefList={liRefList} {...item}/>
+                        return <Component key={`CommonComp${index}`} record={currentRecord} liRefList={liRefList} {...item} />
                     // 自定义按钮
                     case "CustComp":
                         Component = CustComp[item.name] || <></>;
@@ -444,7 +463,7 @@ export default (props) => {
                                 action={item.Action}
                                 fields={item.Action?.Fields ? item.Action?.Fields : []}
                                 icon={item.IconUrl}
-                                onSubmit={async (body) => {
+                                onSubmit={async (body: any) => {
                                     await item.Action.annoRequest({
                                         body,
                                         queryEntity: location.query.queryEntity
