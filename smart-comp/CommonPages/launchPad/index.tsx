@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-08-04 18:10:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-14 11:16:55
+ * @LastEditTime: 2023-12-20 13:42:37
  * @FilePath: /qiankun/uiLab/apps/launchPad/src/pages/LaunchPad.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -73,7 +73,7 @@ const LaunchPad: React.FC = () => {
                 }}>
                   <div style={{ width: "100%" }}>
                     <div>
-                      <img width={48} height={48} src={`AppImages/${childItem.name}.png`} onError={(e) => { e.target.onerror = null; e.target.src = 'navigate@2x.png' }} />
+                      <img width={32} height={32} src={`AppImages/${childItem.name}.png`} onError={(e) => { e.target.onerror = null; e.target.src = 'navigate@2x.png' }} />
                     </div>
                     <div className='title'><FormattedMessage id={`menu.${item.name}.${childItem.name}`} /></div>
                     <div className='description'></div>
@@ -81,12 +81,11 @@ const LaunchPad: React.FC = () => {
                   <div className='tags'>
                     {tagEnum[childItem.name]}
                   </div>
-                  <div className='bottom'>
+                  {/* <div className='bottom'>
                     <img className='navigate' src='navigate@2x.png' />
-                  </div>
+                  </div> */}
                 </div>
               )
-
             })
           }
         </div>
