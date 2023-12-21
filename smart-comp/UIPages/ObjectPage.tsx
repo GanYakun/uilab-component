@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 12:07:34
+ * @LastEditTime: 2023-12-21 11:13:32
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@ import { PageContainer } from '@ant-design/pro-layout';
 import { Card, Image } from 'ant5';
 import SmartField from '../UIComp/SmartField';
 import SmartTable from '../UIComp/SmartTable';
+import SmartEditableTable from '../UIComp/SmartEditableTable';
 import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
@@ -26,23 +27,30 @@ import CustComp from '../../../../src/components/CustComp';
 export default (props: any) => {
     let { initialState, setInitialState } = useModel('@@initialState');
     const { location } = props;
-    const SmartProps = useMemo(() => {
-        return getSource("ObjectPage") || []
-    }, []);
-    const [currentState, setCurrentState] = useState<any>()
-    //数据暂存
+    const [currentState, setCurrentState] = useState<any>(null)
     const [currentRecord, setCurrentRecord] = useState<any>(null);
-    // 展示的数据 默认设置为第一条数据的id, 根据id进行展示
+
+    //展示的数据 默认设置为第一条数据的id, 根据id进行展示
     const [activeValue, setActiveValue] = useState("");
     const headerContentRef = useRef<any>();
     const pageContent = useRef<any>();
-    // 控制顶部是否固定
+
+    //Form props
+
+
+    //控制顶部是否固定
     const [headerStatus, setHeaderStatus] = useState(false);
-    // 控制顶部的header模块是否隐藏
+
+    //控制顶部的header模块是否隐藏
     const [headerHidden, setHeaderHidden] = useState(false);
     const [loading, setLoading] = useState(true)
 
-    //ref
+    //获取配置
+    const SmartProps = useMemo(() => {
+        return getSource("ObjectPage") || []
+    }, []);
+
+    //tour:RefList
     const liRefList = useRef<any>([])
     function getRef(dom: any) {
         liRefList.current.push(dom)
@@ -85,7 +93,7 @@ export default (props: any) => {
         !currentState && init();
     }, [])
     //获取详情页数据
-    const _fetch = async (saveState: { entitySet?: any; HeaderInfo?: boolean | { ID: any; Label: any; Value: any; String: any; Title: any; Description: any; ImageUrl: any; IconUrl: any; Target: any; TypeName: any; TypeNamePlural: any; Criticality: any; CriticalityIsInt: any; CriticalityRepresentation: any; SemanticObject: any; Action: any; Facets: any; Data: any; TargetValue: any; Visualization: any; ValueFormat: any; MaximuValue: any; Inline: any; Url: any; TargetType: any; NavigationPropertyPath: any; fn: any; org: any; tel: any; email: any; photo: any; type: any; address: any; uri: any; }; HeaderFacets?: any; Facets?: any; annoRequest: any; Identification?: any; quickCreate?: boolean | { ID: null; Label: null; Target: any; Fields: any; ImmutableFields: any; annoRequest: any; type: string; }; currentEntityTypeData: any; goupName?: any; routeName?: any; }) => {
+    const _fetch = async (saveState: any) => {
         const { annoRequest, currentEntityTypeData } = saveState;
         const result = await annoRequest()
         if (result) {
@@ -403,9 +411,8 @@ export default (props: any) => {
                     return <React.Fragment key={`Facets-${index}`}></React.Fragment>
                 }
             })
-        } else {
-            return <div></div>
         }
+        return <div />
     }, [activeValue, currentState, currentRecord])
 
     // 解析tab数据
@@ -482,9 +489,9 @@ export default (props: any) => {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
                     subTitle: Description && <SmartField {...subTitleOption} />,
-                    avatar: headerHidden && ({
+                    avatar: headerHidden && currentRecord[ImageUrl] && ({
                         src: currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback,
-                        size: 48
+                        shape: 'square',
                     }),
                     extra: extra, // 右侧按钮
                 },
@@ -550,13 +557,81 @@ export default (props: any) => {
                         </div >
                     </div >
                 ),
-                tabList: _getObjectPageTabOptions() || [],
+                tabList: currentState?.currentStickySessionData ? null : _getObjectPageTabOptions() || [],
                 tabActiveKey: activeValue ? activeValue : "",
             }
-        } else {
-            return {};
         }
+        return {};
     }, [activeValue, currentState, currentRecord, headerStatus, headerHidden])
+
+    const _renderForm = useMemo(() => {
+        let { Facets } = (currentState || {})
+        const _renderFacetsForm = () => {
+            return Facets && Facets.map((item: any, index: number) => {
+                const { label, id, targetData } = item;
+                const _renderFormGroup = () => {
+                    const { facetType, Fields, targetEntitySet, targetNavigation, targetQualifier } = targetData
+                    switch (facetType) {
+                        case 'UI.FieldGroup':
+                            const content: any = []
+                            Fields.map((item: any, index: number) => {
+                                const { Value } = item
+                                const option = {
+                                    entitySet: currentState?.entitySet,
+                                    path: Value,
+                                    showLabel: true,
+                                    key: `${Value}-${index}`
+                                }
+                                content.push(
+                                    <SmartField {...option} />
+                                )
+                            })
+
+                            return (
+                                <ProForm.Group label={label} key={`${id}-${index}`} style={{ marginTop: 24 }}>
+                                    {content}
+                                </ProForm.Group>
+                            )
+                        case 'UI.LineItem':
+                            return (
+                                <ProForm.Group label={label} key={`${id}-${index}`} style={{ marginTop: 24 }}>
+                                    <SmartEditableTable
+                                        entitySet={targetEntitySet}
+                                        targetNavigation={targetNavigation}
+                                        qualifier={targetQualifier}
+                                        queryEntity={location?.query?.queryEntity}
+                                    />
+                                </ProForm.Group>
+                            )
+                        default:
+                            break;
+                    }
+                    return <></>
+                }
+                return targetData && _renderFormGroup()
+            })
+        }
+
+        return (
+            <div style={{ background: '#fff', paddingRight: 24, paddingLeft: 24 }}>
+                <ProForm<{
+                    name: string;
+                    company: string;
+                }>
+                    grid
+                    onFinish={async (values) => {
+                        console.log(values);
+                    }}
+                    initialValues={{
+                        name: '蚂蚁设计有限公司',
+                        useMode: 'chapter',
+                    }}
+                >
+                    {_renderFacetsForm()}
+                </ProForm>
+            </div>
+        )
+    }, [currentState, currentRecord])
 
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header' className={`${headerStatus ? "uilab-ObjectPage-hide-header" : ""}`}>
@@ -568,7 +643,6 @@ export default (props: any) => {
                     tabProps={{
                         type: "line",
                         hideAdd: true,
-                        onEdit: (e, action) => console.log(e, action),
                     }}
                     onBack={() => window.history.back()}
                     footer={[
@@ -578,9 +652,13 @@ export default (props: any) => {
                         setActiveValue(e);
                     }}
                 >
-                    <div ref={pageContent}>
-                        {_renderSection}
-                    </div>
+                    {
+                        currentState ? (
+                            <div ref={pageContent}>
+                                {currentState?.currentStickySessionData ? _renderForm : _renderSection}
+                            </div>
+                        ) : null
+                    }
                 </PageContainer>
             )}
         </div>

@@ -277,7 +277,7 @@ export default (props: any) => {
                 })
             })
         }
-        const pro = document.getElementById("ProTable");
+        const pro = document.getElementById(`ProTable-${entitySet}-${qualifier}`);
         if (indexArr.length > 0 && pro) {
             const tb = Array.from(pro.getElementsByTagName("table"))[0]
             const trArr = Array.from(tb.getElementsByTagName('tr')).filter((item) => {
@@ -296,9 +296,10 @@ export default (props: any) => {
             }
         }
     }
+    
     return (
         <ProTable<GithubIssueItem>
-            id='ProTable'
+            id={`ProTable-${entitySet}-${qualifier}`}
             columns={columns}
             actionRef={actionRef}
             cardBordered
