@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-21 11:13:32
+ * @LastEditTime: 2023-12-21 14:11:05
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -17,11 +17,11 @@ import { ProForm, ProFormGroup } from '@ant-design/pro-components';
 import SmartSKeleton from '../UIComp/SmartSKeleton';
 import SmartModalForm from '../UIComp/SmartModalForm';
 import SmartContactPopover from '../UIComp/SmartContactPopover'
-import { useModel } from 'umi';
+import { useModel, FormattedMessage, useIntl } from 'umi';
 import { imageFallback } from '../Process/config'
 import { mergeSource, getSource } from '../Process/mergeSource';
 import CommonComp, { Icon } from '../CommonComp';
-import { Button } from 'antd';
+import { Button, Popconfirm } from 'ant5';
 import CustComp from '../../../../src/components/CustComp';
 
 export default (props: any) => {
@@ -29,6 +29,9 @@ export default (props: any) => {
     const { location } = props;
     const [currentState, setCurrentState] = useState<any>(null)
     const [currentRecord, setCurrentRecord] = useState<any>(null);
+    const [isEdit, setIsEdit] = useState(false)
+    const { formatMessage } = useIntl();
+
 
     //展示的数据 默认设置为第一条数据的id, 根据id进行展示
     const [activeValue, setActiveValue] = useState("");
@@ -36,7 +39,7 @@ export default (props: any) => {
     const pageContent = useRef<any>();
 
     //Form props
-
+    const formRef = useRef();
 
     //控制顶部是否固定
     const [headerStatus, setHeaderStatus] = useState(false);
@@ -431,60 +434,84 @@ export default (props: any) => {
     }
     //解析头数据
     const _getObjectPageHeaderOptions = useMemo(() => {
-        const { HeaderInfo, entitySet, Identification } = (currentState || {});
+        const { HeaderInfo, entitySet, Identification, currentStickySessionData } = (currentState || {});
         if (HeaderInfo) {
             const { Title, Description, ImageUrl } = HeaderInfo;
+
             const titleOption = {
                 isReadOnly: true,
                 entitySet: entitySet,
                 path: Title.Value,
                 record: currentRecord,
             }
+
             const subTitleOption = {
                 isReadOnly: true,
                 entitySet: entitySet,
                 path: Description.Value,
                 record: currentRecord,
             }
-            let extra = Identification?.map((item: JSX.IntrinsicAttributes, index: React.Key | null | undefined) => {
-                let Component = null;
-                switch (item.type) {
-                    case "CommonComp":
-                        Component = CommonComp[item.name] || <></>;
-                        return <Component key={`CommonComp${index}`} record={currentRecord} liRefList={liRefList} {...item} />
-                    // 自定义按钮
-                    case "CustComp":
-                        Component = CustComp[item.name] || <></>;
-                        return <Component key={`CommonComp${index}`} record={currentRecord} {...item} />
-                    default:
-                        return item.isHidden ? null : (
-                            <SmartModalForm
-                                refData={getRef}
-                                key={index}
-                                formType={item.type}
-                                entitySet={entitySet}
-                                content={{
-                                    title: item.Label,
-                                    btnText: item.Label
-                                }}
-                                action={item.Action}
-                                fields={item.Action?.Fields ? item.Action?.Fields : []}
-                                icon={item.IconUrl}
-                                onSubmit={async (body: any) => {
-                                    await item.Action.annoRequest({
-                                        body,
-                                        queryEntity: location.query.queryEntity
-                                    })
-                                    //刷新listreport数据
-                                    window.uilabKeep = true
-                                    setCurrentState(null);
-                                    init();
-                                }}
-                            />
-                        )
-                }
 
-            })
+            const extra = []
+
+            //Identification
+            if (Identification) {
+                Identification?.map((item: any, index: number) => {
+                    let Component = null;
+                    switch (item.type) {
+                        case "CommonComp":
+                            Component = CommonComp[item.name] || <></>;
+                            return extra.push(<Component key={`CommonComp${index}`} record={currentRecord} liRefList={liRefList} {...item} />)
+                        // 自定义按钮
+                        case "CustComp":
+                            Component = CustComp[item.name] || <></>;
+                            return extra.push(<Component key={`CommonComp${index}`} record={currentRecord} {...item} />)
+
+                        default:
+                            return item.isHidden ? null : (
+                                extra.push(<SmartModalForm
+                                    refData={getRef}
+                                    key={index}
+                                    formType={item.type}
+                                    entitySet={entitySet}
+                                    content={{
+                                        title: item.Label,
+                                        btnText: item.Label
+                                    }}
+                                    action={item.Action}
+                                    fields={item.Action?.Fields ? item.Action?.Fields : []}
+                                    icon={item.IconUrl}
+                                    onSubmit={async (body: any) => {
+                                        await item.Action.annoRequest({
+                                            body,
+                                            queryEntity: location.query.queryEntity
+                                        })
+                                        //刷新listreport数据
+                                        window.uilabKeep = true
+                                        setCurrentState(null);
+                                        init();
+                                    }}
+                                />)
+                            )
+                    }
+                })
+            }
+
+            //stickSession
+            if (currentStickySessionData && !isEdit) {
+                extra.push(
+                    <Button
+                        key="editAction"
+                        type="primary"
+                        onClick={async () => {
+                            setIsEdit(true)
+                        }}
+                    >
+                        <FormattedMessage id="smart.EditBtn" />
+                    </Button>
+                )
+            }
+
             return {
                 header: {
                     title: Title && <SmartField {...titleOption} />,
@@ -493,7 +520,7 @@ export default (props: any) => {
                         src: currentRecord[ImageUrl] ? currentRecord[ImageUrl] : imageFallback,
                         shape: 'square',
                     }),
-                    extra: extra, // 右侧按钮
+                    extra: [...extra], // 右侧按钮
                 },
                 content: (
                     <div>
@@ -557,12 +584,12 @@ export default (props: any) => {
                         </div >
                     </div >
                 ),
-                tabList: currentState?.currentStickySessionData ? null : _getObjectPageTabOptions() || [],
+                tabList: currentState?.currentStickySessionData && isEdit ? null : _getObjectPageTabOptions() || [],
                 tabActiveKey: activeValue ? activeValue : "",
             }
         }
         return {};
-    }, [activeValue, currentState, currentRecord, headerStatus, headerHidden])
+    }, [activeValue, currentState, currentRecord, headerStatus, headerHidden, isEdit])
 
     const _renderForm = useMemo(() => {
         let { Facets } = (currentState || {})
@@ -613,18 +640,13 @@ export default (props: any) => {
         }
 
         return (
-            <div style={{ background: '#fff', paddingRight: 24, paddingLeft: 24 }}>
-                <ProForm<{
-                    name: string;
-                    company: string;
-                }>
+            <div style={{ background: '#fff', paddingRight: 24, paddingLeft: 24, paddingBottom: 24 }}>
+                <ProForm
+                    formRef={formRef}
+                    submitter={false}
                     grid
                     onFinish={async (values) => {
                         console.log(values);
-                    }}
-                    initialValues={{
-                        name: '蚂蚁设计有限公司',
-                        useMode: 'chapter',
                     }}
                 >
                     {_renderFacetsForm()}
@@ -632,6 +654,29 @@ export default (props: any) => {
             </div>
         )
     }, [currentState, currentRecord])
+
+    //编辑时底部按钮
+    const _renderFooter = useMemo(() => {
+        return [
+            <Button
+                key='cancelText'
+                onClick={() => {
+                    setIsEdit(false)
+                }}
+            >
+                {formatMessage({ id: 'smart.cancelText' })}
+            </Button>,
+            <Button
+                key="Save"
+                type="primary"
+                onClick={() => {
+                    formRef?.current?.submit()
+                }}
+            >
+                {formatMessage({ id: 'smart.Save' })}
+            </Button>,
+        ]
+    }, [isEdit])
 
     return (
         <div style={{ background: '#F5F7FA' }} id='uilab-ObjectPage-header' className={`${headerStatus ? "uilab-ObjectPage-hide-header" : ""}`}>
@@ -645,9 +690,7 @@ export default (props: any) => {
                         hideAdd: true,
                     }}
                     onBack={() => window.history.back()}
-                    footer={[
-                        // <Button key="3">重置</Button>
-                    ]}
+                    footer={isEdit && _renderFooter}
                     onTabChange={(e) => {
                         setActiveValue(e);
                     }}
@@ -655,7 +698,7 @@ export default (props: any) => {
                     {
                         currentState ? (
                             <div ref={pageContent}>
-                                {currentState?.currentStickySessionData ? _renderForm : _renderSection}
+                                {currentState?.currentStickySessionData && isEdit ? _renderForm : _renderSection}
                             </div>
                         ) : null
                     }

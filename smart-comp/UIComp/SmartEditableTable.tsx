@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-20 15:39:58
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-21 11:16:23
+ * @LastEditTime: 2023-12-21 12:48:18
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartEditableTable.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@ import { EditableProTable, ProForm } from '@ant-design/pro-components';
 import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';
 import { FormattedMessage } from "react-intl";
+import SmartTable from '../UIComp/SmartTable';
 
 export default (props: any) => {
     const {
@@ -18,6 +19,7 @@ export default (props: any) => {
         targetNavigation,
         parentColumns,
         qualifier,
+        queryEntity
     } = props;
     const [currentState, setCurrentState] = useState<any>()
     let [columns, setColumns] = useState<any>([]);
@@ -67,34 +69,46 @@ export default (props: any) => {
     return (
         <ProForm.Item
             name={targetNavigation}
+            style={{ width: '100%' }}
         >
-            <EditableProTable
-                rowKey="id"
-                toolBarRender={false}
-                columns={columns}
-                recordCreatorProps={{
-                    newRecordType: 'dataSource',
-                    creatorButtonText: <FormattedMessage id="smart.addRow" />,
-                    record: () => {
-                        if (columns) {
-                            const obj = {
-                                id: Date.now(),
-                            }
-                            columns?.forEach((item: any) => {
-                                const { dataIndex, valueType } = item || {};
-                                if (valueType !== 'option') obj[dataIndex] = ''
-                            })
-                            return obj
-                        }
-                    },
-                }}
-                editable={{
-                    type: 'multiple',
-                    actionRender: (row, _, dom) => {
-                        return [dom.delete];
-                    },
-                }}
-            />
+            {
+                currentState?.restrictions?.Insertable ? (
+                    <EditableProTable
+                        rowKey="id"
+                        toolBarRender={false}
+                        columns={columns}
+                        recordCreatorProps={{
+                            newRecordType: 'dataSource',
+                            creatorButtonText: <FormattedMessage id="smart.addRow" />,
+                            record: () => {
+                                if (columns) {
+                                    const obj = {
+                                        id: Date.now(),
+                                    }
+                                    columns?.forEach((item: any) => {
+                                        const { dataIndex, valueType } = item || {};
+                                        if (valueType !== 'option') obj[dataIndex] = ''
+                                    })
+                                    return obj
+                                }
+                            },
+                        }}
+                        editable={{
+                            type: 'multiple',
+                            actionRender: (row, _, dom) => {
+                                return [dom.delete];
+                            },
+                        }}
+                    />
+                ) : (
+                    <SmartTable
+                        entitySet={entitySet}
+                        queryEntity={queryEntity}
+                        targetNavigation={targetNavigation}
+                        qualifier={qualifier}
+                    />
+                )
+            }
         </ProForm.Item>
     );
 };

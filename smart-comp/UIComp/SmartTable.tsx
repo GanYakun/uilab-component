@@ -75,7 +75,8 @@ export default (props: any) => {
                                     isReadOnly: true,
                                     Criticality,
                                     CriticalityIsInt,
-                                    CriticalityRepresentation
+                                    CriticalityRepresentation,
+                                    showLabel: false
                                 }
                                 return <SmartField {...option} />
                             },

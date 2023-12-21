@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-01 15:37:16
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 17:35:08
+ * @LastEditTime: 2023-12-21 13:36:31
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/locale.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -20,6 +20,39 @@ export const enUS = {
     'smart.Contact.Mobile': 'Mobile',
     'smart.Contact.Org': 'Department',
     'smart.addRow': 'Add',
+    'smart.EditBtn': 'Edit',
+    'smart.standard': 'Standard',
+    'smart.myviews': 'My Views (Max 10)',
+    'smart.saveas': 'Save As',
+    'smart.Save': 'Save',
+    'smart.manage': 'Manage',
+    'smart.view': 'View',
+    'smart.createdby': 'Created By',
+    'smart.create': 'Create',
+    'smart.delete': 'Delete',
+    'smart.manageviews': 'Manage Views',
+    'smart.saveview': 'Save View',
+    'smart.Set as Default': 'Set as Default',
+    'smart.Apply Automatically': 'Apply Automatically',
+    'smart.Already Exists': 'Already Exists',
+    'smart.Adapt Filters': 'Adapt Filters',
+    'smart.Field': 'Field',
+    'smart.Export': 'Export',
+    'smart.Edit': 'Edit',
+    'smart.AddItem': 'Add Item',
+    'smart.DeleteItem': 'Delete Item',
+    'smart.cancelText': 'Cancel',
+    'smart.submitText': 'Submit',
+    'smart.ok': 'OK',
+    'smart.resetText': 'Reset',
+    'smart.queryText': 'Query',
+    'smart.emptyAlarm': 'Please confirm that there are no errors before proceeding with the operation!',
+    'smart.submitApprovel': 'Submit for approval',
+    'smart.return': 'Return',
+    'smart.abandon': 'Do you want to abandon all modifications?',
+    'smart.apply': 'Apply',
+    'smart.MainContent': 'Main Content',
+    'smart.leavePage': 'This page contains unsaved data. Are you sure you want to leave the page?'
 }
 export const zhCN = {
     //smart组件
@@ -35,4 +68,30 @@ export const zhCN = {
     'smart.Contact.Mobile': '手机号',
     'smart.Contact.Org': '部门',
     'smart.addRow': '新增一行',
+    'smart.EditBtn': '编辑',
+    'smart.standard': '标准',
+    'smart.myviews': '我的视图 (最多 10)',
+    'smart.saveas': '另存为',
+    'smart.Save': '保存',
+    'smart.manage': '管理',
+    'smart.view': '视图',
+    'smart.createdby': '创建人',
+    'smart.delete': '删除',
+    'smart.manageviews': '管理视图',
+    'smart.saveview': '保存视图',
+    'smart.Set as Default': '设置默认',
+    'smart.Apply Automatically': '自动应用',
+    'smart.Already Exists': '已存在',
+    'smart.Adapt Filters': '调整过滤器',
+    'smart.Field': '字段',
+    'smart.Export': '导出',
+    'smart.Edit': '编辑',
+    'smart.AddItem': '添加项',
+    'smart.DeleteItem': '删除项',
+    'smart.cancelText': '取消',
+    'smart.submitText': '确定',
+    'smart.resetText': '重置',
+    'smart.queryText': '查询',
+    'smart.emptyAlarm': '请确定无误后，执行操作！',
+    'smart.submitApprovel': '提交审核',
 }
