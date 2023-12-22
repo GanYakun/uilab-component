@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 15:23:53
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-21 12:42:40
+ * @LastEditTime: 2023-12-22 14:23:04
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Anotations/smartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -21,6 +21,8 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
         inLineBtns: [] as any,
         headerBtns: [] as any,
         Criticality: '' as string,
+        CriticalityIsInt: '' as string,
+        CriticalityRepresentation: '' as string
     }
 
     //LineItem
@@ -39,7 +41,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
             for (let a of collection) {
                 const { record } = a
                 for (let b of record) {
-                    const { type, propertyValue, annotation, } = b
+                    const { type, propertyValue, } = b
                     let {
                         Label,
                         Value,
@@ -48,10 +50,10 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                         Inline,
                         SemanticObject,
                         Action,
-                        TargetValue,
-                        TargetType,
                         NavigationPropertyPath,
                         Criticality,
+                        CriticalityIsInt,
+                        CriticalityRepresentation,
                         Target
                     } = Utils.parsePropertyValue(propertyValue, entitySetName)
 
@@ -62,7 +64,9 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                                 path: Value,
                                 Label,
                                 show: true,
-                                Criticality
+                                Criticality,
+                                CriticalityIsInt,
+                                CriticalityRepresentation,
                             })
                             break;
                         case 'UI.DataFieldForAction':
@@ -81,7 +85,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                                 if (facetType === 'UI.DataPoint') {
                                     _addToColumns({
                                         type: facetType,
-                                        path: value.Value,
+                                        path: value?.Value,
                                         Label: value?.Title,
                                         value: value,
                                         show: true
@@ -89,7 +93,7 @@ const getTableConfig = (currentAnnotations: any[], entitySetName: string, qualif
                                 } else if (facetType === 'Communication.Contact') {
                                     _addToColumns({
                                         type: facetType,
-                                        path: value.path,
+                                        path: value?.path,
                                         Label,
                                         value: value,
                                         show: true
@@ -162,7 +166,7 @@ const _setRequest = (entitySet: string, columns: any, Criticality: string) => {
 
         //获取查询字段
         currentColumns.map((item: { path: any; type: any; value: any; show: any; url: any; Criticality: any, Url: any }) => {
-            const { path, type, value, show, Url, Criticality } = item
+            const { path, type, value, Url, Criticality } = item
             switch (type) {
                 case 'UI.DataField':
                     fieldArr.push(path)

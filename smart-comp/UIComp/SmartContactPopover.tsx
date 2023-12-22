@@ -2,15 +2,16 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-12-11 13:17:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-19 13:07:56
+ * @LastEditTime: 2023-12-22 14:30:59
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/UIComp/SmartContactPopover.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React, { useState, useEffect } from 'react';
 import { Popover, Avatar, Button } from 'antd';
 import SmartField from './SmartField';
+import { defaultAvator } from '../Process/config'
 
-export default (props) => {
+export default (props:any) => {
     const { contact, record } = props as any
     const [currentValue, setCurrentValue] = useState<any>(null)
     const [currentRecord, setCurrentRecord] = useState<any>(null)
@@ -54,10 +55,10 @@ export default (props) => {
 
     const title = () => {
         const { photo } = contact
-
+        const src = currentRecord?.[photo]
         return (
-            <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex',margin:'10px 0'}}>
-                <Avatar src={currentRecord?.[photo] || photo} size="large" />
+            <div onClick={(e) => e.stopPropagation()} style={{ display: 'flex', margin: '10px 0' }}>
+                <Avatar src={src ? src : defaultAvator} size="large" />
                 <div style={{ marginLeft: 10 }}>{currentValue}</div>
             </div>
         )

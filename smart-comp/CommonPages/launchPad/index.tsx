@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-08-04 18:10:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 13:42:37
+ * @LastEditTime: 2023-12-22 14:38:15
  * @FilePath: /qiankun/uiLab/apps/launchPad/src/pages/LaunchPad.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -50,7 +50,7 @@ const LaunchPad: React.FC = () => {
 
   const tagEnum = {
     'supplierparty-manage': <Statistic title="Registered" value={112} prefix={<FileDoneOutlined />} valueStyle={{ color: '#3f8600' }} />,
-    'supplierapprove-managebyapplication': <Progress type="circle" percent={30} size={60} />,
+    'supplierapprove-managebyapplication': <Statistic title="To be registered" value={60} prefix={<FileSyncOutlined />} valueStyle={{ color: '#0a6ed1' }} />,
     'supplierapprove-managebyprocurement': <Statistic title="To be registered" value={47} prefix={<FileSyncOutlined />} valueStyle={{ color: '#00BFFF' }} />,
     'supplierapprove-managebycompliance': <Statistic title="To be registered" value={12} prefix={<FileSyncOutlined />} valueStyle={{ color: '#00BFFF' }} />,
   }

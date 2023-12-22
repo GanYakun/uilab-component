@@ -87,6 +87,7 @@ export default (props: any) => {
                                         overflow: 'hidden',
                                         whiteSpace: 'wrap',
                                         textOverflow: 'ellipsis',
+                                        cursor: navigationRoute ? 'pointer' : ''
                                     }
                                 }
                             },
@@ -108,7 +109,18 @@ export default (props: any) => {
                                     }
                                 }
                                 return <SmartField {...option} />
-                            }
+                            },
+                            onCell: () => {
+                                return {
+                                    style: {
+                                        maxWidth: 150,
+                                        overflow: 'hidden',
+                                        whiteSpace: 'wrap',
+                                        textOverflow: 'ellipsis',
+                                        cursor: navigationRoute ? 'pointer' : ''
+                                    }
+                                }
+                            },
                         })
                         break;
                     case 'UI.DataPoint':
@@ -124,7 +136,18 @@ export default (props: any) => {
                                     record,
                                 }
                                 return <SmartField {...option} />
-                            }
+                            },
+                            onCell: () => {
+                                return {
+                                    style: {
+                                        maxWidth: 150,
+                                        overflow: 'hidden',
+                                        whiteSpace: 'wrap',
+                                        textOverflow: 'ellipsis',
+                                        cursor: navigationRoute ? 'pointer' : ''
+                                    }
+                                }
+                            },
                         })
                         break;
                     case 'Communication.Contact':
@@ -139,7 +162,18 @@ export default (props: any) => {
                                         contact={value}
                                     />
                                 )
-                            }
+                            },
+                            onCell: () => {
+                                return {
+                                    style: {
+                                        maxWidth: 150,
+                                        overflow: 'hidden',
+                                        whiteSpace: 'wrap',
+                                        textOverflow: 'ellipsis',
+                                        cursor: navigationRoute ? 'pointer' : ''
+                                    }
+                                }
+                            },
                         })
                         break;
                     default:
@@ -207,7 +241,14 @@ export default (props: any) => {
                         return <RightOutlined
                             style={{ color: '#6a6d70', fontSize: '12px', background: 'transparent' }}
                         />
-                    }
+                    },
+                    onCell: () => {
+                        return {
+                            style: {
+                                cursor: 'pointer'
+                            }
+                        }
+                    },
                 })
             }
 
@@ -297,7 +338,7 @@ export default (props: any) => {
             }
         }
     }
-    
+
     return (
         <ProTable<GithubIssueItem>
             id={`ProTable-${entitySet}-${qualifier}`}
