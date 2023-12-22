@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-20 14:05:06
+ * @LastEditTime: 2023-12-22 10:48:01
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -245,16 +245,98 @@ const getHeaderInfoOptions = (currentAnnotations: any) => {
     return false
 };
 
+const _formRequest = (entitySet: any) => {
+
+    function assiginObj(target = {}, sources = {}) {
+        let obj = target;
+        if (typeof target != 'object' || typeof sources != 'object') {
+            return sources; // 如果其中一个不是对象 就返回sources
+        }
+        for (let key in sources) {
+            // 如果target也存在 那就再次合并
+            if (target.hasOwnProperty(key)) {
+                obj[key] = assiginObj(target[key], sources[key]);
+            } else {
+                // 不存在就直接添加
+                obj[key] = sources[key];
+            }
+        }
+        return obj;
+    }
+
+
+    const _getCurrentBody = (body: any) => {
+        let result = {}
+        for (let key of Object.keys(body)) {
+            if (key.search('/') === -1) {
+                result[key] = body[key]
+            } else {
+                const arr = key.split('/')
+                let obj = {};
+                let currentObj = obj;
+                for (let i = 0; i < arr.length; i++) {
+                    let key1 = arr[i];
+                    if (i === arr.length - 1) {
+                        currentObj[key1] = body[key]; 
+                    } else {
+                        currentObj[key1] = {};
+                        currentObj = currentObj[key1];
+                    }
+                }
+                result = assiginObj(result, obj)
+            }
+        }
+        return result
+    }
+
+    return {
+        post: async ({ body = {}, queryEntity = null, targetNavigation = null }) => {
+            let path = entitySet
+            if (queryEntity) {
+                if (targetNavigation) {
+                    path = `${queryEntity}/${targetNavigation}`
+                } else {
+                    path = `${queryEntity}`
+                }
+            }
+            let option = {
+                path: path,
+                method: 'POST',
+                body: _getCurrentBody(body),
+            };
+            return await Odata.submit(option);
+        },
+        patch: async (record:any, body: any) => {
+            let option = {
+                path: record['@odata.id'],
+                method: 'PATCH',
+                body: _getCurrentBody(body),
+            };
+            console.log({ option })
+            //return await Odata.submit(option);
+        },
+        delete: async (record: any) => {
+            let option = {
+                path: record['@Odata.id'],
+                method: 'DELETE',
+                body: {},
+            };
+            return await Odata.submit(option);
+        }
+    }
+}
+
 export const getConfig = async (props: any) => {
     const { location, currentRecord } = props
     const { queryEntity } = location?.query
-    const { entitySet,goupName,routeName } = await _getManifestConfig()
+    const { entitySet, goupName, routeName } = await _getManifestConfig()
     const { currentAnnotations, currentEntitySetData, currentEntityTypeData, currentStickySessionData } = Utils.getEntitySetConfig(entitySet)
     const HeaderInfo = getHeaderInfoOptions(currentAnnotations)
     const { Facets, HeaderFacets, HiddenPaths } = Utils.getObjectPageFacetsByAnnotations(currentAnnotations, currentEntitySetData, currentRecord)
     const Identification = getIdentificationByAnnotations(currentAnnotations, currentRecord)
     const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }))
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
+    const formRequest = _formRequest(entitySet)
 
     //调试使用
     if (currentRecord) {
@@ -271,9 +353,10 @@ export const getConfig = async (props: any) => {
             annoRequest,
             Identification,
             quickCreate,
-            goupName, 
+            goupName,
             routeName,
-            currentStickySessionData
+            currentStickySessionData,
+            formRequest
         })
     }
 
@@ -288,6 +371,7 @@ export const getConfig = async (props: any) => {
         currentEntityTypeData,
         goupName,
         routeName,
-        currentStickySessionData
+        currentStickySessionData,
+        formRequest
     }
 }
