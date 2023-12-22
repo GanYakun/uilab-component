@@ -2,13 +2,21 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-22 13:48:50
+ * @LastEditTime: 2023-12-22 17:24:32
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import { useEffect, useState } from 'react';
 import { getConfig } from '../Anotations/SmartField'
-import { ProFormDatePicker, ProFormDateTimePicker, ProFormDigit, ProFormSelect, ProFormText, ProFormTextArea, ProFormUploadButton } from '@ant-design/pro-components';
+import {
+    ProFormDatePicker,
+    ProFormDateTimePicker,
+    ProFormDigit,
+    ProFormSelect,
+    ProFormText,
+    ProFormTextArea,
+    ProFormUploadButton
+} from '@ant-design/pro-components';
 import moment from 'moment';
 import { Modal, Typography, message, Image } from 'antd';
 import { Rate, Progress } from 'ant5'
@@ -29,7 +37,7 @@ export default (props: any) => {
         isReadOnly,
         DataFieldWithUrl,
         formRef, // 表单的钩子函数
-        showLabel=true, // 是否显示label字段，与isReadOnly配合使用
+        showLabel = true, // 是否显示label字段，与isReadOnly配合使用
         colProps,
         Criticality,
         CriticalityIsInt,
@@ -41,10 +49,10 @@ export default (props: any) => {
         label: parentLabel,
         inFilterBar,
         displayValue: parentDisplayValue,
-        name:parentName,
+        name: parentName,
         onValuesChange,
-        value:formValue,
-        defaultValue:formDetasultValue,
+        value: formValue,
+        defaultValue: formDetasultValue,
         ...otherProps
     } = props;
 
@@ -59,7 +67,7 @@ export default (props: any) => {
     //字段相关显示属性
     let [currentFieldProps, setCurrentFieldProps] = useState<any>({
         //1.tabel内不显示label 2.优先使用父级传递的label
-        name: parentName ?parentName:path,
+        name: parentName ? parentName : path,
         colProps: colProps || { md: 8, xl: 6 },
         fieldProps: {
         },
@@ -84,7 +92,7 @@ export default (props: any) => {
         })
         if (result) {
             const { Label } = result;
-            if(showLabel){
+            if (showLabel) {
                 currentFieldProps.label = parentLabel ? parentLabel : Label;
             }
             //设置必填
@@ -234,7 +242,7 @@ export default (props: any) => {
     };
     //根据fiedType类型渲染内容
     const renderContent = () => {
-        let { fieldType, displayValue, valueListConfig, defaultValue, isMultiple } = (currentState || {})
+        let { fieldType, displayValue, valueListConfig, defaultValue, isMultiple, currentValue } = (currentState || {})
         const { Criticality: DataPointCriticality, TargetValue } = dataPoint || {}//dataPoint相关参数
 
         //设置默认值
@@ -242,10 +250,16 @@ export default (props: any) => {
             currentFieldProps.initialValue = defaultValue;
         }
 
-        if (parentDisplayValue){
-            displayValue=parentDisplayValue
+        //设置父级值
+        if (parentDisplayValue) {
+            displayValue = parentDisplayValue
         }
-        
+
+        //设置值
+        if (currentValue){
+            currentFieldProps.value = currentValue;
+        }
+
         let color = "";
         if (record) {
             if (CriticalityIsInt) {
@@ -343,7 +357,7 @@ export default (props: any) => {
                     }}
                 />
             case 'DateTime':
-                return <ProFormDateTimePicker {...currentFieldProps} fieldProps={otherProps}/>
+                return <ProFormDateTimePicker {...currentFieldProps} fieldProps={otherProps} />
             case "Hidden":
                 return <ProFormText {...currentFieldProps} hidden />
             case "Upload":

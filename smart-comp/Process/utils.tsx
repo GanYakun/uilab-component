@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-21 13:58:23
+ * @LastEditTime: 2023-12-22 17:05:18
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -435,7 +435,7 @@ const getLabelByAnnotation = (annotations: any[]) => {
  * @param {string} property 需要获取的字段名称
  * @returns Edm.String、Edm.Boolean
  */
-const getPropertyType = (entityTypeArray: { property: any[]; }, property: never) => {
+const getPropertyType = (entityTypeArray: any, property: never) => {
     let result;
     entityTypeArray.property.map((d) => {
         if (d.name === property) {
@@ -1368,7 +1368,7 @@ const getTargetAnnotationProcessed = (
                         const record = Data[0]?.record
                         for (let c of record) {
                             const { type, propertyValue } = c
-                            const { Value,String, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url, IconUrl } = parsePropertyValue(propertyValue)
+                            const { Value, String, Criticality, CriticalityIsInt, CriticalityRepresentation, Action, Label, Url, IconUrl } = parsePropertyValue(propertyValue)
                             const obj = {
                                 type,
                                 Value: targetNavigation ? `${targetNavigation}/${Value}` : Value,//如果有导航属性，则加上导航属性
@@ -1532,7 +1532,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations: any[], currentEnti
  * @returns 关联对象的entitySet name
  */
 const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
-    currentEntitySetData: { navigationPropertyBinding: any; },
+    currentEntitySetData:any,
     targetPath: string,
 ) => {
     const { metadata } = getUi5ConfigAsync()
@@ -1661,7 +1661,7 @@ const parseQuickCreateFacets = (currentAnnotations: any[], entitySet: string) =>
 
     //设置请求
     if (result.Fields.length > 0) {
-        const _getCurrentBody = (body:any) => {
+        const _getCurrentBody = (body: any) => {
             let result = {}
             for (let key of Object.keys(body)) {
                 if (key.search('/') === -1) {
@@ -1982,7 +1982,8 @@ const getSelectionVariantByAnnotations = (obj: { property: any; record: any; }, 
 };
 
 //拼接query path
-const getBatchPath = ({ obj, record, PrimaryKeys }) => {
+const getBatchPath = (params: any) => {
+    const { obj, record, PrimaryKeys } = params
     let result, str = ''
 
     //判断是日期类型
@@ -2304,7 +2305,7 @@ const getObjectRestrictions = (annotations: any) => {
     };
 
     const _getValue = (record: any, currentType: string, currentProperty: string) => {
-        let _result:any = true;
+        let _result: any = true;
         for (let a of record) {
             const { propertyValue, type } = a;
             if (type === currentType) {

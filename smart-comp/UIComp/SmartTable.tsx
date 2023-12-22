@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import type { ProColumns } from '@ant-design/pro-components';
 import { ProTable } from '@ant-design/pro-components';
 import { getConfig } from '../Anotations/SmartTable';
 import SmartField from './SmartField';

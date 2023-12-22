@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-26 17:01:20
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-22 13:52:04
+ * @LastEditTime: 2023-12-22 17:29:50
  * @FilePath: /uilab-gbms/lib/o3smart-comp/UIPages/ListReport.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -448,7 +448,7 @@ export default (props: any) => {
             const subTitleOption = {
                 isReadOnly: true,
                 entitySet: entitySet,
-                path: Description.Value,
+                path: Description?.Value,
                 record: currentRecord,
             }
 
@@ -607,13 +607,13 @@ export default (props: any) => {
                                     entitySet: currentState?.entitySet,
                                     path: Value,
                                     showLabel: true,
-                                    key: `${Value}-${index}`
+                                    key: `${Value}-${index}`,
+                                    record:currentRecord
                                 }
                                 content.push(
                                     <SmartField {...option} />
                                 )
                             })
-
                             return (
                                 <ProForm.Group label={label} key={`${id}-${index}`} style={{ marginTop: 24 }}>
                                     {content}
@@ -646,10 +646,13 @@ export default (props: any) => {
                     submitter={false}
                     grid
                     onFinish={async (values) => {
-                        console.log(values);
                         const { formRequest } = currentState;
                         if (currentRecord) {
-                            formRequest.patch(currentRecord, values)
+                           const result = await formRequest.patch(currentRecord, values)
+                            if (result){
+                                await _fetch(currentState)
+                                setIsEdit(false)
+                            }
                         }
                     }}
                 >

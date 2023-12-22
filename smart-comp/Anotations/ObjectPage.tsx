@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2022-09-19 14:59:09
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-22 10:48:01
+ * @LastEditTime: 2023-12-22 17:16:11
  * @FilePath: /uilab-gbms/lib/o3smart-comp/Anotations/SmartTable.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -12,6 +12,7 @@ import Utils from '../Process/utils'
 import { addLocale } from 'umi';
 import enUS from 'antd/es/locale/en_US';
 import znCN from 'antd/es/locale/zh_CN';
+import moment from 'moment';
 
 /**
  * 获取manifest配置
@@ -245,8 +246,33 @@ const getHeaderInfoOptions = (currentAnnotations: any) => {
     return false
 };
 
-const _formRequest = (entitySet: any) => {
+const _formRequest = (entitySet: any, currentEntitySetData: any,) => {
 
+    //参数不全
+    function paramCheck(body:any,name:any,type:any) {
+        if (!body[name]) {
+            //处理空值
+            if (type === 'Edm.String') {
+                body[name] = ''
+            } else if (type === 'Edm.Boolean') {
+                body[name] = false
+            } else if (type === 'Edm.Decimal') {
+                body[name] = body[name]
+            } else if (type === 'Collection(Edm.String)') {
+                body[name] = body[name] ? body[name] : []
+            } else {
+                body[name] = null
+            }
+        } else {
+            //处理日期格式
+            if (type === 'Edm.DateTimeOffset') {
+                body[name] = moment(body[name]).format('YYYY-MM-DDTHH:mm:ss.SSSZ')
+            }
+        }
+        return body[name]
+    }
+
+    //合并对象属性
     function assiginObj(target = {}, sources = {}) {
         let obj = target;
         if (typeof target != 'object' || typeof sources != 'object') {
@@ -264,26 +290,45 @@ const _formRequest = (entitySet: any) => {
         return obj;
     }
 
-
     const _getCurrentBody = (body: any) => {
         let result = {}
         for (let key of Object.keys(body)) {
-            if (key.search('/') === -1) {
-                result[key] = body[key]
-            } else {
-                const arr = key.split('/')
-                let obj = {};
-                let currentObj = obj;
-                for (let i = 0; i < arr.length; i++) {
-                    let key1 = arr[i];
-                    if (i === arr.length - 1) {
-                        currentObj[key1] = body[key]; 
-                    } else {
-                        currentObj[key1] = {};
-                        currentObj = currentObj[key1];
+            if(Array.isArray(body[key])){
+                const arr=[]
+                for (let a of body[key]){
+                    const {id,...other}=a 
+                    const obj={}
+                    for(let key of Object.keys(other)){
+                        if (other[key]){
+                            obj[key] = other[key]
+                        }
+                    }
+                    if(JSON.stringify(obj)!=='{}'){
+                        arr.push(obj)
                     }
                 }
-                result = assiginObj(result, obj)
+                if(arr.length>0){
+                    result[key]=arr
+                }
+            }else{
+                if (key.search('/') === -1) {
+                    const { currentPropertyType } = Utils.getEntitySetConfig(entitySet, key)
+                    result[key] = paramCheck(body, key, currentPropertyType)
+                } else {
+                    const arr = key.split('/')
+                    let obj = {};
+                    let currentObj = obj;
+                    for (let i = 0; i < arr.length; i++) {
+                        let key1 = arr[i];
+                        if (i === arr.length - 1) {
+                            currentObj[key1] = body[key];
+                        } else {
+                            currentObj[key1] = {};
+                            currentObj = currentObj[key1];
+                        }
+                    }
+                    result = assiginObj(result, obj)
+                }
             }
         }
         return result
@@ -313,7 +358,7 @@ const _formRequest = (entitySet: any) => {
                 body: _getCurrentBody(body),
             };
             console.log({ option })
-            //return await Odata.submit(option);
+            return await Odata.submit(option);
         },
         delete: async (record: any) => {
             let option = {
@@ -336,7 +381,7 @@ export const getConfig = async (props: any) => {
     const Identification = getIdentificationByAnnotations(currentAnnotations, currentRecord)
     const annoRequest = _setRequest(entitySet, queryEntity, getFieldArr({ HeaderInfo, Facets, HeaderFacets, HiddenPaths, Identification }))
     const quickCreate = Utils.parseQuickCreateFacets(currentAnnotations, entitySet)
-    const formRequest = _formRequest(entitySet)
+    const formRequest = _formRequest(entitySet, currentEntitySetData)
 
     //调试使用
     if (currentRecord) {
