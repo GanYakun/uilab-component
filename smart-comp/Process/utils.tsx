@@ -2,7 +2,7 @@
  * @Author: lx.jin 308561217@qq.com
  * @Date: 2023-11-20 12:24:40
  * @LastEditors: lx.jin 308561217@qq.com
- * @LastEditTime: 2023-12-22 17:05:18
+ * @LastEditTime: 2023-12-25 15:08:58
  * @FilePath: /Uilab-Application/lib/Uilab-Comp/smart-comp/Process/utils.js
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -1426,6 +1426,28 @@ const getTargetAnnotationProcessed = (
         }
     }
 
+    //@UI.PresentationVariant
+    if (target && target.search('@UI.PresentationVariant') !== -1) {
+        const data: any = getTermAnnotations(currentAnnotations, 'UI.PresentationVariant', targetQualifier)
+        if (data) {
+            const { Visualizations, orderby } = getPresentationVariantByAnnotations(data);
+            if (Visualizations) {
+                const { term, qualifier } = Visualizations
+                switch (term) {
+                    case '@UI.LineItem':
+                        return {
+                            facetType: 'UI.LineItem',
+                            targetNavigation,
+                            targetEntitySet: NavigationEntitySet,
+                            targetQualifier: qualifier
+                        }
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
     return false
 };
 
@@ -1532,7 +1554,7 @@ const getObjectPageFacetsByAnnotations = (currentAnnotations: any[], currentEnti
  * @returns 关联对象的entitySet name
  */
 const getEntitySetByCurrentEntitySetNavigationPropertyBinding = (
-    currentEntitySetData:any,
+    currentEntitySetData: any,
     targetPath: string,
 ) => {
     const { metadata } = getUi5ConfigAsync()
@@ -1730,7 +1752,7 @@ const parseQuickCreateFacets = (currentAnnotations: any[], entitySet: string) =>
  * @param {*} obj 
  * @returns 
  */
-const getPresentationVariantByAnnotations = (obj: { term: any; record: any; property: any; }) => {
+const getPresentationVariantByAnnotations = (obj: any) => {
     const { term, record, property } = obj;
     let result = {
         orderby: null as any,
